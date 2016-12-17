@@ -1,0 +1,52 @@
+{
+	"name": "WeeklyRelatedChanges",
+	"version": "0.1.0",
+	"license-name": "GPL-3.0+",
+	"author": [
+		"[http://mwstake.org Mark A. Hershberger]"
+	],
+	"require": [ "1.26" ],
+	"url": "https://www.mediawiki.org/wiki/Extension:WeeklyRelatedChanges",
+	"descriptionmsg": "weeklyrelatedchanges-desc",
+	"type": "specialpage",
+	"callback": "WeeklyRelatedChanges\\Hook::initExtension",
+	"MessagesDirs": {
+		"WeeklyRelatedChanges": [
+			"i18n"
+		]
+	},
+	"AutoloadClasses": {
+		"WeeklyRelatedChanges\\WeeklyRelatedChanges": "src/WeeklyRelatedChanges.php",
+		"WeeklyRelatedChanges\\SpecialWhoWatches": "page/SpecialWhoWatches.php",
+		"WeeklyRelatedChanges\\Hook": "src/Hook.php"
+	},
+	"SpecialPages": {
+		"WhoWatches": "WeeklyRelatedChanges\\SpecialWhoWatches"
+	},
+	"GroupPermissions": {
+		"user": {
+			"add-weekly-changes": true
+		}
+	},
+	"AvailableRights": [
+		"add-weekly-changes"
+	],
+	"ConfigRegistry": {
+		"WeeklyRelatedChanges": "WeeklyRelatedChanges\\Hook::makeConfig"
+	},
+	"Hooks": {
+		"LoadExtensionSchemaUpdates": [
+			"WeeklyRelatedChanges\\Hook::onLoadExtensionSchemaUpdates"
+		]
+	},
+	"config": {
+		"_prefix": "WeeklyRelatedChanges"
+	},
+	"ResourceModules": {
+		"ext.weeklyRelatedChanges": {
+			"styles": [
+			]
+		}
+	},
+	"manifest_version": 1
+}

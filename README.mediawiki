@@ -1,0 +1,35 @@
+= Weekly Related Changes =
+
+This is MediaWiki extension to specify that a user should get the related changes for a page every week.
+
+== Installation ==
+
+* Download and place the files in a directory called WeeklyRelatedChanges in your extensions/ folder.
+
+* Add the following code at the bottom of your <tt>LocalSettings.php</tt>:
+
+<source lang="php">
+wfLoadExtension( 'WeeklyRelatedChanges' );
+</source>
+
+* Done - Navigate to Special:Version on your wiki to verify that the extension is successfully installed.
+
+* Current issues
+
+== Special Page ==
+
+Special:WeeklyRelatedChanges lets you configure who should get which related changes.
+
+This will be stored in an SQL table.
+
+== Email template ==
+
+From the Special Page, you'll be able to edit a page that will be used as the email message template.
+
+== Job Queue ==
+
+Job should sit in the queue and wait until Friday morning to run.  Looks like Echo can do this even w/o the job queue.
+
+== query related changes ==
+
+Need a maint script that will show us the related changes in the past week for any given page

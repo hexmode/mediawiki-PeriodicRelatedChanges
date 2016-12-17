@@ -1,0 +1,9 @@
+{
+	"@metadata": {
+		"authors": []
+	},
+	"whowatches": "Set Weekly Watches",
+	"whowatches-user-editname": "User:",
+	"whowatches-lookup-user": "User to check",
+	"whowatches-getuser": "fetch"
+}
