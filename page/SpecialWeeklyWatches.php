@@ -23,12 +23,12 @@ use Html;
 use SpecialPage;
 use Xml;
 
-class SpecialWhoWatches extends SpecialPage {
+class SpecialWeeklyWatches extends SpecialPage {
 	/**
 	 * Constructor
 	 */
 	public function __construct() {
-		parent::__construct( 'WhoWatches', 'add-weekly-changes' );
+		parent::__construct( 'WeeklyWatches', 'add-weekly-changes' );
 	}
 
 	/**
@@ -79,12 +79,12 @@ class SpecialWhoWatches extends SpecialPage {
 				[ 'method' => 'post',
 				  'action' => $this->getPageTitle( $userName )->getLocalUrl(),
 				  'name' => 'uluser',
-				  'id' => 'mw-whowatches-form1' ]
+				  'id' => 'mw-weeklywatches-form1' ]
 			) .
 			Html::hidden( 'addToken', $this->getUser()->getEditToken( __CLASS__ ) ) .
-			Xml::fieldset( $this->msg( 'whowatches-lookup-user' )->text() ) .
+			Xml::fieldset( $this->msg( 'weeklywatches-lookup-user' )->text() ) .
 			Xml::inputLabel(
-				$this->msg( 'whowatches-user-editname' )->text(),
+				$this->msg( 'weeklywatches-user-editname' )->text(),
 				'user',
 				'username',
 				30,
@@ -92,7 +92,7 @@ class SpecialWhoWatches extends SpecialPage {
 				[ 'autofocus' => true,
 				  'class' => 'mw-autocomplete-user' ] // used by mediawiki.userSuggest
 			) . ' ' .
-			Xml::submitButton( $this->msg( 'whowatches-getuser' )->text() ) .
+			Xml::submitButton( $this->msg( 'weeklywatches-getuser' )->text() ) .
 			Html::closeElement( 'fieldset' ) .
 			Html::closeElement( 'form' ) . "\n"
 		);

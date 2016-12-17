@@ -17,11 +17,11 @@
 	},
 	"AutoloadClasses": {
 		"WeeklyRelatedChanges\\WeeklyRelatedChanges": "src/WeeklyRelatedChanges.php",
-		"WeeklyRelatedChanges\\SpecialWhoWatches": "page/SpecialWhoWatches.php",
+		"WeeklyRelatedChanges\\SpecialWeeklyWatches": "page/SpecialWeeklyWatches.php",
 		"WeeklyRelatedChanges\\Hook": "src/Hook.php"
 	},
 	"SpecialPages": {
-		"WhoWatches": "WeeklyRelatedChanges\\SpecialWhoWatches"
+		"WeeklyWatches": "WeeklyRelatedChanges\\SpecialWeeklyWatches"
 	},
 	"GroupPermissions": {
 		"user": {

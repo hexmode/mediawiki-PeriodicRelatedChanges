@@ -2,8 +2,8 @@
 	"@metadata": {
 		"authors": []
 	},
-	"whowatches": "Set Weekly Watches",
-	"whowatches-user-editname": "User:",
-	"whowatches-lookup-user": "User to check",
-	"whowatches-getuser": "fetch"
+	"weeklywatches": "Set Weekly Watches",
+	"weeklywatches-user-editname": "User:",
+	"weeklywatches-lookup-user": "User to check",
+	"weeklywatches-getuser": "fetch"
 }
