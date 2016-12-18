@@ -7,8 +7,6 @@
 		 (c-basic-offset . 4)
 		 (indent-tabs-mode . t)
 		 (lice:default-license . "gpl-3.0")
-		 (flycheck-phpcs-standard . mah/mediawiki-phpcs)
-		 (flycheck-phpmd-rulesets . mah/mediawiki-phpmd)
 		 (eval . (progn (when (fboundp 'delete-trailing-whitespace)
 						  (delete-trailing-whitespace))
                           (tabify (point-min) (point-max))))
