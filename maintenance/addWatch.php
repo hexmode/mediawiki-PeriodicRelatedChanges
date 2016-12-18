@@ -19,6 +19,8 @@
 
 namespace WeeklyRelatedChanges;
 
+use MWException;
+
 $IP = getenv( 'MW_INSTALL_PATH' );
 if ( $IP === false ) {
 	$IP = __DIR__ . '/../../..';
@@ -49,8 +51,8 @@ class AddWatch extends Maintenance {
 
 		try {
 			$wrc->add( $this->getArg( 0 ), $this->getArg( 1 ) );
-		} catch ( Exception $e ) {
-			$this->error( $e->getMessage() );
+		} catch ( MWException $e ) {
+			$this->error( $e->getMessage(), 1 );
 		}
 	}
 }

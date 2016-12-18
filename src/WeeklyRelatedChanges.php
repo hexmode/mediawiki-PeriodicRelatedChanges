@@ -18,6 +18,8 @@
 
 namespace WeeklyRelatedChanges;
 
+use MWException;
+use Page;
 use Title;
 use User;
 use WikiPage;
@@ -51,27 +53,29 @@ class WeeklyRelatedChanges {
 		if ( $user === false ) {
 			throw new MWException( "Invalid user name." );
 		}
+		if ( $user->getID() === 0 ) {
+			throw new MWException( "User doesn't exist." );
+		}
 
 		$title = Title::newFromTextThrow( $pageName );
+		$page = WikiPage::factory( $title );
+		if ( !$page->exists() ) {
+			throw new MWException( "Page doesn't exist." );
+		}
 
-		return $this->addWatch( $user, $title );
+		return $this->addWatch( $user, $page );
 	}
 
 	/**
 	 * Store a watch for the user.  SQL schema ensures that there can only be one.
 	 *
 	 * @param User $user the user
-	 * @param Title $title the title to watch for related changes.
+	 * @param Page $page what to watch for related changes.
 	 *
 	 * @return bool
 	 */
-	public function addWatch( User $user, Title $title ) {
-		$dbw = wfGetDB( DB_MASTER );
-		$dbw->insert( 'weekly_changes',
-					  [ 'wc_user' => $user->getId(),
-						'wc_page' => WikiPage::factory( $title )->getID() ],
-					  __METHOD__,
-					  [ 'IGNORE' ] );
-		return true;
+	public function addWatch( User $user, Page $page ) {
+		$watch = new RelatedWatcher( $user, $page );
+		return $watch->save();
 	}
 }

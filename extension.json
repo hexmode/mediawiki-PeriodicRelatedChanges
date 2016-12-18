@@ -17,6 +17,8 @@
 	},
 	"AutoloadClasses": {
 		"WeeklyRelatedChanges\\WeeklyRelatedChanges": "src/WeeklyRelatedChanges.php",
+		"WeeklyRelatedChanges\\RelatedWatcher": "src/RelatedWatcher.php",
+		"WeeklyRelatedChanges\\RelatedWatchList": "src/RelatedWatchList.php",
 		"WeeklyRelatedChanges\\SpecialWeeklyWatches": "page/SpecialWeeklyWatches.php",
 		"WeeklyRelatedChanges\\Hook": "src/Hook.php"
 	},
