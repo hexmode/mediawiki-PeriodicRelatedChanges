@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace WeeklyRelatedChanges;
+namespace PeriodicRelatedChanges;
 
 use IDatabase;
 use ResultWrapper;
@@ -43,7 +43,7 @@ class RelatedWatchList extends ResultWrapper {
 	 */
 	public static function newFromUser( User $user ) {
 		$dbr = wfGetDB( DB_SLAVE );
-		$res = $dbr->select( 'weekly_changes',
+		$res = $dbr->select( 'periodic_changes',
 							 [ 'wc_page', 'wc_timestamp' ],
 							 [ 'wc_user' => $user->getId() ],
 							 __METHOD__ );
@@ -52,7 +52,8 @@ class RelatedWatchList extends ResultWrapper {
 
 	/**
 	 * Returns an array of the current result
-	 * @return array|null
+	 *
+	 * @return array|boolean
 	 */
 	public function current() {
 		$cur = parent::current();
@@ -63,5 +64,15 @@ class RelatedWatchList extends ResultWrapper {
 					 'timestamp' => $cur->wc_timestamp ];
 		}
 		return $res;
+	}
+
+	/**
+	 * Get a list of changes for a page
+	 *
+	 * @param WikiPage $page to check
+	 * @return array
+	 */
+	public function getChangesFor ( WikiPage $page ) {
+		
 	}
 }

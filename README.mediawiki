@@ -1,15 +1,15 @@
-= Weekly Related Changes =
+= Periodic Related Changes =
 
 This is MediaWiki extension to specify that a user should get the related changes for a page every week.
 
 == Installation ==
 
-* Download and place the files in a directory called WeeklyRelatedChanges in your extensions/ folder.
+* Download and place the files in a directory called PeriodicRelatedChanges in your extensions/ folder.
 
 * Add the following code at the bottom of your <tt>LocalSettings.php</tt>:
 
 <source lang="php">
-wfLoadExtension( 'WeeklyRelatedChanges' );
+wfLoadExtension( 'PeriodicRelatedChanges' );
 </source>
 
 * Done - Navigate to Special:Version on your wiki to verify that the extension is successfully installed.
@@ -18,7 +18,7 @@ wfLoadExtension( 'WeeklyRelatedChanges' );
 
 == Special Page ==
 
-Special:WeeklyRelatedChanges lets you configure who should get which related changes.
+Special:PeriodicRelatedChanges lets you configure who should get which related changes.
 
 This will be stored in an SQL table.
 

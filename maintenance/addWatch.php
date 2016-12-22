@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace WeeklyRelatedChanges;
+namespace PeriodicRelatedChanges;
 
 use MWException;
 
@@ -36,7 +36,7 @@ class AddWatch extends Maintenance {
 	 */
 	public function __construct() {
 		parent::__construct();
-		$this->addDescription( "Add a watch to the weekly watches." );
+		$this->addDescription( "Add a watch to the periodic watches." );
 		$this->addArg( "user", "User to send notices to.  Must have an email address.",
 					   true );
 		$this->addArg( "page", "The page to summarize RelatedChanges for.  Must exist.",
@@ -47,7 +47,7 @@ class AddWatch extends Maintenance {
 	 * Where all the business happens.
 	 */
 	public function execute() {
-		$wrc = WeeklyRelatedChanges::getManager();
+		$wrc = PeriodicRelatedChanges::getManager();
 
 		try {
 			$wrc->add( $this->getArg( 0 ), $this->getArg( 1 ) );
@@ -57,5 +57,5 @@ class AddWatch extends Maintenance {
 	}
 }
 
-$maintClass = "WeeklyRelatedChanges\\AddWatch";
+$maintClass = "PeriodicRelatedChanges\\AddWatch";
 require_once ( DO_MAINTENANCE );

@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace WeeklyRelatedChanges;
+namespace PeriodicRelatedChanges;
 
 use Iterator;
 use Title;
@@ -68,24 +68,39 @@ class ListWatch extends Maintenance {
 		$watches = RelatedWatchList::newFromUser( $user );
 
 		if ( $watches->numRows() === 0 ) {
-			$this->error( "$user does not have any weekly notices!\n", 1 );
+			$this->error( "$user does not have any periodic notices!\n", 1 );
 		}
 
 		if ( $page === null ) {
-			$this->output( "$user has these weekly notices:\n" );
-			iterator_apply( $watches, [ $this, 'printWatchName' ], [ $watches ] );
+			$this->output( "$user has these periodic notices:\n" );
+			$this->output( "Title\t\tLast Seen\n" );
+			$this->output( "------------------------------\n" );
+			iterator_apply( $watches, [ $this, 'printWatch' ], [ $watches ] );
+			return;
 		}
+
+		$changes = $watches->getChangesFor( $page );
+
+		if ( $changes->numRows() === 0 ) {
+			$this->error( "$user has no changes on $page this week!\n", 1 );
+		}
+
+		$this->output( "Changes for $page:\n" );
+		$this->output( "Title\t\tLast Seen\t\tDiff URL" );
+		$this->output( "------------------------------\n" );
+		iterator_apply( $changes, [ $this, 'printChange' ], [ $changes ] );
 	}
 
 	/**
 	 * Handle the display of a single watch name.
+	 *
 	 * @param Iterator $obj a single watch
 	 * @return bool
 	 */
-	public function printWatchName( Iterator $obj ) {
+	public function printWatch( Iterator $obj ) {
 		$res = $obj->current();
 		$title = $res['page']->getTitle();
-		$timestamp = $res['timestamp'];
+		$timestamp = $res['timestamp'] ? $res['timestamp'] : "(not checked)";
 		$this->output( "$title\t" );
 		$this->output( "$timestamp\n" );
 
@@ -93,5 +108,5 @@ class ListWatch extends Maintenance {
 	}
 }
 
-$maintClass = "WeeklyRelatedChanges\\ListWatch";
+$maintClass = "PeriodicRelatedChanges\\ListWatch";
 require_once DO_MAINTENANCE;

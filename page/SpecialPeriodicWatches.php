@@ -17,18 +17,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace WeeklyRelatedChanges;
+namespace PeriodicRelatedChanges;
 
 use Html;
 use SpecialPage;
 use Xml;
 
-class SpecialWeeklyWatches extends SpecialPage {
+class SpecialPeriodicWatches extends SpecialPage {
 	/**
 	 * Constructor
 	 */
 	public function __construct() {
-		parent::__construct( 'WeeklyWatches', 'add-weekly-changes' );
+		parent::__construct( 'PeriodicWatches', 'add-periodic-changes' );
 	}
 
 	/**
@@ -58,19 +58,19 @@ class SpecialWeeklyWatches extends SpecialPage {
 		parent::execute( $userName );
 
 		if ( $this->findUser( $userName ) ) {
-            $this->getTargetPage( );
-            $this->listCurrentWatches( $userName );
-        }
+			$this->getTargetPage( );
+			$this->listCurrentWatches( $userName );
+		}
 	}
 
-    /**
-     * Display the auto-complete form for a user
-     *
-     * @param string|null the username if already selected
-     *
-     * @return bool
-     */
-    public function findUser( $userName ) {
+	/**
+	 * Display the auto-complete form for a user
+	 *
+	 * @param string|null the username if already selected
+	 *
+	 * @return bool
+	 */
+	public function findUser( $userName ) {
 		$this->getOutput()->addModules( 'mediawiki.userSuggest' );
 
 		$this->getOutput()->addHTML(
@@ -79,12 +79,12 @@ class SpecialWeeklyWatches extends SpecialPage {
 				[ 'method' => 'post',
 				  'action' => $this->getPageTitle( $userName )->getLocalUrl(),
 				  'name' => 'uluser',
-				  'id' => 'mw-weeklywatches-form1' ]
+				  'id' => 'mw-periodicwatches-form1' ]
 			) .
 			Html::hidden( 'addToken', $this->getUser()->getEditToken( __CLASS__ ) ) .
-			Xml::fieldset( $this->msg( 'weeklywatches-lookup-user' )->text() ) .
+			Xml::fieldset( $this->msg( 'periodicwatches-lookup-user' )->text() ) .
 			Xml::inputLabel(
-				$this->msg( 'weeklywatches-user-editname' )->text(),
+				$this->msg( 'periodicwatches-user-editname' )->text(),
 				'user',
 				'username',
 				30,
@@ -92,12 +92,12 @@ class SpecialWeeklyWatches extends SpecialPage {
 				[ 'autofocus' => true,
 				  'class' => 'mw-autocomplete-user' ] // used by mediawiki.userSuggest
 			) . ' ' .
-			Xml::submitButton( $this->msg( 'weeklywatches-getuser' )->text() ) .
+			Xml::submitButton( $this->msg( 'periodicwatches-getuser' )->text() ) .
 			Html::closeElement( 'fieldset' ) .
 			Html::closeElement( 'form' ) . "\n"
 		);
 
 		return false;
-    }
+	}
 
 }

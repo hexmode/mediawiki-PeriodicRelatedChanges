@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace WeeklyRelatedChanges;
+namespace PeriodicRelatedChanges;
 
 use DatabaseUpdater;
 
@@ -32,8 +32,8 @@ class Hook {
 	public static function onLoadExtensionSchemaUpdates(
 		DatabaseUpdater $updater
 	) {
-		$updater->addExtensionTable( 'weekly_changes', __DIR__
-									 . "/../sql/weekly_changes.sql" );
+		$updater->addExtensionTable( 'periodic_changes', __DIR__
+									 . "/../sql/periodic_changes.sql" );
 		return true;
 	}
 
@@ -49,6 +49,6 @@ class Hook {
 	 * @return GlobalVarConfig
 	 */
 	public function makeConfig() {
-		return new GlobalVarConfig( "WeeklyRelatedChanges" );
+		return new GlobalVarConfig( "PeriodicRelatedChanges" );
 	}
 }

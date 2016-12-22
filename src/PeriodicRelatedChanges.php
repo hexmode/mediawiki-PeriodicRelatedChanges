@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace WeeklyRelatedChanges;
+namespace PeriodicRelatedChanges;
 
 use MWException;
 use Page;
@@ -24,11 +24,11 @@ use Title;
 use User;
 use WikiPage;
 
-class WeeklyRelatedChanges {
+class PeriodicRelatedChanges {
 	/**
 	 * Get the manager for this
 	 *
-	 * @returns WeeklyRelatedChanges
+	 * @return PeriodicRelatedChanges
 	 */
 	public static function getManager() {
 		return new self();

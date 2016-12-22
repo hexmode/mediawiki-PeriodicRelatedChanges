@@ -1,51 +1,51 @@
 {
-	"name": "WeeklyRelatedChanges",
+	"name": "PeriodicRelatedChanges",
 	"version": "0.1.0",
 	"license-name": "GPL-3.0+",
 	"author": [
 		"[http://mwstake.org Mark A. Hershberger]"
 	],
 	"require": [ "1.26" ],
-	"url": "https://www.mediawiki.org/wiki/Extension:WeeklyRelatedChanges",
-	"descriptionmsg": "weeklyrelatedchanges-desc",
+	"url": "https://www.mediawiki.org/wiki/Extension:PeriodicRelatedChanges",
+	"descriptionmsg": "periodicrelatedchanges-desc",
 	"type": "specialpage",
-	"callback": "WeeklyRelatedChanges\\Hook::initExtension",
+	"callback": "PeriodicRelatedChanges\\Hook::initExtension",
 	"MessagesDirs": {
-		"WeeklyRelatedChanges": [
+		"PeriodicRelatedChanges": [
 			"i18n"
 		]
 	},
 	"AutoloadClasses": {
-		"WeeklyRelatedChanges\\WeeklyRelatedChanges": "src/WeeklyRelatedChanges.php",
-		"WeeklyRelatedChanges\\RelatedWatcher": "src/RelatedWatcher.php",
-		"WeeklyRelatedChanges\\RelatedWatchList": "src/RelatedWatchList.php",
-		"WeeklyRelatedChanges\\SpecialWeeklyWatches": "page/SpecialWeeklyWatches.php",
-		"WeeklyRelatedChanges\\Hook": "src/Hook.php"
+		"PeriodicRelatedChanges\\PeriodicRelatedChanges": "src/PeriodicRelatedChanges.php",
+		"PeriodicRelatedChanges\\RelatedWatcher": "src/RelatedWatcher.php",
+		"PeriodicRelatedChanges\\RelatedWatchList": "src/RelatedWatchList.php",
+		"PeriodicRelatedChanges\\SpecialPeriodicWatches": "page/SpecialPeriodicWatches.php",
+		"PeriodicRelatedChanges\\Hook": "src/Hook.php"
 	},
 	"SpecialPages": {
-		"WeeklyWatches": "WeeklyRelatedChanges\\SpecialWeeklyWatches"
+		"PeriodicWatches": "PeriodicRelatedChanges\\SpecialPeriodicWatches"
 	},
 	"GroupPermissions": {
 		"user": {
-			"add-weekly-changes": true
+			"add-periodic-changes": true
 		}
 	},
 	"AvailableRights": [
-		"add-weekly-changes"
+		"add-periodic-changes"
 	],
 	"ConfigRegistry": {
-		"WeeklyRelatedChanges": "WeeklyRelatedChanges\\Hook::makeConfig"
+		"PeriodicRelatedChanges": "PeriodicRelatedChanges\\Hook::makeConfig"
 	},
 	"Hooks": {
 		"LoadExtensionSchemaUpdates": [
-			"WeeklyRelatedChanges\\Hook::onLoadExtensionSchemaUpdates"
+			"PeriodicRelatedChanges\\Hook::onLoadExtensionSchemaUpdates"
 		]
 	},
 	"config": {
-		"_prefix": "WeeklyRelatedChanges"
+		"_prefix": "PeriodicRelatedChanges"
 	},
 	"ResourceModules": {
-		"ext.weeklyRelatedChanges": {
+		"ext.periodicRelatedChanges": {
 			"styles": [
 			]
 		}

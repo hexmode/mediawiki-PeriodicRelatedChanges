@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace WeeklyRelatedChanges;
+namespace PeriodicRelatedChanges;
 
 use Page;
 use Title;
@@ -45,7 +45,7 @@ class RelatedWatcher {
 	 */
 	public function save() {
 		$dbw = wfGetDB( DB_MASTER );
-		$dbw->insert( 'weekly_changes',
+		$dbw->insert( 'periodic_changes',
 					  [ 'wc_user' => $this->user->getId(),
 						'wc_page' => $this->page->getId() ],
 					  __METHOD__,
