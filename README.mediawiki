@@ -1,6 +1,6 @@
 = Periodic Related Changes =
 
-This is MediaWiki extension to specify that a user should get the related changes for a page every week.
+This is MediaWiki extension to specify that a user should get the related changes for a page during a specified period of time (usually a week).
 
 == Installation ==
 
@@ -32,4 +32,4 @@ Job should sit in the queue and wait until Friday morning to run.  Looks like Ec
 
 == query related changes ==
 
-Need a maint script that will show us the related changes in the past week for any given page
+Need a maint script that will show us the related changes in a period of time for any given page

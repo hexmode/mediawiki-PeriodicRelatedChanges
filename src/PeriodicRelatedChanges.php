@@ -20,11 +20,14 @@ namespace PeriodicRelatedChanges;
 
 use MWException;
 use Page;
+use ResultWrapper;
 use Title;
 use User;
 use WikiPage;
 
 class PeriodicRelatedChanges {
+	protected $collectedChanges = [];
+
 	/**
 	 * Get the manager for this
 	 *
@@ -32,12 +35,6 @@ class PeriodicRelatedChanges {
 	 */
 	public static function getManager() {
 		return new self();
-	}
-
-	/**
-	 * Constructor
-	 */
-	public function __construct() {
 	}
 
 	/**
@@ -77,5 +74,59 @@ class PeriodicRelatedChanges {
 	public function addWatch( User $user, Page $page ) {
 		$watch = new RelatedWatcher( $user, $page );
 		return $watch->save();
+	}
+
+	/**
+	 * Get related pages
+	 * @param User $user the user
+	 * @param Page $page what to watch for related changes.
+	 *
+	 * @return RelatedWatcher
+	 */
+	public function getRelatedWatcher( User $user, Page $page ) {
+		return new RelatedWatcher( $user, $page );
+	}
+	/**
+	 * Given a list of individual changes, collect them into a batch
+	 * FIXME: should replace this with some SQL queries
+	 * @param LinkedRecentChanges $changes to collect
+	 */
+	public function collectChanges( ResultWrapper $changes ) {
+		foreach ( $changes as $change ) {
+			$title = $change->rc_title;
+			$user  = $change->rc_user_text;
+
+			if ( !isset( $this->collectedChanges['page'][$title] ) ) {
+				$this->collectedChanges['page'][$title]['editors'] = [];
+			}
+
+			if ( !isset( $this->collectedChanges['page'][$title][$user] ) ) {
+				$this->collectedChanges['page'][$title]['editors'][$user] = 0;
+			}
+
+			if ( !isset( $this->collectedChanges['user'][$user] ) ) {
+				$this->collectedChanges['user'][$user] = 0;
+			}
+
+			$this->collectedChanges['user'][$user]++;
+			if (
+				!isset( $this->collectedChanges['page'][$title]['oldestId'] ) ||
+				$this->collectedChanges['page'][$title]['oldestId'] > $change->rc_this_oldid
+			) {
+				$this->collectedChanges['page'][$title]['oldestId']
+					= $change->rc_this_oldid;
+			}
+			$this->collectedChanges['page'][$title]['editors'][$user]++;
+		}
+	}
+
+	/**
+	 * Return an aggreate list of changes
+	 * @param RelatedWatcher $changes the list of individual changes to aggregate
+	 * @return Iterator
+	 */
+	public function getCollectedChanges( RelatedWatcher $changes ) : array {
+		$this->collectChanges( $changes->getRelatedChanges() );
+		return $this->collectedChanges;
 	}
 }

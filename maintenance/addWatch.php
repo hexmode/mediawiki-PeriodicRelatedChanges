@@ -20,14 +20,18 @@
 namespace PeriodicRelatedChanges;
 
 use MWException;
+use Maintenance;
 
 $IP = getenv( 'MW_INSTALL_PATH' );
 if ( $IP === false ) {
 	$IP = __DIR__ . '/../../..';
 }
-require_once "$IP/maintenance/Maintenance.php";
-
-use Maintenance;
+$maint = "$IP/maintenance/Maintenance.php";
+if ( !file_exists( $maint ) ) {
+	die( "Please set the enviorment variable MW_INSTALL_PATH to\n" .
+		 "the location of your mediawiki installation.\n" );
+}
+require_once $maint;
 
 class AddWatch extends Maintenance {
 
@@ -50,7 +54,9 @@ class AddWatch extends Maintenance {
 		$wrc = PeriodicRelatedChanges::getManager();
 
 		try {
-			$wrc->add( $this->getArg( 0 ), $this->getArg( 1 ) );
+			if ( $wrc->add( $this->getArg( 0 ), $this->getArg( 1 ) ) === true ) {
+				$this->output( "Success!\n" );
+			}
 		} catch ( MWException $e ) {
 			$this->error( $e->getMessage(), 1 );
 		}
@@ -58,4 +64,4 @@ class AddWatch extends Maintenance {
 }
 
 $maintClass = "PeriodicRelatedChanges\\AddWatch";
-require_once ( DO_MAINTENANCE );
+require_once DO_MAINTENANCE;

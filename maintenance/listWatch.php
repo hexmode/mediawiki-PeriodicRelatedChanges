@@ -20,6 +20,7 @@
 namespace PeriodicRelatedChanges;
 
 use Iterator;
+use Maintenance;
 use Title;
 use User;
 use WikiPage;
@@ -29,8 +30,6 @@ if ( $IP === false ) {
 	$IP = __DIR__ . '/../../..';
 }
 require_once "$IP/maintenance/Maintenance.php";
-
-use Maintenance;
 
 class ListWatch extends Maintenance {
 
@@ -82,7 +81,7 @@ class ListWatch extends Maintenance {
 		$changes = $watches->getChangesFor( $page );
 
 		if ( $changes->numRows() === 0 ) {
-			$this->error( "$user has no changes on $page this week!\n", 1 );
+			$this->error( "$user has no changes on $page!\n", 1 );
 		}
 
 		$this->output( "Changes for $page:\n" );

@@ -19,13 +19,18 @@
 
 namespace PeriodicRelatedChanges;
 
+use MediaWiki\Changes\LinkedRecentChanges;
 use Page;
+use ResultWrapper;
 use Title;
 use User;
 
 class RelatedWatcher {
-	public $user;
-	public $page;
+	protected $user;
+	protected $page;
+	protected $sinceDays;
+	protected $limit;
+	protected $collectedChanges;
 
 	/**
 	 * Constructor
@@ -52,4 +57,46 @@ class RelatedWatcher {
 					  [ 'IGNORE' ] );
 		return true;
 	}
+
+	/**
+	 * @return User the user
+	 */
+	public function getUser() {
+		return $this->user;
+	}
+
+	/**
+	 * @return Page the page
+	 */
+	public function getPage() {
+		return $this->page;
+	}
+
+	/**
+	 * Limit the query in time
+	 * @param int $days days to look at
+	 */
+	public function setSince( int $days ) {
+		$this->sinceDays = $days;
+	}
+
+	/**
+	 * Limit the query in time
+	 * @param int $days days to look at
+	 */
+	public function setLimit( int $limit ) {
+		$this->limit = $limit;
+	}
+
+	/**
+	 * Get a list of related changes
+	 * @return LinkedRecentChanges to list the changes
+	 */
+	public function getRelatedChanges() : ResultWrapper {
+		$changes = new LinkedRecentChanges( $this->page->getTitle() );
+		$changes->setLimit( $this->limit );
+		$changes->addCond( "rc_timestamp > now() - " + abs( $this->sinceDays ) * 24 * 3600 );
+		return $changes->getResult();
+	}
+
 }

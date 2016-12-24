@@ -73,6 +73,5 @@ class RelatedWatchList extends ResultWrapper {
 	 * @return array
 	 */
 	public function getChangesFor ( WikiPage $page ) {
-		
 	}
 }
