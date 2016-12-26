@@ -30,7 +30,7 @@ class SpecialPeriodicWatches extends SpecialPage {
 	 * Constructor
 	 */
 	public function __construct() {
-		parent::__construct( 'PeriodicWatches', 'add-periodic-changes' );
+		parent::__construct( 'PeriodicWatches' );
 	}
 
 	/**
@@ -73,7 +73,7 @@ class SpecialPeriodicWatches extends SpecialPage {
 	 * @return User|bool
 	 */
 	public function findUser( $userName ) {
-		if ( !$userName ) {
+		if ( !$userName && $this->getUser()->isAllowed( 'periodic-changes-any-user' ) ) {
 			$this->getOutput()->addModules( 'ext.periodicRelatedChanges.user' );
 
 			$formDescriptor = [
@@ -94,6 +94,14 @@ class SpecialPeriodicWatches extends SpecialPage {
 		}
 
 		$user = User::newFromName( $userName );
+		if ( !$this->getUser()->isAllowed( 'periodic-changes-any-user' ) ) {
+			if ( !$userName || $user->getName() !== $this->getUser()->getName() ) {
+				$this->findUserSubmit( [ "username" => $this->getUser()->getName() ] );
+				return false;
+			}
+			$user = $this->getUser();
+		}
+
 		if ( $user && $user->getId() === 0 ) {
 			throw new ErrorPageError( "periodicwatches-error",
 									  "periodicwatches-userdoesnotexist",
@@ -124,17 +132,14 @@ class SpecialPeriodicWatches extends SpecialPage {
 	 */
 	public function findUserSubmit( array $formData ) {
 		if ( isset( $formData['username'] ) && $formData['username'] != '' ) {
-			$this->getOutput()->redirect( "/" . $formData['username'] );
+			$this->getOutput()->redirect( $this->getTitle()->getLinkURL() . "/" . $formData['username'] );
 		}
 	}
 
 	/**
 	 * List the watches for this user
 	 * @param User $user to list watches for
-	 * @param null|Page $target specific info for this page
 	 */
 	public function listCurrentWatches( User $user ) {
-		
 	}
-
 }

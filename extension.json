@@ -26,12 +26,12 @@
 		"PeriodicWatches": "PeriodicRelatedChanges\\SpecialPeriodicWatches"
 	},
 	"GroupPermissions": {
-		"user": {
-			"add-periodic-changes": true
+		"sysop": {
+			"periodic-changes-any-user": true
 		}
 	},
 	"AvailableRights": [
-		"add-periodic-changes"
+		"periodic-changes-any-user"
 	],
 	"ConfigRegistry": {
 		"PeriodicRelatedChanges": "PeriodicRelatedChanges\\Hook::makeConfig"
