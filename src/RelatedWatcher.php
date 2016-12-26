@@ -81,8 +81,8 @@ class RelatedWatcher {
 	}
 
 	/**
-	 * Limit the query in time
-	 * @param int $days days to look at
+	 * Limit number of query results
+	 * @param int $limit days to look at
 	 */
 	public function setLimit( int $limit ) {
 		$this->limit = $limit;
@@ -94,8 +94,10 @@ class RelatedWatcher {
 	 */
 	public function getRelatedChanges() : ResultWrapper {
 		$changes = new LinkedRecentChanges( $this->page->getTitle() );
-		$changes->setLimit( $this->limit );
-		$changes->addCond( "rc_timestamp > now() - " + abs( $this->sinceDays ) * 24 * 3600 );
+		if ( is_integer( $this->limit ) ) {
+			$changes->setLimit( $this->limit );
+		}
+		$changes->addCond( "rc_timestamp > now() - " . abs( $this->sinceDays ) * 24 * 3600 );
 		return $changes->getResult();
 	}
 

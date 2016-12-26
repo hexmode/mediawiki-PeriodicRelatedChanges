@@ -53,6 +53,8 @@ class ShowRelatedChanges extends Maintenance {
 					   true );
 		$this->addOption( "period", "The period, in days, to cover. (7)", false, true,
 						  "p" );
+		$this->addOption( "limit", "Max number to show (unlimited)", false, true,
+						  "l" );
 	}
 
 	/**
@@ -75,7 +77,10 @@ class ShowRelatedChanges extends Maintenance {
 		try {
 			$watcher = $wrc->getRelatedWatcher( $user, $page );
 			$watcher->setSince( $this->getOption( "period", 7 ) );
-			$watcher->setLimit( 200 );
+			$limit = $this->getOption( "limit", null );
+			if ( $limit !== null ) {
+				$watcher->setLimit( $limit );
+			}
 
 			$this->displayChanges( $wrc->getCollectedChanges( $watcher ) );
 		} catch ( MWException $e ) {
@@ -90,6 +95,7 @@ class ShowRelatedChanges extends Maintenance {
 	 */
 	public function showEditors( array $editors, string $prefix = "\t" ) {
 		$this->output( "{$prefix}Editors (edits):\n" );
+		// show editors with most edits first
 		arsort( $editors );
 		foreach ( $editors as $editor => $editCount ) {
 			$this->output( "$prefix\t$editor ($editCount)\n" );
