@@ -29,7 +29,12 @@ $IP = getenv( 'MW_INSTALL_PATH' );
 if ( $IP === false ) {
 	$IP = __DIR__ . '/../../..';
 }
-require_once "$IP/maintenance/Maintenance.php";
+$maint = "$IP/maintenance/Maintenance.php";
+if ( !file_exists( $maint ) ) {
+	die( "Please set the environment variable MW_INSTALL_PATH to\n" .
+		 "the location of your mediawiki installation.\n" );
+}
+require_once $maint;
 
 class ListWatch extends Maintenance {
 

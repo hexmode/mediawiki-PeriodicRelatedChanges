@@ -31,7 +31,7 @@ if ( $IP === false ) {
 }
 $maint = "$IP/maintenance/Maintenance.php";
 if ( !file_exists( $maint ) ) {
-	die( "Please set the enviorment variable MW_INSTALL_PATH to\n" .
+	die( "Please set the environment variable MW_INSTALL_PATH to\n" .
 		 "the location of your mediawiki installation.\n" );
 }
 require_once $maint;
