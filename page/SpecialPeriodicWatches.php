@@ -19,9 +19,11 @@
 
 namespace PeriodicRelatedChanges;
 
-use Html;
+use ErrorPageError;
+use HTMLForm;
+use MWException;
 use SpecialPage;
-use Xml;
+use User;
 
 class SpecialPeriodicWatches extends SpecialPage {
 	/**
@@ -52,52 +54,87 @@ class SpecialPeriodicWatches extends SpecialPage {
 	/**
 	 * Actually show the form and let people do stuff
 	 *
-	 * @param string|null $subPage the bit after the pagename.  We'll have a username.
+	 * @param string|null $userName user to lookup
 	 */
 	public function execute( $userName ) {
 		parent::execute( $userName );
 
-		if ( $this->findUser( $userName ) ) {
-			$this->getTargetPage( );
-			$this->listCurrentWatches( $userName );
+		$user = $this->findUser( $userName );
+		if ( $user !== false ) {
+			$this->listCurrentWatches( $user );
 		}
 	}
 
 	/**
 	 * Display the auto-complete form for a user
 	 *
-	 * @param string|null the username if already selected
+	 * @param string|bool $userName false if form is needed, username otherwise
 	 *
-	 * @return bool
+	 * @return User|bool
 	 */
 	public function findUser( $userName ) {
-		$this->getOutput()->addModules( 'mediawiki.userSuggest' );
+		if ( !$userName ) {
+			$this->getOutput()->addModules( 'ext.periodicRelatedChanges.user' );
 
-		$this->getOutput()->addHTML(
-			Html::openElement(
-				'form',
-				[ 'method' => 'post',
-				  'action' => $this->getPageTitle( $userName )->getLocalUrl(),
-				  'name' => 'uluser',
-				  'id' => 'mw-periodicwatches-form1' ]
-			) .
-			Html::hidden( 'addToken', $this->getUser()->getEditToken( __CLASS__ ) ) .
-			Xml::fieldset( $this->msg( 'periodicwatches-lookup-user' )->text() ) .
-			Xml::inputLabel(
-				$this->msg( 'periodicwatches-user-editname' )->text(),
-				'user',
-				'username',
-				30,
-				'',
-				[ 'autofocus' => true,
-				  'class' => 'mw-autocomplete-user' ] // used by mediawiki.userSuggest
-			) . ' ' .
-			Xml::submitButton( $this->msg( 'periodicwatches-getuser' )->text() ) .
-			Html::closeElement( 'fieldset' ) .
-			Html::closeElement( 'form' ) . "\n"
-		);
+			$formDescriptor = [
+				'username' => [
+					'label-message'       => 'periodicwatches-user-editname',
+					'type'                => 'user',
+					'size'                => 30,
+					'autofocus'           => true,
+					'validation-callback' => [ $this, 'findUserValidate' ],
+					'required'            => true
+				] ];
+			$form = HTMLForm::factory( 'ooui', $formDescriptor,
+									   $this->getContext() );
+			$form->setSubmitCallback( [ $this, 'findUserSubmit' ] );
+			$form->setSubmitTextMsg( 'periodicwatches-getuser' );
+			$form->show();
+			return false;
+		}
 
-		return false;
+		$user = User::newFromName( $userName );
+		if ( $user && $user->getId() === 0 ) {
+			throw new ErrorPageError( "periodicwatches-error",
+									  "periodicwatches-userdoesnotexist",
+									  [ $user ] );
+		}
+		return $user;
+	}
+
+	/**
+	 * Handle user form validation
+	 * @param string|null $userName to validate
+	 * @param array $formData contains the rest of the form
+	 * @return bool|string true if valid, error message otherwise
+	 */
+	public function findUserValidate( $userName, array $formData ) {
+		if ( $userName ) {
+			$user = User::newFromName( $userName );
+			if ( $user->getID() === 0 ) {
+				return wfMessage( 'periodicwatches-nosuchuser' );
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Handle user form submission
+	 * @param array $formData from the request
+	 */
+	public function findUserSubmit( array $formData ) {
+		if ( isset( $formData['username'] ) && $formData['username'] != '' ) {
+			$this->getOutput()->redirect( "/" . $formData['username'] );
+		}
+	}
+
+	/**
+	 * List the watches for this user
+	 * @param User $user to list watches for
+	 * @param null|Page $target specific info for this page
+	 */
+	public function listCurrentWatches( User $user ) {
+		
 	}
 
 }

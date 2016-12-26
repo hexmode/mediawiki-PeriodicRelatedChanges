@@ -48,7 +48,16 @@
 		"ext.periodicRelatedChanges": {
 			"styles": [
 			]
+		},
+		"ext.periodicRelatedChanges.user": {
+			"scripts": [
+				"modules/periodicRelatedChanges.user.js"
+			]
 		}
+	},
+	"ResourceFileModulePaths": {
+		"localBasePath": "",
+		"remoteExtPath": "PeriodicRelatedChanges"
 	},
 	"manifest_version": 1
 }

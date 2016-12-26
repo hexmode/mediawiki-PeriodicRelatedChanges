@@ -5,5 +5,8 @@
 	"periodicwatches": "Set Periodic Watches",
 	"periodicwatches-user-editname": "User:",
 	"periodicwatches-lookup-user": "User to check",
-	"periodicwatches-getuser": "fetch"
+	"periodicwatches-getuser": "fetch",
+	"periodicwatches-error": "Error",
+	"periodicwatches-userdoesnotexist": "User not found: $1",
+	"periodicwatches-nosuchuser": "No such user"
 }
