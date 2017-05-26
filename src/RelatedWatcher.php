@@ -31,6 +31,8 @@ class RelatedWatcher {
 	protected $sinceDays;
 	protected $limit;
 	protected $collectedChanges;
+	protected $table;
+	protected $exists;
 
 	/**
 	 * Constructor
@@ -41,6 +43,17 @@ class RelatedWatcher {
 	public function __construct( User $user, Page $page ) {
 		$this->user = $user;
 		$this->page = $page;
+		$this->table = "periodic_changes";
+		$this->exists = null;
+	}
+
+	/**
+	 * Get data ready for row query and insert
+	 * @return array
+	 */
+	protected function getRowData() {
+		return [ 'wc_user' => $this->user->getId(),
+				 'wc_page' => $this->page->getId() ];
 	}
 
 	/**
@@ -50,12 +63,43 @@ class RelatedWatcher {
 	 */
 	public function save() {
 		$dbw = wfGetDB( DB_MASTER );
-		$dbw->insert( 'periodic_changes',
-					  [ 'wc_user' => $this->user->getId(),
-						'wc_page' => $this->page->getId() ],
-					  __METHOD__,
-					  [ 'IGNORE' ] );
+		$dbw->insert( $this->table, $this->getRowData(), __METHOD__ );
 		return true;
+	}
+
+	/**
+	 * See if this watch pair already exists
+	 * @param Database $dbr requestor
+	 * @return bool
+	 */
+	public function exists( $dbr = null ) {
+		if ( $this->exists === null ) {
+			$this->exists = false;
+
+			if ( $dbr === null ) {
+				$dbr = wfGetDB( DB_SLAVE );
+			}
+			$row = $this->getRowData();
+			$res = $dbr->select( $this->table, array_keys( $row ), $row, __METHOD__ );
+
+			if ( $res->numRows() > 0 ) {
+				$this->exists = true;
+			}
+		}
+		return $this->exists;
+	}
+
+	/**
+	 * remove a watch
+	 */
+	public function remove() {
+		$dbw = wfGetDB( DB_MASTER );
+		$dbw->startAtomic( __METHOD__ );
+		if ( $this->exists( $dbw ) ) {
+			$row = $this->getRowData();
+			$dbw->delete( $this->table, $row, __METHOD__ );
+		}
+		$dbw->endAtomic( __METHOD__ );
 	}
 
 	/**

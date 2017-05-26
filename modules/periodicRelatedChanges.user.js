@@ -4,5 +4,6 @@ $("button.oo-ui-inputWidget-input").click(
 		window.location.href = window.location.href.replace(
 			"Special:PeriodicWatches", "Special:PeriodicWatches/" + user
 		);
+
 		return false;
 	} );

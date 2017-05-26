@@ -129,4 +129,13 @@ class PeriodicRelatedChanges {
 		$this->collectChanges( $changes->getRelatedChanges() );
 		return $this->collectedChanges;
 	}
+
+	/**
+	 * Return the list of titles currently being watched by the user
+	 * @param User $user we want info on
+	 * @return Iterator
+	 */
+	public function getCurrentWatches( User $user ) {
+		return RelatedWatchList::newFromUser( $user );
+	}
 }

@@ -51,10 +51,10 @@ class AddWatch extends Maintenance {
 	 * Where all the business happens.
 	 */
 	public function execute() {
-		$wrc = PeriodicRelatedChanges::getManager();
+		$prc = PeriodicRelatedChanges::getManager();
 
 		try {
-			if ( $wrc->add( $this->getArg( 0 ), $this->getArg( 1 ) ) === true ) {
+			if ( $prc->add( $this->getArg( 0 ), $this->getArg( 1 ) ) === true ) {
 				$this->output( "Success!\n" );
 			}
 		} catch ( MWException $e ) {

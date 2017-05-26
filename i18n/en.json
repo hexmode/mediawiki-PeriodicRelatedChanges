@@ -6,7 +6,18 @@
 	"periodicwatches-user-editname": "User:",
 	"periodicwatches-lookup-user": "User to check",
 	"periodicwatches-getuser": "fetch",
+	"periodicwatches-addtitle": "add",
 	"periodicwatches-error": "Error",
 	"periodicwatches-userdoesnotexist": "User not found: $1",
-	"periodicwatches-nosuchuser": "No such user"
+	"periodicwatches-nosuchuser": "No such user",
+	"periodicwatches-nosuchtitle": "No such title",
+	"periodicwatches-nowatches-title": "No periodic watches",
+	"periodicwatches-nowatches": "Currently, there are no watches for $1",
+	"periodicwatches-lookupuser": "[[Special:PeriodicWatches|Look up another user]]",
+	"periodicwatches-watchalreadyexists": "There is already a watch for [[$1]]",
+	"periodicwatches-user-addtitle": "Add a title to the periodic watchlist for $1",
+	"periodicwatches-watchlist-titles": "Titles on the watchlist for $1",
+	"periodicwatches-removetitles": "Remove selected titles",
+	"periodicwatches-addtitle": "Add",
+	"periodicwatches-currentwatchlist": "Current"
 }

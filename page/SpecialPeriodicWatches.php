@@ -23,9 +23,17 @@ use ErrorPageError;
 use HTMLForm;
 use MWException;
 use SpecialPage;
+use Title;
 use User;
+use WikiPage;
 
 class SpecialPeriodicWatches extends SpecialPage {
+	// The user under examination
+	protected $userSubject;
+
+	// The title under examination
+	protected $titleSubject;
+
 	/**
 	 * Constructor
 	 */
@@ -61,7 +69,7 @@ class SpecialPeriodicWatches extends SpecialPage {
 
 		$user = $this->findUser( $userName );
 		if ( $user !== false ) {
-			$this->listCurrentWatches( $user );
+			$this->manageWatchList( $user );
 		}
 	}
 
@@ -93,7 +101,7 @@ class SpecialPeriodicWatches extends SpecialPage {
 			return false;
 		}
 
-		$user = User::newFromName( $userName );
+		$user = User::newFromName( trim( $userName, "/" ) );
 		if ( !$this->getUser()->isAllowed( 'periodic-changes-any-user' ) ) {
 			if ( !$userName || $user->getName() !== $this->getUser()->getName() ) {
 				$this->findUserSubmit( [ "username" => $this->getUser()->getName() ] );
@@ -102,11 +110,12 @@ class SpecialPeriodicWatches extends SpecialPage {
 			$user = $this->getUser();
 		}
 
-		if ( $user && $user->getId() === 0 ) {
+		if ( !$user || $user->getId() === 0 ) {
 			throw new ErrorPageError( "periodicwatches-error",
 									  "periodicwatches-userdoesnotexist",
 									  [ $user ] );
 		}
+		$this->userSubject = $user;
 		return $user;
 	}
 
@@ -132,7 +141,9 @@ class SpecialPeriodicWatches extends SpecialPage {
 	 */
 	public function findUserSubmit( array $formData ) {
 		if ( isset( $formData['username'] ) && $formData['username'] != '' ) {
-			$this->getOutput()->redirect( $this->getTitle()->getLinkURL() . "/" . $formData['username'] );
+			$this->getOutput()->redirect(
+				$this->getTitle()->getLinkURL() . "/" . $formData['username']
+			);
 		}
 	}
 
@@ -140,6 +151,157 @@ class SpecialPeriodicWatches extends SpecialPage {
 	 * List the watches for this user
 	 * @param User $user to list watches for
 	 */
-	public function listCurrentWatches( User $user ) {
+	public function manageWatchList( User $user ) {
+		$out = $this->getOutput();
+		if ( $this->getUser()->isAllowed( 'periodic-changes-any-user' ) ) {
+			$out->setSubTitle( wfMessage( "periodicwatches-lookupuser" ) );
+		}
+		$watches = RelatedWatchList::newFromUser( $user );
+
+		if ( $watches->numRows() === 0 ) {
+			$out->setPageTitle(
+				wfMessage( "periodicwatches-nowatches-title" )
+			);
+			$out->addHTML(
+				wfMessage( "periodicwatches-nowatches", [ $this->userSubject->getName() ] )
+			);
+		}
+
+		if ( $this->getRequest()->getVal( "wpRemovePage" ) !== "1" ) {
+			$this->addTitleFormHandler();
+		} else {
+			$this->listAndRemoveTitlesFormHandler();
+		}
+	}
+
+	/**
+	 * Here's the form for adding titles to the watch list.
+	 */
+	public function addTitleFormHandler() {
+		$formDescriptor = [
+			'addTitle' => [
+				'section'             => 'addtitle',
+				'label-message'       =>
+				wfMessage( 'periodicwatches-user-addtitle',
+						   [ $this->userSubject->getName() ]
+				),
+				'type'                => 'title',
+				'autofocus'           => true,
+				'validation-callback' => [ $this, 'addTitleValidate' ],
+			] ];
+
+		$form = HTMLForm::factory( 'ooui', $formDescriptor, $this->getContext(),
+								   'periodicwatches' );
+		$form->setSubmitCallback( [ $this, 'addTitleSubmit' ] );
+		$form->setSubmitTextMsg( 'periodicwatches-addtitle' );
+		$form->show();
+	}
+
+	/**
+	 * Form to remove pages.
+	 */
+	public function removePageFormHandler() {
+		$prc = PeriodicRelatedChanges::getManager();
+		foreach ( $prc->getCurrentWatches( $this->userSubject ) as $watch ) {
+			$formDescriptor['watch-' . $watch['page']->getTitle()->getDBKey()] = [
+				'section'       => 'currentwatchlist',
+				'label' => $watch['page']->getTitle(),
+				'type'          => 'check',
+				'size'          => 30,
+			];
+		}
+		$form = HTMLForm::factory( 'ooui', $formDescriptor, $this->getContext(),
+								   'periodicwatches' );
+		$form->setSubmitCallback( [ $this, 'addTitleSubmit' ] );
+		$form->setSubmitTextMsg( 'periodicwatches-addtitle' );
+		$form->show();
+	}
+
+	/**
+	 * Handle title validation for the form
+	 * @param string|null $titleString to validate
+	 * @return bool|string true if valid, error message otherwise
+	 */
+	public function addTitleValidate( $titleString ) {
+		$title = null;
+		if ( $titleString ) {
+			$title = Title::newFromText( $titleString );
+			if ( !$title->exists() ) {
+				return wfMessage( 'periodicwatches-nosuchtitle' );
+			}
+		}
+
+		if ( $title ) {
+			$watch = PeriodicRelatedChanges::getManager()->getRelatedWatcher(
+				$this->userSubject, WikiPage::factory( $title )
+			);
+			if ( $watch->exists() ) {
+				return wfMessage( 'periodicwatches-watchalreadyexists', [ $titleString ] );
+			}
+			$this->titleSubject = $title;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Handle title form submission
+	 * @param array $formData from the request
+	 */
+	public function addTitleSubmit( array $formData ) {
+		if ( $this->titleSubject instanceof Title
+			 && $formData['addTitle'] == $this->titleSubject->getText() ) {
+			$prc = PeriodicRelatedChanges::getManager();
+			// Chance of race condition here that would result in an exception?
+			$prc->add( $this->userSubject, $this->titleSubject );
+		}
+	}
+
+	/**
+	 * Handle watch display and removal form
+	 */
+	public function listAndRemoveTitlesFormHandler() {
+		$prc = PeriodicRelatedChanges::getManager();
+		$formDescriptor['RemovePage'] = [
+			'type' => 'hidden',
+			'default' => '1'
+		];
+		foreach ( $prc->getCurrentWatches( $this->userSubject ) as $watch ) {
+			$formDescriptor['watch-' . $watch['page']->getTitle()->getDBKey()] = [
+				'section' => 'currentwatchlist',
+				'label'   => $watch['page']->getTitle(),
+				'type'    => 'check',
+				'size'    => 30,
+			];
+		}
+		$form = HTMLForm::factory( 'ooui', $formDescriptor,
+								   $this->getContext(), "periodicwatches" );
+		$form->setSubmitCallback( [ $this, 'handleWatchRemoval' ] );
+		$form->setSubmitTextMsg( 'periodicwatches-removetitles' );
+		$form->show();
+	}
+
+	/**
+	 * Handle removal of watch.
+	 * @param array $formData from the form
+	 */
+	public function handleWatchRemoval( array $formData ) {
+		$pagesToRemove = array_map(
+			function ( $key ) {
+				return substr( $key, 6 );
+			},
+			array_filter( array_keys( $formData ),
+									   function ( $item ) use ( $formData ) {
+										   if ( substr( $item, 0, 6 ) === "watch-"
+												&& $formData[$item] ) {
+											   return true;
+										   }
+									   } ) );
+		foreach ( $pagesToRemove as $page ) {
+			$watch = PeriodicRelatedChanges::getManager()->getRelatedWatcher(
+				$this->userSubject, WikiPage::factory( Title::newFromText( $page ) )
+			);
+			$watch->remove();
+		}
 	}
 }
