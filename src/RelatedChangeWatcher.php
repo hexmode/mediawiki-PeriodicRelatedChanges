@@ -25,7 +25,7 @@ use ResultWrapper;
 use Title;
 use User;
 
-class RelatedWatcher {
+class RelatedChangeWatcher {
 	protected $user;
 	protected $page;
 	protected $sinceDays;
@@ -43,7 +43,7 @@ class RelatedWatcher {
 	public function __construct( User $user, Page $page ) {
 		$this->user = $user;
 		$this->page = $page;
-		$this->table = "periodic_changes";
+		$this->table = "periodic_related_change";
 		$this->exists = null;
 	}
 

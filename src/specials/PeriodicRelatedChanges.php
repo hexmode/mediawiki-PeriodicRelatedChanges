@@ -27,7 +27,7 @@ use Title;
 use User;
 use WikiPage;
 
-class SpecialPeriodicWatches extends SpecialPage {
+class SpecialPeriodicRelatedChanges extends SpecialPage {
 	// The user under examination
 	protected $userSubject;
 
@@ -39,9 +39,11 @@ class SpecialPeriodicWatches extends SpecialPage {
 
 	/**
 	 * Constructor
+	 * @param string $name Name of the special page, as seen in links and URLs
+	 * @param string $restriction User right required, e.g. "block" or "delete"
 	 */
-	public function __construct( 'periodic-watches', 'periodic-watches' ) {
-		parent::__construct( 'PeriodicWatches' );
+	public function __construct( $name = 'PeriodicRelatedChanges', $restriction = 'periodic-related-changes' ) {
+		parent::__construct( $name, $restriction );
 	}
 
 	/**
@@ -67,13 +69,13 @@ class SpecialPeriodicWatches extends SpecialPage {
 	 *
 	 * @param string|null $userName user to lookup
 	 */
-	public function execute( $userName ) {
+	public function execute( $userName = null ) {
 		parent::execute( $userName );
-		$this->canChangeAnyUser = $this->getUser()->isAllowed( 'periodic-changes-any-user' );
+		$this->canChangeAnyUser = $this->getUser()->isAllowed( 'periodic-related-changes-any-user' );
 
 		if ( $this->getUser()->isAnon() ) {
-			throw new ErrorPageError( "periodicwatches-error",
-									  "periodicwatches-anons-not-allowed" );
+			throw new ErrorPageError( "periodic-related-changes-error",
+									  "periodic-related-changes-anons-not-allowed" );
 		}
 
 		$user = $this->findUser( $userName );
@@ -95,7 +97,7 @@ class SpecialPeriodicWatches extends SpecialPage {
 
 			$formDescriptor = [
 				'username' => [
-					'label-message'       => 'periodicwatches-user-editname',
+					'label-message'       => 'periodic-related-changes-user-editname',
 					'type'                => 'user',
 					'size'                => 30,
 					'autofocus'           => true,
@@ -105,13 +107,13 @@ class SpecialPeriodicWatches extends SpecialPage {
 			$form = HTMLForm::factory( 'ooui', $formDescriptor,
 									   $this->getContext() );
 			$form->setSubmitCallback( [ $this, 'findUserSubmit' ] );
-			$form->setSubmitTextMsg( 'periodicwatches-getuser' );
+			$form->setSubmitTextMsg( 'periodic-related-changes-getuser' );
 			$form->show();
 			return false;
 		}
 
 		// If you can't edit just anyone's, you can only see your own.
-		if ( !$this->canChangeAnyUser && $this->getUser()->isAllowed( 'periodic-changes' )
+		if ( !$this->canChangeAnyUser && $this->getUser()->isAllowed( 'periodic-related-changes' )
 			 && ( !isset( $userName ) || $userName !== $this->getUser()->getName() ) ) {
 			$this->getOutput()->redirect(
 				$this->getTitle()->getLinkURL() . "/" . $this->getUser()->getName()
@@ -129,8 +131,8 @@ class SpecialPeriodicWatches extends SpecialPage {
 		}
 
 		if ( !$user || $user->getId() === 0 ) {
-			throw new ErrorPageError( "periodicwatches-error",
-									  "periodicwatches-userdoesnotexist",
+			throw new ErrorPageError( "periodic-related-changes-error",
+									  "periodic-related-changes-userdoesnotexist",
 									  [ $user ] );
 		}
 		$this->userSubject = $user;
@@ -147,7 +149,7 @@ class SpecialPeriodicWatches extends SpecialPage {
 		if ( $userName ) {
 			$user = User::newFromName( $userName );
 			if ( $user->getID() === 0 ) {
-				return wfMessage( 'periodicwatches-nosuchuser' );
+				return wfMessage( 'periodic-related-changes-nosuchuser' );
 			}
 		}
 		return true;
@@ -172,7 +174,7 @@ class SpecialPeriodicWatches extends SpecialPage {
 	public function manageWatchList( User $user ) {
 		$out = $this->getOutput();
 		if ( $this->canChangeAnyUser ) {
-			$out->setSubTitle( wfMessage( "periodicwatches-lookupuser" ) );
+			$out->setSubTitle( wfMessage( "periodic-related-changes-lookupuser" ) );
 		}
 
 		$this->listCurrentWatches( $user );
@@ -189,15 +191,15 @@ class SpecialPeriodicWatches extends SpecialPage {
 	 * @return int number of pages watched
 	 */
 	public function listCurrentWatches( User $user ) {
-		$watches = RelatedWatchList::newFromUser( $user );
+		$watches = RelatedChangeWatchList::newFromUser( $user );
 		$out = $this->getOutput();
 		$userName = ( $user->getID() === $this->getUser()->getID() )
 				  ? "you"
 				  : $user->getName();
 
 		if ( $watches->numRows() === 0 ) {
-			$out->setPageTitle( wfMessage( "periodicwatches-nowatches-title" ) );
-			$out->addHTML( wfMessage( "periodicwatches-nowatches", [ $userName ] ) );
+			$out->setPageTitle( wfMessage( "periodic-related-changes-nowatches-title" ) );
+			$out->addHTML( wfMessage( "periodic-related-changes-nowatches", [ $userName ] ) );
 			return 0;
 		}
 
@@ -212,7 +214,7 @@ class SpecialPeriodicWatches extends SpecialPage {
 			'addTitle' => [
 				'section'             => 'addtitle',
 				'label-message'       =>
-				wfMessage( 'periodicwatches-user-addtitle',
+				wfMessage( 'periodic-related-changes-user-addtitle',
 						   [ $this->userSubject->getName() ]
 				),
 				'type'                => 'title',
@@ -221,9 +223,9 @@ class SpecialPeriodicWatches extends SpecialPage {
 			] ];
 
 		$form = HTMLForm::factory( 'ooui', $formDescriptor, $this->getContext(),
-								   'periodicwatches' );
+								   'periodic-related-changes' );
 		$form->setSubmitCallback( [ $this, 'addTitleSubmit' ] );
-		$form->setSubmitTextMsg( 'periodicwatches-addtitle' );
+		$form->setSubmitTextMsg( 'periodic-related-changes-addtitle' );
 		$form->show();
 	}
 
@@ -241,9 +243,9 @@ class SpecialPeriodicWatches extends SpecialPage {
 			];
 		}
 		$form = HTMLForm::factory( 'ooui', $formDescriptor, $this->getContext(),
-								   'periodicwatches' );
+								   'periodic-related-changes' );
 		$form->setSubmitCallback( [ $this, 'addTitleSubmit' ] );
-		$form->setSubmitTextMsg( 'periodicwatches-addtitle' );
+		$form->setSubmitTextMsg( 'periodic-related-changes-addtitle' );
 		$form->show();
 	}
 
@@ -257,16 +259,16 @@ class SpecialPeriodicWatches extends SpecialPage {
 		if ( $titleString ) {
 			$title = Title::newFromText( $titleString );
 			if ( !$title->exists() ) {
-				return wfMessage( 'periodicwatches-nosuchtitle' );
+				return wfMessage( 'periodic-related-changes-nosuchtitle' );
 			}
 		}
 
 		if ( $title ) {
-			$watch = PeriodicRelatedChanges::getManager()->getRelatedWatcher(
+			$watch = PeriodicRelatedChanges::getManager()->getRelatedChangeWatcher(
 				$this->userSubject, WikiPage::factory( $title )
 			);
 			if ( $watch->exists() ) {
-				return wfMessage( 'periodicwatches-watchalreadyexists',
+				return wfMessage( 'periodic-related-changes-watchalreadyexists',
 								  [ $titleString ] );
 			}
 			$this->titleSubject = $title;
@@ -286,17 +288,17 @@ class SpecialPeriodicWatches extends SpecialPage {
 			$prc = PeriodicRelatedChanges::getManager();
 			// Chance of race condition here that would result in an exception?
 			if ( $prc->add( $this->userSubject, $this->titleSubject ) ) {
-				$this->getOutput()->addWikiMsg( "periodicwatches-added",
+				$this->getOutput()->addWikiMsg( "periodic-related-changes-added",
 												$this->titleSubject,
 												$this->userSubject
 				);
-				$this->getOutput()->addWikiMsg( "periodicwatches-return" );
+				$this->getOutput()->addWikiMsg( "periodic-related-changes-return" );
 				return true;
 			}
-			return wfMessage( "periodicwatches-add-fail",
+			return wfMessage( "periodic-related-changes-add-fail",
 							  [ $this->titleSubject, $this->userSubject ] );
 		}
-		return wfMessage( "periodicwatches-invalid-form-data" );
+		return wfMessage( "periodic-related-changes-invalid-form-data" );
 	}
 
 	/**
@@ -317,9 +319,9 @@ class SpecialPeriodicWatches extends SpecialPage {
 			];
 		}
 		$form = HTMLForm::factory( 'ooui', $formDescriptor,
-								   $this->getContext(), "periodicwatches" );
+								   $this->getContext(), "periodic-related-changes" );
 		$form->setSubmitCallback( [ $this, 'handleWatchRemoval' ] );
-		$form->setSubmitTextMsg( 'periodicwatches-removetitles' );
+		$form->setSubmitTextMsg( 'periodic-related-changes-removetitles' );
 		$form->show();
 	}
 
@@ -341,7 +343,7 @@ class SpecialPeriodicWatches extends SpecialPage {
 										   }
 									   } ) );
 		foreach ( $pagesToRemove as $page ) {
-			$watch = PeriodicRelatedChanges::getManager()->getRelatedWatcher(
+			$watch = PeriodicRelatedChanges::getManager()->getRelatedChangeWatcher(
 				$this->userSubject, WikiPage::factory( Title::newFromText( $page ) )
 			);
 			$watch->remove();

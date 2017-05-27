@@ -18,7 +18,6 @@
 
 namespace PeriodicRelatedChanges;
 
-use Article;
 use MWException;
 use Page;
 use ResultWrapper;
@@ -58,7 +57,7 @@ class PeriodicRelatedChanges {
 			throw new MWException( "Page doesn't exist." );
 		}
 
-		return $this->addWatch( $user, new Article( $title ) );
+		return $this->addWatch( $user, WikiPage::factory( $title ) );
 	}
 
 	/**
@@ -70,7 +69,7 @@ class PeriodicRelatedChanges {
 	 * @return bool
 	 */
 	public function addWatch( User $user, Page $page ) {
-		$watch = new RelatedWatcher( $user, $page );
+		$watch = new RelatedChangeWatcher( $user, $page );
 		return $watch->save();
 	}
 
@@ -79,10 +78,10 @@ class PeriodicRelatedChanges {
 	 * @param User $user the user
 	 * @param Page $page what to watch for related changes.
 	 *
-	 * @return RelatedWatcher
+	 * @return RelatedChangeWatcher
 	 */
-	public function getRelatedWatcher( User $user, Page $page ) {
-		return new RelatedWatcher( $user, $page );
+	public function getRelatedChangeWatcher( User $user, Page $page ) {
+		return new RelatedChangeWatcher( $user, $page );
 	}
 	/**
 	 * Given a list of individual changes, collect them into a batch
@@ -120,10 +119,10 @@ class PeriodicRelatedChanges {
 
 	/**
 	 * Return an aggreate list of changes
-	 * @param RelatedWatcher $changes the list of individual changes to aggregate
+	 * @param RelatedChangeWatcher $changes the list of individual changes to aggregate
 	 * @return Iterator
 	 */
-	public function getCollectedChanges( RelatedWatcher $changes ) {
+	public function getCollectedChanges( RelatedChangeWatcher $changes ) {
 		$this->collectChanges( $changes->getRelatedChanges() );
 		return $this->collectedChanges;
 	}
@@ -134,6 +133,6 @@ class PeriodicRelatedChanges {
 	 * @return Iterator
 	 */
 	public function getCurrentWatches( User $user ) {
-		return RelatedWatchList::newFromUser( $user );
+		return RelatedChangeWatchList::newFromUser( $user );
 	}
 }

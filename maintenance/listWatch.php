@@ -69,7 +69,7 @@ class ListWatch extends Maintenance {
 			$this->error( "Page does not exist.", 1 );
 		}
 
-		$watches = RelatedWatchList::newFromUser( $user );
+		$watches = RelatedChangeWatchList::newFromUser( $user );
 
 		if ( $watches->numRows() === 0 ) {
 			$this->error( "$user does not have any periodic notices!\n", 1 );

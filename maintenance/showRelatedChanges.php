@@ -75,7 +75,7 @@ class ShowRelatedChanges extends Maintenance {
 		}
 
 		try {
-			$watcher = $wrc->getRelatedWatcher( $user, $page );
+			$watcher = $wrc->getRelatedChangeWatcher( $user, $page );
 			$watcher->setSince( $this->getOption( "period", 7 ) );
 			$limit = $this->getOption( "limit", null );
 			if ( $limit !== null ) {

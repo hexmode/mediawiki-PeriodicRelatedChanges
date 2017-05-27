@@ -32,8 +32,8 @@ class Hook {
 	public static function onLoadExtensionSchemaUpdates(
 		DatabaseUpdater $updater
 	) {
-		$updater->addExtensionTable( 'periodic_changes', __DIR__
-									 . "/../sql/periodic_changes.sql" );
+		$updater->addExtensionTable( 'periodic_related_change', __DIR__
+									 . "/../sql/periodic_related_change.sql" );
 		return true;
 	}
 

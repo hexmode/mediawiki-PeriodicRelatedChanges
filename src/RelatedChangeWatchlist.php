@@ -24,7 +24,7 @@ use ResultWrapper;
 use User;
 use WikiPage;
 
-class RelatedWatchList extends ResultWrapper {
+class RelatedChangeWatchList extends ResultWrapper {
 	/**
 	 * A constructor!
 	 *
@@ -39,11 +39,11 @@ class RelatedWatchList extends ResultWrapper {
 	 * Return an iterable list of watches for a user
 	 *
 	 * @param User $user whose related watches to fetch.
-	 * @return RelatedWatchList
+	 * @return RelatedChangeWatchList
 	 */
 	public static function newFromUser( User $user ) {
 		$dbr = wfGetDB( DB_SLAVE );
-		$res = $dbr->select( 'periodic_changes',
+		$res = $dbr->select( 'periodic_related_change',
 							 [ 'wc_page', 'wc_timestamp' ],
 							 [ 'wc_user' => $user->getId() ],
 							 __METHOD__ );
