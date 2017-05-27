@@ -120,7 +120,7 @@ class RelatedWatcher {
 	 * Limit the query in time
 	 * @param int $days days to look at
 	 */
-	public function setSince( int $days ) {
+	public function setSince( $days ) {
 		$this->sinceDays = $days;
 	}
 
@@ -128,7 +128,7 @@ class RelatedWatcher {
 	 * Limit number of query results
 	 * @param int $limit days to look at
 	 */
-	public function setLimit( int $limit ) {
+	public function setLimit( $limit ) {
 		$this->limit = $limit;
 	}
 
@@ -136,7 +136,7 @@ class RelatedWatcher {
 	 * Get a list of related changes
 	 * @return LinkedRecentChanges to list the changes
 	 */
-	public function getRelatedChanges() : ResultWrapper {
+	public function getRelatedChanges() {
 		$changes = new LinkedRecentChanges( $this->page->getTitle() );
 		if ( is_integer( $this->limit ) ) {
 			$changes->setLimit( $this->limit );

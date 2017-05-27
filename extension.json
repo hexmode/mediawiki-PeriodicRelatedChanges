@@ -19,7 +19,7 @@
 		"PeriodicRelatedChanges\\PeriodicRelatedChanges": "src/PeriodicRelatedChanges.php",
 		"PeriodicRelatedChanges\\RelatedWatcher": "src/RelatedWatcher.php",
 		"PeriodicRelatedChanges\\RelatedWatchList": "src/RelatedWatchList.php",
-		"PeriodicRelatedChanges\\SpecialPeriodicWatches": "src/page/SpecialPeriodicWatches.php",
+		"PeriodicRelatedChanges\\SpecialPeriodicWatches": "src/specials/PeriodicWatches.php",
 		"PeriodicRelatedChanges\\Hook": "src/Hook.php"
 	},
 	"SpecialPages": {
@@ -28,10 +28,14 @@
 	"GroupPermissions": {
 		"sysop": {
 			"periodic-changes-any-user": true
+		},
+		"user": {
+			"periodic-changes": true
 		}
 	},
 	"AvailableRights": [
-		"periodic-changes-any-user"
+		"periodic-changes-any-user",
+		"periodic-changes"
 	],
 	"ConfigRegistry": {
 		"PeriodicRelatedChanges": "PeriodicRelatedChanges\\Hook::makeConfig"

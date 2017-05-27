@@ -34,10 +34,13 @@ class SpecialPeriodicWatches extends SpecialPage {
 	// The title under examination
 	protected $titleSubject;
 
+	// Does this user have permisssion to change any user's watchlist
+	protected $canChangeAnyUser;
+
 	/**
 	 * Constructor
 	 */
-	public function __construct() {
+	public function __construct( 'periodic-watches', 'periodic-watches' ) {
 		parent::__construct( 'PeriodicWatches' );
 	}
 
@@ -66,9 +69,15 @@ class SpecialPeriodicWatches extends SpecialPage {
 	 */
 	public function execute( $userName ) {
 		parent::execute( $userName );
+		$this->canChangeAnyUser = $this->getUser()->isAllowed( 'periodic-changes-any-user' );
+
+		if ( $this->getUser()->isAnon() ) {
+			throw new ErrorPageError( "periodicwatches-error",
+									  "periodicwatches-anons-not-allowed" );
+		}
 
 		$user = $this->findUser( $userName );
-		if ( $user !== false ) {
+		if ( $user !== false && !$user->isAnon() ) {
 			$this->manageWatchList( $user );
 		}
 	}
@@ -81,7 +90,7 @@ class SpecialPeriodicWatches extends SpecialPage {
 	 * @return User|bool
 	 */
 	public function findUser( $userName ) {
-		if ( !$userName && $this->getUser()->isAllowed( 'periodic-changes-any-user' ) ) {
+		if ( !$userName && $this->canChangeAnyUser ) {
 			$this->getOutput()->addModules( 'ext.periodicRelatedChanges.user' );
 
 			$formDescriptor = [
@@ -101,8 +110,17 @@ class SpecialPeriodicWatches extends SpecialPage {
 			return false;
 		}
 
+		// If you can't edit just anyone's, you can only see your own.
+		if ( !$this->canChangeAnyUser && $this->getUser()->isAllowed( 'periodic-changes' )
+			 && ( !isset( $userName ) || $userName !== $this->getUser()->getName() ) ) {
+			$this->getOutput()->redirect(
+				$this->getTitle()->getLinkURL() . "/" . $this->getUser()->getName()
+			);
+			return false;
+		}
+
 		$user = User::newFromName( trim( $userName, "/" ) );
-		if ( !$this->getUser()->isAllowed( 'periodic-changes-any-user' ) ) {
+		if ( !$this->canChangeAnyUser ) {
 			if ( !$userName || $user->getName() !== $this->getUser()->getName() ) {
 				$this->findUserSubmit( [ "username" => $this->getUser()->getName() ] );
 				return false;
@@ -148,30 +166,42 @@ class SpecialPeriodicWatches extends SpecialPage {
 	}
 
 	/**
-	 * List the watches for this user
+	 * Manage the watchlist for this user for this user
 	 * @param User $user to list watches for
 	 */
 	public function manageWatchList( User $user ) {
 		$out = $this->getOutput();
-		if ( $this->getUser()->isAllowed( 'periodic-changes-any-user' ) ) {
+		if ( $this->canChangeAnyUser ) {
 			$out->setSubTitle( wfMessage( "periodicwatches-lookupuser" ) );
 		}
-		$watches = RelatedWatchList::newFromUser( $user );
 
-		if ( $watches->numRows() === 0 ) {
-			$out->setPageTitle(
-				wfMessage( "periodicwatches-nowatches-title" )
-			);
-			$out->addHTML(
-				wfMessage( "periodicwatches-nowatches", [ $this->userSubject->getName() ] )
-			);
-		}
-
+		$this->listCurrentWatches( $user );
 		if ( $this->getRequest()->getVal( "wpRemovePage" ) !== "1" ) {
 			$this->addTitleFormHandler();
 		} else {
 			$this->listAndRemoveTitlesFormHandler();
 		}
+	}
+
+	/**
+	 * List the watches for this user
+	 * @param User $user to list watches for
+	 * @return int number of pages watched
+	 */
+	public function listCurrentWatches( User $user ) {
+		$watches = RelatedWatchList::newFromUser( $user );
+		$out = $this->getOutput();
+		$userName = ( $user->getID() === $this->getUser()->getID() )
+				  ? "you"
+				  : $user->getName();
+
+		if ( $watches->numRows() === 0 ) {
+			$out->setPageTitle( wfMessage( "periodicwatches-nowatches-title" ) );
+			$out->addHTML( wfMessage( "periodicwatches-nowatches", [ $userName ] ) );
+			return 0;
+		}
+
+		return $watches->numRows();
 	}
 
 	/**
@@ -204,10 +234,10 @@ class SpecialPeriodicWatches extends SpecialPage {
 		$prc = PeriodicRelatedChanges::getManager();
 		foreach ( $prc->getCurrentWatches( $this->userSubject ) as $watch ) {
 			$formDescriptor['watch-' . $watch['page']->getTitle()->getDBKey()] = [
-				'section'       => 'currentwatchlist',
-				'label' => $watch['page']->getTitle(),
-				'type'          => 'check',
-				'size'          => 30,
+				'section' => 'currentwatchlist',
+				'label'   => $watch['page']->getTitle(),
+				'type'    => 'check',
+				'size'    => 30,
 			];
 		}
 		$form = HTMLForm::factory( 'ooui', $formDescriptor, $this->getContext(),
@@ -236,7 +266,8 @@ class SpecialPeriodicWatches extends SpecialPage {
 				$this->userSubject, WikiPage::factory( $title )
 			);
 			if ( $watch->exists() ) {
-				return wfMessage( 'periodicwatches-watchalreadyexists', [ $titleString ] );
+				return wfMessage( 'periodicwatches-watchalreadyexists',
+								  [ $titleString ] );
 			}
 			$this->titleSubject = $title;
 		}
@@ -247,14 +278,25 @@ class SpecialPeriodicWatches extends SpecialPage {
 	/**
 	 * Handle title form submission
 	 * @param array $formData from the request
+	 * @return bool for form handling
 	 */
 	public function addTitleSubmit( array $formData ) {
 		if ( $this->titleSubject instanceof Title
 			 && $formData['addTitle'] == $this->titleSubject->getText() ) {
 			$prc = PeriodicRelatedChanges::getManager();
 			// Chance of race condition here that would result in an exception?
-			$prc->add( $this->userSubject, $this->titleSubject );
+			if ( $prc->add( $this->userSubject, $this->titleSubject ) ) {
+				$this->getOutput()->addWikiMsg( "periodicwatches-added",
+												$this->titleSubject,
+												$this->userSubject
+				);
+				$this->getOutput()->addWikiMsg( "periodicwatches-return" );
+				return true;
+			}
+			return wfMessage( "periodicwatches-add-fail",
+							  [ $this->titleSubject, $this->userSubject ] );
 		}
+		return wfMessage( "periodicwatches-invalid-form-data" );
 	}
 
 	/**
@@ -284,6 +326,7 @@ class SpecialPeriodicWatches extends SpecialPage {
 	/**
 	 * Handle removal of watch.
 	 * @param array $formData from the form
+	 * @return null
 	 */
 	public function handleWatchRemoval( array $formData ) {
 		$pagesToRemove = array_map(

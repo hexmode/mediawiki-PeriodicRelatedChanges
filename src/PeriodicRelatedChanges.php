@@ -18,6 +18,7 @@
 
 namespace PeriodicRelatedChanges;
 
+use Article;
 use MWException;
 use Page;
 use ResultWrapper;
@@ -40,27 +41,24 @@ class PeriodicRelatedChanges {
 	/**
 	 * Add a watcher.
 	 *
-	 * @param string $userName text form of username.
-	 * @param string $pageName text form of page name that will be made into a title object.
+	 * @param User $user the user.
+	 * @param Title $title the page name.
 	 *
 	 * @return bool
 	 */
-	public function add( string $userName, string $pageName ) {
-		$user = User::newFromName( $userName );
-		if ( $user === false ) {
-			throw new MWException( "Invalid user name." );
+	public function add( User $user, Title $title ) {
+		if ( $user->isAnon() ) {
+			throw new MWException( "Anonymous user not allowed." );
 		}
 		if ( $user->getID() === 0 ) {
 			throw new MWException( "User doesn't exist." );
 		}
 
-		$title = Title::newFromTextThrow( $pageName );
-		$page = WikiPage::factory( $title );
-		if ( !$page->exists() ) {
+		if ( !$title->exists() ) {
 			throw new MWException( "Page doesn't exist." );
 		}
 
-		return $this->addWatch( $user, $page );
+		return $this->addWatch( $user, new Article( $title ) );
 	}
 
 	/**
@@ -125,7 +123,7 @@ class PeriodicRelatedChanges {
 	 * @param RelatedWatcher $changes the list of individual changes to aggregate
 	 * @return Iterator
 	 */
-	public function getCollectedChanges( RelatedWatcher $changes ) : array {
+	public function getCollectedChanges( RelatedWatcher $changes ) {
 		$this->collectChanges( $changes->getRelatedChanges() );
 		return $this->collectedChanges;
 	}
