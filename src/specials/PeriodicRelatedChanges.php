@@ -37,12 +37,17 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	// Does this user have permisssion to change any user's watchlist
 	protected $canChangeAnyUser;
 
+	// Can this user change themselves
+	protected $canChangeSelf;
+
 	/**
 	 * Constructor
 	 * @param string $name Name of the special page, as seen in links and URLs
 	 * @param string $restriction User right required, e.g. "block" or "delete"
 	 */
-	public function __construct( $name = 'PeriodicRelatedChanges', $restriction = 'periodic-related-changes' ) {
+	public function __construct(
+		$name = 'PeriodicRelatedChanges', $restriction = 'periodic-related-changes'
+	) {
 		parent::__construct( $name, $restriction );
 	}
 
@@ -71,7 +76,10 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 */
 	public function execute( $userName = null ) {
 		parent::execute( $userName );
-		$this->canChangeAnyUser = $this->getUser()->isAllowed( 'periodic-related-changes-any-user' );
+		$this->canChangeAnyUser = $this->getUser()->isAllowed(
+			'periodic-related-changes-any-user'
+		);
+		$this->canChangeSelf = $this->getUser()->isAllowed( 'periodic-related-changes' );
 
 		if ( $this->getUser()->isAnon() ) {
 			throw new ErrorPageError( "periodic-related-changes-error",
@@ -113,8 +121,10 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		}
 
 		// If you can't edit just anyone's, you can only see your own.
-		if ( !$this->canChangeAnyUser && $this->getUser()->isAllowed( 'periodic-related-changes' )
-			 && ( !isset( $userName ) || $userName !== $this->getUser()->getName() ) ) {
+		if ( !$this->canChangeAnyUser
+			 && $this->getUser()->isAllowed( 'periodic-related-changes' )
+			 && ( !isset( $userName ) || $userName !== $this->getUser()->getName() )
+		) {
 			$this->getOutput()->redirect(
 				$this->getTitle()->getLinkURL() . "/" . $this->getUser()->getName()
 			);
@@ -193,16 +203,23 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	public function listCurrentWatches( User $user ) {
 		$watches = RelatedChangeWatchList::newFromUser( $user );
 		$out = $this->getOutput();
-		$userName = ( $user->getID() === $this->getUser()->getID() )
-				  ? "you"
-				  : $user->getName();
+		$userName = $user->getName();
 
 		if ( $watches->numRows() === 0 ) {
 			$out->setPageTitle( wfMessage( "periodic-related-changes-nowatches-title" ) );
-			$out->addHTML( wfMessage( "periodic-related-changes-nowatches", [ $userName ] ) );
+			$out->addWikiMsg( "periodic-related-changes-nowatches", $userName );
 			return 0;
 		}
 
+		$out->addWikiMsg( "periodic-related-changes-watch-count", $userName,
+						  $watches->numRows()
+		);
+
+		$titles = PeriodicRelatedChanges::getManager()->getCurrentWatches( $user );
+		foreach ( $titles as $titleRow ) {
+			$out->addWikiMsg( 'periodic-related-changes-watch-item',
+							  $titleRow['page']->getTitle() );
+		}
 		return $watches->numRows();
 	}
 
