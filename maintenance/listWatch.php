@@ -109,9 +109,6 @@ class ListWatch extends Maintenance {
 			$this->error( "$user has no changes on $title!\n", 1 );
 		}
 
-		ksort( $changesTo );
-		ksort( $changesFrom );
-
 		$width = $this->getLongestInList(
 			5, array_keys( array_merge( $changesTo, $changesFrom ) ),
 						   function( $arg ) {

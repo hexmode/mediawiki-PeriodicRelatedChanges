@@ -128,6 +128,7 @@ class RelatedChangeWatchList extends ResultWrapper {
 				$change[$title]['new'] = $watch->rc_this_oldid;
 			}
 		}
+		ksort( $change );
 
 		return $change;
 	}
