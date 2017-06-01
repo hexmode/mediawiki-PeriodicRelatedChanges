@@ -49,7 +49,7 @@ class RelatedChangeWatchList extends ResultWrapper {
 							 [ 'wc_page', 'wc_timestamp' ],
 							 [ 'wc_user' => $user->getId() ],
 							 __METHOD__ );
-		$this->user = $user;
+
 		return new self( $dbr, $res );
 	}
 
@@ -73,6 +73,7 @@ class RelatedChangeWatchList extends ResultWrapper {
 	 *
 	 * @param WikiPage $page to check
 	 * @param int $startTime to check
+	 * @param string $style which direction
 	 * @return array
 	 */
 	public function getChangesFor( WikiPage $page, $startTime = 0, $style = "to" ) {
@@ -143,5 +144,5 @@ class RelatedChangeWatchList extends ResultWrapper {
 			$user = $this->user;
 		}
 		$to = $user->getEmail();
-		
+	}
 }
