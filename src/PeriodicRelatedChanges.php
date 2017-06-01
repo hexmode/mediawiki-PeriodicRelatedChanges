@@ -83,6 +83,7 @@ class PeriodicRelatedChanges {
 	public function getRelatedChangeWatcher( User $user, Page $page ) {
 		return new RelatedChangeWatcher( $user, $page );
 	}
+
 	/**
 	 * Given a list of individual changes, collect them into a batch
 	 * FIXME: should replace this with some SQL queries

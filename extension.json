@@ -20,6 +20,7 @@
 		"PeriodicRelatedChanges\\RelatedChangeWatcher": "src/RelatedChangeWatcher.php",
 		"PeriodicRelatedChanges\\RelatedChangeWatchList": "src/RelatedChangeWatchList.php",
 		"PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges": "src/specials/PeriodicRelatedChanges.php",
+		"PeriodicRelatedChanges\\MySpecialRelatedChanges": "src/specials/MySpecialRelatedChanges.php",
 		"PeriodicRelatedChanges\\Hook": "src/Hook.php"
 	},
 	"SpecialPages": {

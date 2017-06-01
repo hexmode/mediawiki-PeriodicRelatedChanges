@@ -9,9 +9,12 @@
 	"periodic-related-changes-addtitle": "Add",
 	"periodic-related-changes-anons-not-allowed": "Anonymous users aren't allowed to edit periodic related change watchlists.",
 	"periodic-related-changes-currentwatchlist": "Current",
+	"periodic-related-changes-email-subject": "Changes in the past $1 days for pages linked from $2",
+	"periodic-related-changes-email-body": "The following pages linked from [[:$1]] have been changed.  Each page is listed with the number of changes made to it and a link that shows the differences before and after the changes were made.",
 	"periodic-related-changes-error": "Error",
 	"periodic-related-changes-getuser": "fetch",
 	"periodic-related-changes-lookup-user": "User to check",
+	"periodic-related-changes-invalid-form-data": "invalid form data",
 	"periodic-related-changes-lookupuser": "[[Special:Periodic-Related-Changes|Look up another user]]",
 	"periodic-related-changes-nosuchtitle": "No such title",
 	"periodic-related-changes-nosuchuser": "No such user",
@@ -23,7 +26,7 @@
 	"periodic-related-changes-user-editname": "User:",
 	"periodic-related-changes-userdoesnotexist": "User not found: $1",
 	"periodic-related-changes-watch-count": "$1 has $2 {{PLURAL:$2|watch|watches}}",
-	"periodic-related-changes-watch-item": "* [[$1]]",
+	"periodic-related-changes-watch-item": "* [[:$1]] <small>([[{{FULLPAGENAME}}/$1|see related changes]])</small>",
 	"periodic-related-changes-watchalreadyexists": "There is already a periodic related change watch for [[$1]]",
 	"periodic-related-changes-watchlist-titles": "Titles on the periodic related change watchlist for $1"
 }

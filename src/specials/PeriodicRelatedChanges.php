@@ -72,10 +72,16 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	/**
 	 * Actually show the form and let people do stuff
 	 *
-	 * @param string|null $userName user to lookup
+	 * @param string|null $par parameters passed to the page
 	 */
-	public function execute( $userName = null ) {
-		parent::execute( $userName );
+	public function execute( $par = null ) {
+		parent::execute( $par );
+
+		$userName = $par;
+		$page = null;
+		if ( strstr( "/", $par ) !== false ) {
+			list( $userName, $page ) = explode( "/", $par, 2 );
+		}
 		$this->canChangeAnyUser = $this->getUser()->isAllowed(
 			'periodic-related-changes-any-user'
 		);
@@ -87,9 +93,23 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		}
 
 		$user = $this->findUser( $userName );
-		if ( $user !== false && !$user->isAnon() ) {
+		if ( !$page && $user !== false && !$user->isAnon() ) {
 			$this->manageWatchList( $user );
 		}
+
+		$title = Title::newFromText( $page );
+		if ( $title ) {
+			$this->showRelatedChanges( $user, $title );
+		}
+	}
+
+	/**
+	 * Show the changes for this article
+	 * @param User $user to examine
+	 * @param Title $title to find related changes for
+	 */
+	public function showRelatedChanges( User $user, Title $title ) {
+		
 	}
 
 	/**
@@ -218,7 +238,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		$titles = PeriodicRelatedChanges::getManager()->getCurrentWatches( $user );
 		foreach ( $titles as $titleRow ) {
 			$out->addWikiMsg( 'periodic-related-changes-watch-item',
-							  $titleRow['page']->getTitle() );
+							  $titleRow['page']->getTitle()->getPrefixedText() );
 		}
 		return $watches->numRows();
 	}
@@ -284,6 +304,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			$watch = PeriodicRelatedChanges::getManager()->getRelatedChangeWatcher(
 				$this->userSubject, WikiPage::factory( $title )
 			);
+
 			if ( $watch->exists() ) {
 				return wfMessage( 'periodic-related-changes-watchalreadyexists',
 								  [ $titleString ] );
@@ -300,22 +321,19 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * @return bool for form handling
 	 */
 	public function addTitleSubmit( array $formData ) {
-		if ( $this->titleSubject instanceof Title
-			 && $formData['addTitle'] == $this->titleSubject->getText() ) {
-			$prc = PeriodicRelatedChanges::getManager();
-			// Chance of race condition here that would result in an exception?
-			if ( $prc->add( $this->userSubject, $this->titleSubject ) ) {
-				$this->getOutput()->addWikiMsg( "periodic-related-changes-added",
-												$this->titleSubject,
-												$this->userSubject
-				);
-				$this->getOutput()->addWikiMsg( "periodic-related-changes-return" );
-				return true;
-			}
-			return wfMessage( "periodic-related-changes-add-fail",
-							  [ $this->titleSubject, $this->userSubject ] );
+		$prc = PeriodicRelatedChanges::getManager();
+		// Chance of race condition here that would result in an exception?
+		if ( $prc->add( $this->userSubject, $this->titleSubject ) ) {
+			$this->getOutput()->addWikiMsg( "periodic-related-changes-added",
+											$this->titleSubject,
+											$this->userSubject
+			);
+			$this->getOutput()->addWikiMsg( "periodic-related-changes-return" );
+
+			return true;
 		}
-		return wfMessage( "periodic-related-changes-invalid-form-data" );
+		return wfMessage( "periodic-related-changes-add-fail",
+						  [ $this->titleSubject, $this->userSubject ] );
 	}
 
 	/**
