@@ -79,14 +79,16 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 
 		$userName = $par;
 		$page = null;
-		if ( strstr( "/", $par ) !== false ) {
+		if ( strstr( $par, "/" ) !== false ) {
 			list( $userName, $page ) = explode( "/", $par, 2 );
 		}
+
 		$this->canChangeAnyUser = $this->getUser()->isAllowed(
 			'periodic-related-changes-any-user'
 		);
 		$this->canChangeSelf = $this->getUser()->isAllowed( 'periodic-related-changes' );
 
+        $this->days = $this->getRequest()->getVal( "days", 7 );
 		if ( $this->getUser()->isAnon() ) {
 			throw new ErrorPageError( "periodic-related-changes-error",
 									  "periodic-related-changes-anons-not-allowed" );
@@ -109,7 +111,80 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * @param Title $title to find related changes for
 	 */
 	public function showRelatedChanges( User $user, Title $title ) {
-		
+        $out = $this->getOutput();
+		$watches = RelatedChangeWatchList::newFromUser( $user );
+		if ( !$watches->hasTitle( $title ) ) {
+			$out->addWikiMsg( "periodic-related-changes-no-user-title", $user, $title );
+			return;
+		}
+
+        $page = WikiPage::factory( $title );
+		$changesTo = $watches->getChangesFor( $page, $this->days, "to" );
+		$changesFrom = $watches->getChangesFor( $page, $this->days, "from" );
+
+		if ( !$changesTo && !$changesFrom ) {
+			$out->addWikiMsg(
+                "periodic-related-changes-no-user-title-days", $user, $title, $this->days
+            );
+            return;
+		}
+
+        $seen = [];
+        if ( $changesTo ) {
+			$out->addWikiMsg( "periodic-related-changes-link-to", $title );
+            foreach ( $changesTo as $changeTitle => $change ) {
+                $this->showChange( $changeTitle, $change );
+                $seen[$changeTitle] = true;
+            }
+        }
+
+        $shown = false;
+        foreach ( $changesFrom as $changeTitle => $change ) {
+            if ( !isset( $seen[$changeTitle] ) ) {
+                if ( !$shown ) {
+                    $out->addWikiMsg( "periodic-related-changes-link-from", $title );
+                    $shown = true;
+                }
+                $this->showChange( $changeTitle, $change );
+            }
+        }
+	}
+
+    /**
+     * Show a page with a link to the changes
+     * @param string $changeTitle the changed page
+     * @param array $diff array containing the diff information
+     */
+    public function showChange( $changeTitle, array $diff ) {
+		$count = count( $diff['ts'] );
+		$old = $diff['old'];
+		$new = $diff['new'];
+
+        $diffLink = $this->getDiffLink( $old, $new );
+
+        if ( $old != 0 ) {
+            $this->getOutput()->addWikiMsg(
+                "periodic-related-changes-linked-item", $changeTitle, $count, $diffLink
+            );
+        } else {
+            $this->getOutput()->addWikiMsg(
+                "periodic-related-changes-page-created", $changeTitle
+            );
+        }
+		return true;
+    }
+
+	/**
+	 * Return the link needed to see this group of diffs
+	 * @FIXME copypasta with listWatches
+	 * @param int $old revision #
+	 * @param int $new revision #
+	 * @return string
+	 */
+	protected function getDiffLink( $old, $new ) {
+		global $wgServer, $wgScript;
+
+		return $wgServer . $wgScript . "?diff=$new&oldid=$old";
 	}
 
 	/**

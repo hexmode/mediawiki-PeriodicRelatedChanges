@@ -20,7 +20,9 @@
 namespace PeriodicRelatedChanges;
 
 use IDatabase;
+use MWException;
 use ResultWrapper;
+use Title;
 use User;
 use WikiPage;
 
@@ -46,11 +48,30 @@ class RelatedChangeWatchList extends ResultWrapper {
 	public static function newFromUser( User $user ) {
 		$dbr = wfGetDB( DB_SLAVE );
 		$res = $dbr->select( 'periodic_related_change',
-							 [ 'wc_page', 'wc_timestamp' ],
+							 [ 'wc_page as page', 'wc_timestamp as timestamp' ],
 							 [ 'wc_user' => $user->getId() ],
 							 __METHOD__ );
 
-		return new self( $dbr, $res );
+		$watches = new self( $dbr, $res );
+		$watches->setUser( $user );
+		return $watches;
+	}
+
+	/**
+	 * Return true if this watchlist contains the given page.
+	 * @param Title $title to look for
+	 * @return bool
+	 */
+	public function hasTitle( Title $title ) {
+        $obj = $this->fetchObject();
+        while( $obj !== false ) {
+            if ( $title->equals( Title::newFromId( $obj->page ) ) ) {
+                $this->rewind();
+                return true;
+            }
+            $obj = $this->fetchObject();
+        }
+        return false;
 	}
 
 	/**
@@ -62,8 +83,8 @@ class RelatedChangeWatchList extends ResultWrapper {
 		$cur = parent::current();
 		$res = false;
 		if ( $cur !== false ) {
-			$res = [ 'page' => WikiPage::newFromID( $cur->wc_page ),
-					 'timestamp' => $cur->wc_timestamp ];
+			$res = [ 'page' => WikiPage::newFromID( $cur->page ),
+					 'timestamp' => $cur->timestamp ];
 		}
 		return $res;
 	}
@@ -78,22 +99,15 @@ class RelatedChangeWatchList extends ResultWrapper {
 	 */
 	public function getChangesFor( WikiPage $page, $startTime = 0, $style = "to" ) {
 		global $wgHooks;
-		$oldHooks = [];
-		if ( isset( $wgHooks['ChangesListSpecialPageQuery'] ) ) {
-			$oldHooks = $wgHooks['ChangesListSpecialPageQuery'];
-		}
-		$rcl = new MySpecialRelatedChanges( $page->getTitle()->getText(), $startTime );
+
+		$rcl = new MySpecialRelatedChanges(
+            $page->getTitle()->getPrefixedText(), $startTime
+        );
 		$rcl->linkedTo( false );
 		if ( $style === "to" ) {
 			$rcl->linkedTo( true );
 		}
 		$rows = $rcl->getRows();
-
-		if ( count( $oldHooks ) == 0 ) {
-			unset( $wgHooks['ChangesListSpecialPageQuery'] );
-		} else {
-			$wgHooks['ChangesListSpecialPageQuery'] = $oldHooks;
-		}
 
 		if ( $rows === false ) {
 			return [];
@@ -111,7 +125,9 @@ class RelatedChangeWatchList extends ResultWrapper {
 		$change = [];
 
 		foreach ( $watches as $watch ) {
-			$title = $watch->rc_title;
+			$title = Title::newFromText(
+                $watch->rc_title, $watch->rc_namespace
+            )->getPrefixedText();
 			$rev = $watch->rc_id;
 
 			if ( !isset( $change[$title] ) ) {
@@ -134,6 +150,14 @@ class RelatedChangeWatchList extends ResultWrapper {
 	}
 
 	/**
+	 * Set the user associated with this watchlist
+	 * @param User $user to associate
+	 */
+	public function setUser( User $user ) {
+		$this->user = $user;
+	}
+
+	/**
 	 * Send an email with the relevant pages to the user.
 	 * @param User $user Optionally specify the user to send this to
 	 */
@@ -145,5 +169,10 @@ class RelatedChangeWatchList extends ResultWrapper {
 			$user = $this->user;
 		}
 		$to = $user->getEmail();
+
+        if ( !$to ) {
+            throw new MWException( "No email for $user.\n" );
+        }
+        exit;
 	}
 }
