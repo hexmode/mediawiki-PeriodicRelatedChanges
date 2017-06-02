@@ -22,9 +22,12 @@ namespace PeriodicRelatedChanges;
 use FauxRequest;
 use IDatabase;
 use MWException;
+use MailAddress;
 use ResultWrapper;
+use RequestContext;
 use Title;
 use User;
+use UserMailer;
 use WikiPage;
 
 class RelatedChangeWatchList extends ResultWrapper {
@@ -171,9 +174,10 @@ class RelatedChangeWatchList extends ResultWrapper {
 
 	/**
 	 * Send an email with the relevant pages to the user.
-	 * @param User $user Optionally specify the user to send this to
+	 * @param User $user the user to send this to
+	 * @param int $days days we look back.
 	 */
-	public function sendEmail( User $user = null ) {
+	public function sendEmail( User $user = null, $days = 7 ) {
 		if ( $this->user === null && $user === null ) {
 			throw new MWException( "No user to send to." );
 		}
@@ -185,6 +189,27 @@ class RelatedChangeWatchList extends ResultWrapper {
         if ( !$to ) {
             throw new MWException( "No email for $user.\n" );
         }
-        $req = new FauxRequest();
+		$thisPage = Title::newFromText( "PeriodicRelatedChanges/$user", NS_SPECIAL );
+        $req = RequestContext::newExtraneousContext(
+			$thisPage,
+			[
+				"fullreport" => true,
+				"printable" => "yes",
+				"days" => $days
+			] );
+		$req->setUser( $user );
+		\SpecialPageFactory::executePath( $thisPage, $req );
+
+		global $wgAllowHTMLEmail, $wgPasswordSender;
+		$wgAllowHTMLEmail = true;
+
+		UserMailer::send( MailAddress::newFromUser( $user ),
+						  new MailAddress($wgPasswordSender),
+						  $req->getOutput()->getPageTitle(),
+						  [
+							  "text" => "nothing here ... See the HTML part!",
+							  "html" => $req->getOutput()->getHTML()
+						  ], [ "contentType" => "multipart/alternative" ]
+		);
 	}
 }

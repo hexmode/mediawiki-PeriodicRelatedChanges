@@ -102,13 +102,8 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 
 		$user = $this->findUser( $userName );
 
-		if ( $doFullReport ) {
-			foreach(
-				PeriodicRelatedChanges::getManager()->getCurrentWatches( $user )
-				as $page
-			) {
-				$this->showRelatedChanges( $user, $page['page']->getTitle() );
-			}
+		if ( $user && $doFullReport ) {
+			$this->showFullReport( $user );
 			return;
 		}
 
@@ -120,6 +115,23 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		if ( $title ) {
 			$this->showRelatedChanges( $user, $title );
 		}
+	}
+
+
+	/**
+	 * Show the full report for all changes
+	 * @param User $user report is for
+	 */
+	public function showFullReport( User $user ) {
+		foreach(
+			PeriodicRelatedChanges::getManager()->getCurrentWatches( $user )
+			as $page
+		) {
+			$this->showRelatedChanges( $user, $page['page']->getTitle() );
+		}
+		$this->getOutput()->setPageTitle( wfMessage(
+			"periodic-related-changes-fullreport", $user, $this->days
+		) );
 	}
 
 	/**
@@ -172,30 +184,30 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		}
 	}
 
-/**
- * Show a page with a link to the changes
- * @param string $changeTitle the changed page
- * @param array $diff array containing the diff information
- */
-public function showChange( $changeTitle, array $diff ) {
-	$count = count( $diff['ts'] );
-	$old = $diff['old'];
-	$new = $diff['new'];
+	/**
+	 * Show a page with a link to the changes
+	 * @param string $changeTitle the changed page
+	 * @param array $diff array containing the diff information
+	 */
+	public function showChange( $changeTitle, array $diff ) {
+		$count = count( $diff['ts'] );
+		$old = $diff['old'];
+		$new = $diff['new'];
 
-	$diffLink = $this->getDiffLink( $old, $new );
+		$diffLink = $this->getDiffLink( $old, $new );
 
-	if ( $old != 0 ) {
-		$this->getOutput()->addWikiMsg(
-			"periodic-related-changes-linked-item", $changeTitle,
-			$count, $diffLink
-		);
-	} else {
-		$this->getOutput()->addWikiMsg(
-			"periodic-related-changes-page-created", $changeTitle
-		);
+		if ( $old != 0 ) {
+			$this->getOutput()->addWikiMsg(
+				"periodic-related-changes-linked-item", $changeTitle,
+				$count, $diffLink
+			);
+		} else {
+			$this->getOutput()->addWikiMsg(
+				"periodic-related-changes-page-created", $changeTitle
+			);
+		}
+		return true;
 	}
-	return true;
-}
 
 	/**
 	 * Return the link needed to see this group of diffs

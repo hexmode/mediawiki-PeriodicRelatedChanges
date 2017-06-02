@@ -55,20 +55,6 @@ class MySpecialRelatedChanges extends \SpecialRecentChangesLinked {
 	}
 
 	/**
-	 * Sets headers - Override SpecialPage
-	 */
-	function setHeaders() {
-		$out = $this->getOutput();
-		if ( $this->getConfig()->get( 'UseMediaWikiUIEverywhere' ) ) {
-			$out->addModuleStyles( [
-				'mediawiki.ui.input',
-				'mediawiki.ui.radio',
-				'mediawiki.ui.checkbox',
-			] );
-		}
-	}
-
-	/**
 	 * Don't list this as a special page
 	 * @return bool
 	 */

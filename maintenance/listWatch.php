@@ -77,8 +77,10 @@ class ListWatch extends Maintenance {
 
 		$watches = RelatedChangeWatchList::newFromUser( $user );
 
+		$this->days = $this->getOption( "days", 7 );
+
 		if ( $this->hasOption( "mail" ) ) {
-			$watches->sendEmail();
+			$watches->sendEmail( $user, $this->days );
 			return;
 		}
 
@@ -86,8 +88,6 @@ class ListWatch extends Maintenance {
 			$this->printWatchedTitles( $user, $watches );
 			return;
 		}
-
-		$this->days = $this->getOption( "days", 7 );
 
 		$this->printRelatedChanges( $user, $watches, $page );
 	}
