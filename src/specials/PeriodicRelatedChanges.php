@@ -46,7 +46,8 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * @param string $restriction User right required, e.g. "block" or "delete"
 	 */
 	public function __construct(
-		$name = 'PeriodicRelatedChanges', $restriction = 'periodic-related-changes'
+		$name = 'PeriodicRelatedChanges',
+		$restriction = 'periodic-related-changes'
 	) {
 		parent::__construct( $name, $restriction );
 	}
@@ -86,15 +87,31 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		$this->canChangeAnyUser = $this->getUser()->isAllowed(
 			'periodic-related-changes-any-user'
 		);
-		$this->canChangeSelf = $this->getUser()->isAllowed( 'periodic-related-changes' );
+		$this->canChangeSelf
+			= $this->getUser()->isAllowed( 'periodic-related-changes' );
 
-        $this->days = $this->getRequest()->getVal( "days", 7 );
+		$this->days = $this->getRequest()->getVal( "days", 7 );
+		$doFullReport = $this->getRequest()->getCheck( "fullreport" );
+
 		if ( $this->getUser()->isAnon() ) {
-			throw new ErrorPageError( "periodic-related-changes-error",
-									  "periodic-related-changes-anons-not-allowed" );
+			throw new ErrorPageError(
+				"periodic-related-changes-error",
+				"periodic-related-changes-anons-not-allowed"
+			);
 		}
 
 		$user = $this->findUser( $userName );
+
+		if ( $doFullReport ) {
+			foreach(
+				PeriodicRelatedChanges::getManager()->getCurrentWatches( $user )
+				as $page
+			) {
+				$this->showRelatedChanges( $user, $page['page']->getTitle() );
+			}
+			return;
+		}
+
 		if ( !$page && $user !== false && !$user->isAnon() ) {
 			$this->manageWatchList( $user );
 		}
@@ -111,68 +128,74 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * @param Title $title to find related changes for
 	 */
 	public function showRelatedChanges( User $user, Title $title ) {
-        $out = $this->getOutput();
+		$out = $this->getOutput();
 		$watches = RelatedChangeWatchList::newFromUser( $user );
 		if ( !$watches->hasTitle( $title ) ) {
-			$out->addWikiMsg( "periodic-related-changes-no-user-title", $user, $title );
+			$out->addWikiMsg(
+				"periodic-related-changes-no-user-title", $user, $title
+			);
 			return;
 		}
 
-        $page = WikiPage::factory( $title );
+		$page = WikiPage::factory( $title );
 		$changesTo = $watches->getChangesFor( $page, $this->days, "to" );
 		$changesFrom = $watches->getChangesFor( $page, $this->days, "from" );
 
 		if ( !$changesTo && !$changesFrom ) {
 			$out->addWikiMsg(
-                "periodic-related-changes-no-user-title-days", $user, $title, $this->days
-            );
-            return;
+				"periodic-related-changes-no-user-title-days", $user, $title,
+				$this->days
+			);
+			return;
 		}
 
-        $seen = [];
-        if ( $changesTo ) {
+		$seen = [];
+		if ( $changesTo ) {
 			$out->addWikiMsg( "periodic-related-changes-link-to", $title );
-            foreach ( $changesTo as $changeTitle => $change ) {
-                $this->showChange( $changeTitle, $change );
-                $seen[$changeTitle] = true;
-            }
-        }
+			foreach ( $changesTo as $changeTitle => $change ) {
+				$this->showChange( $changeTitle, $change );
+				$seen[$changeTitle] = true;
+			}
+		}
 
-        $shown = false;
-        foreach ( $changesFrom as $changeTitle => $change ) {
-            if ( !isset( $seen[$changeTitle] ) ) {
-                if ( !$shown ) {
-                    $out->addWikiMsg( "periodic-related-changes-link-from", $title );
-                    $shown = true;
-                }
-                $this->showChange( $changeTitle, $change );
-            }
-        }
+		$shown = false;
+		foreach ( $changesFrom as $changeTitle => $change ) {
+			if ( !isset( $seen[$changeTitle] ) ) {
+				if ( !$shown ) {
+					$out->addWikiMsg(
+						"periodic-related-changes-link-from", $title
+					);
+					$shown = true;
+				}
+				$this->showChange( $changeTitle, $change );
+			}
+		}
 	}
 
-    /**
-     * Show a page with a link to the changes
-     * @param string $changeTitle the changed page
-     * @param array $diff array containing the diff information
-     */
-    public function showChange( $changeTitle, array $diff ) {
-		$count = count( $diff['ts'] );
-		$old = $diff['old'];
-		$new = $diff['new'];
+/**
+ * Show a page with a link to the changes
+ * @param string $changeTitle the changed page
+ * @param array $diff array containing the diff information
+ */
+public function showChange( $changeTitle, array $diff ) {
+	$count = count( $diff['ts'] );
+	$old = $diff['old'];
+	$new = $diff['new'];
 
-        $diffLink = $this->getDiffLink( $old, $new );
+	$diffLink = $this->getDiffLink( $old, $new );
 
-        if ( $old != 0 ) {
-            $this->getOutput()->addWikiMsg(
-                "periodic-related-changes-linked-item", $changeTitle, $count, $diffLink
-            );
-        } else {
-            $this->getOutput()->addWikiMsg(
-                "periodic-related-changes-page-created", $changeTitle
-            );
-        }
-		return true;
-    }
+	if ( $old != 0 ) {
+		$this->getOutput()->addWikiMsg(
+			"periodic-related-changes-linked-item", $changeTitle,
+			$count, $diffLink
+		);
+	} else {
+		$this->getOutput()->addWikiMsg(
+			"periodic-related-changes-page-created", $changeTitle
+		);
+	}
+	return true;
+}
 
 	/**
 	 * Return the link needed to see this group of diffs
@@ -200,7 +223,8 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 
 			$formDescriptor = [
 				'username' => [
-					'label-message'       => 'periodic-related-changes-user-editname',
+					'label-message'       =>
+					'periodic-related-changes-user-editname',
 					'type'                => 'user',
 					'size'                => 30,
 					'autofocus'           => true,
@@ -218,27 +242,34 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		// If you can't edit just anyone's, you can only see your own.
 		if ( !$this->canChangeAnyUser
 			 && $this->getUser()->isAllowed( 'periodic-related-changes' )
-			 && ( !isset( $userName ) || $userName !== $this->getUser()->getName() )
+			 && ( !isset( $userName )
+				  || $userName !== $this->getUser()->getName() )
 		) {
 			$this->getOutput()->redirect(
-				$this->getTitle()->getLinkURL() . "/" . $this->getUser()->getName()
+				$this->getTitle()->getLinkURL() . "/"
+				. $this->getUser()->getName()
 			);
 			return false;
 		}
 
 		$user = User::newFromName( trim( $userName, "/" ) );
 		if ( !$this->canChangeAnyUser ) {
-			if ( !$userName || $user->getName() !== $this->getUser()->getName() ) {
-				$this->findUserSubmit( [ "username" => $this->getUser()->getName() ] );
+			if ( !$userName || $user->getName()
+				 !== $this->getUser()->getName() ) {
+				$this->findUserSubmit(
+					[ "username" => $this->getUser()->getName() ]
+				);
 				return false;
 			}
 			$user = $this->getUser();
 		}
 
 		if ( !$user || $user->getId() === 0 ) {
-			throw new ErrorPageError( "periodic-related-changes-error",
-									  "periodic-related-changes-userdoesnotexist",
-									  [ $user ] );
+			throw new ErrorPageError(
+				"periodic-related-changes-error",
+				"periodic-related-changes-userdoesnotexist",
+				[ $user ]
+			);
 		}
 		$this->userSubject = $user;
 		return $user;
@@ -279,7 +310,9 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	public function manageWatchList( User $user ) {
 		$out = $this->getOutput();
 		if ( $this->canChangeAnyUser ) {
-			$out->setSubTitle( wfMessage( "periodic-related-changes-lookupuser" ) );
+			$out->setSubTitle(
+				wfMessage( "periodic-related-changes-lookupuser" )
+			);
 		}
 
 		$this->listCurrentWatches( $user );
@@ -301,7 +334,9 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		$userName = $user->getName();
 
 		if ( $watches->numRows() === 0 ) {
-			$out->setPageTitle( wfMessage( "periodic-related-changes-nowatches-title" ) );
+			$out->setPageTitle(
+				wfMessage( "periodic-related-changes-nowatches-title" )
+			);
 			$out->addWikiMsg( "periodic-related-changes-nowatches", $userName );
 			return 0;
 		}
@@ -310,10 +345,13 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 						  $watches->numRows()
 		);
 
-		$titles = PeriodicRelatedChanges::getManager()->getCurrentWatches( $user );
+		$titles
+			= PeriodicRelatedChanges::getManager()->getCurrentWatches( $user );
 		foreach ( $titles as $titleRow ) {
-			$out->addWikiMsg( 'periodic-related-changes-watch-item',
-							  $titleRow['page']->getTitle()->getPrefixedText() );
+			$out->addWikiMsg(
+				'periodic-related-changes-watch-item',
+				$titleRow['page']->getTitle()->getPrefixedText()
+			);
 		}
 		return $watches->numRows();
 	}
@@ -376,8 +414,9 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		}
 
 		if ( $title ) {
-			$watch = PeriodicRelatedChanges::getManager()->getRelatedChangeWatcher(
-				$this->userSubject, WikiPage::factory( $title )
+			$watch
+				= PeriodicRelatedChanges::getManager()->getRelatedChangeWatcher(
+					$this->userSubject, WikiPage::factory( $title )
 			);
 
 			if ( $watch->exists() ) {
@@ -421,15 +460,19 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			'default' => '1'
 		];
 		foreach ( $prc->getCurrentWatches( $this->userSubject ) as $watch ) {
-			$formDescriptor['watch-' . $watch['page']->getTitle()->getDBKey()] = [
-				'section' => 'currentwatchlist',
-				'label'   => $watch['page']->getTitle(),
-				'type'    => 'check',
-				'size'    => 30,
+			$formDescriptor['watch-' . $watch['page']
+							->getTitle()->getDBKey()] = [
+								'section' => 'currentwatchlist',
+								'label'   => $watch['page']->getTitle(),
+								'type'    => 'check',
+								'size'    => 30,
 			];
 		}
-		$form = HTMLForm::factory( 'ooui', $formDescriptor,
-								   $this->getContext(), "periodic-related-changes" );
+		$form = HTMLForm::factory(
+			'ooui', $formDescriptor,
+			$this->getContext(),
+			"periodic-related-changes"
+		);
 		$form->setSubmitCallback( [ $this, 'handleWatchRemoval' ] );
 		$form->setSubmitTextMsg( 'periodic-related-changes-removetitles' );
 		$form->show();
@@ -447,15 +490,18 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			},
 			array_filter( array_keys( $formData ),
 									   function ( $item ) use ( $formData ) {
-										   if ( substr( $item, 0, 6 ) === "watch-"
+										   if ( substr( $item, 0, 6 )
+												=== "watch-"
 												&& $formData[$item] ) {
 											   return true;
 										   }
 									   } ) );
 		foreach ( $pagesToRemove as $page ) {
-			$watch = PeriodicRelatedChanges::getManager()->getRelatedChangeWatcher(
-				$this->userSubject, WikiPage::factory( Title::newFromText( $page ) )
-			);
+			$watch
+				= PeriodicRelatedChanges::getManager()->getRelatedChangeWatcher(
+					$this->userSubject,
+					WikiPage::factory( Title::newFromText( $page ) )
+				);
 			$watch->remove();
 		}
 	}

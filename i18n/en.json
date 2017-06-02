@@ -32,7 +32,7 @@
 	"periodic-related-changes-user-addtitle": "Add a title to the periodic related change watchlist for [[User:$1|$1]]",
 	"periodic-related-changes-user-editname": "User:",
 	"periodic-related-changes-userdoesnotexist": "User not found: $1",
-	"periodic-related-changes-watch-count": "$1 has $2 {{PLURAL:$2|watch|watches}}",
+	"periodic-related-changes-watch-count": "$1 is tracking {{PLURAL:$2|one page|$2 pages}} for any related changes.{{PLURAL:$2|| <small>([{{fullurl:Special:PeriodicRelatedChanges/$1|fullreport}} see entire report])</small>}}",
 	"periodic-related-changes-watch-item": "* [[:$1]] <small>([[{{FULLPAGENAME}}/$1|see related changes]])</small>",
 	"periodic-related-changes-watchalreadyexists": "There is already a periodic related change watch for [[$1]]",
 	"periodic-related-changes-watchlist-titles": "Titles on the periodic related change watchlist for $1"
