@@ -192,7 +192,7 @@ class ListWatch extends Maintenance {
 
 	/**
 	 * Handle the display of a list of changes
-	 *
+	 * @FIXME copy-pasta with PeriodicRelatedChanges special page
 	 * @param int $width to pad to
 	 * @param string $title to display
 	 * @param array $res a list of changes
@@ -215,6 +215,7 @@ class ListWatch extends Maintenance {
 
 	/**
 	 * Return the link needed to see this group of diffs
+	 * @FIXME copypasta with special page
 	 * @param int $old revision #
 	 * @param int $new revision #
 	 * @return string
