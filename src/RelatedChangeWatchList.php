@@ -19,6 +19,7 @@
 
 namespace PeriodicRelatedChanges;
 
+use FauxRequest;
 use IDatabase;
 use MWException;
 use ResultWrapper;
@@ -100,14 +101,25 @@ class RelatedChangeWatchList extends ResultWrapper {
 	public function getChangesFor( WikiPage $page, $startTime = 0, $style = "to" ) {
 		global $wgHooks;
 
+		# Don't let any hooks mess us up
+		$oldHooks = [];
+		if ( isset( $wgHooks['ChangesListSpecialPageQuery'] ) ) {
+			$oldHooks = $wgHooks['ChangesListSpecialPageQuery'];
+		}
 		$rcl = new MySpecialRelatedChanges(
-            $page->getTitle()->getPrefixedText(), $startTime
-        );
+			$page->getTitle()->getPrefixedText(), $startTime
+		);
 		$rcl->linkedTo( false );
 		if ( $style === "to" ) {
 			$rcl->linkedTo( true );
 		}
 		$rows = $rcl->getRows();
+
+		if ( count( $oldHooks ) == 0 ) {
+			unset( $wgHooks['ChangesListSpecialPageQuery'] );
+		} else {
+			$wgHooks['ChangesListSpecialPageQuery'] = $oldHooks;
+		}
 
 		if ( $rows === false ) {
 			return [];
@@ -173,6 +185,6 @@ class RelatedChangeWatchList extends ResultWrapper {
         if ( !$to ) {
             throw new MWException( "No email for $user.\n" );
         }
-        exit;
+        $req = new FauxRequest();
 	}
 }
