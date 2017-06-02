@@ -176,6 +176,7 @@ class RelatedChangeWatchList extends ResultWrapper {
 	 * Send an email with the relevant pages to the user.
 	 * @param User $user the user to send this to
 	 * @param int $days days we look back.
+	 * @return Status
 	 */
 	public function sendEmail( User $user = null, $days = 7 ) {
 		if ( $this->user === null && $user === null ) {
@@ -203,7 +204,7 @@ class RelatedChangeWatchList extends ResultWrapper {
 		global $wgAllowHTMLEmail, $wgPasswordSender;
 		$wgAllowHTMLEmail = true;
 
-		UserMailer::send( MailAddress::newFromUser( $user ),
+		return UserMailer::send( MailAddress::newFromUser( $user ),
 						  new MailAddress($wgPasswordSender),
 						  $req->getOutput()->getPageTitle(),
 						  [

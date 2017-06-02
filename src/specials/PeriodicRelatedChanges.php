@@ -92,23 +92,21 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 
 		$this->days = $this->getRequest()->getVal( "days", 7 );
 		$doFullReport = $this->getRequest()->getCheck( "fullreport" );
-
-		if ( $this->getUser()->isAnon() ) {
-			throw new ErrorPageError(
-				"periodic-related-changes-error",
-				"periodic-related-changes-anons-not-allowed"
-			);
-		}
-
+		$sendEmail = $this->getRequest()->getCheck( "sendemail" );
 		$user = $this->findUser( $userName );
+
+		if ( $sendEmail && !$this->sendEmail( $user ) ) {
+			return;
+		}
 
 		if ( $user && $doFullReport ) {
 			$this->showFullReport( $user );
 			return;
 		}
 
-		if ( !$page && $user !== false && !$user->isAnon() ) {
+		if ( !$page && $user !== false ) {
 			$this->manageWatchList( $user );
+			return;
 		}
 
 		$title = Title::newFromText( $page );
@@ -117,19 +115,44 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		}
 	}
 
+	/**
+	 * Send the full report to a user
+	 * @param User $user to send to
+	 * @return bool false if problem
+	 */
+	public function sendEmail( User $user ) {
+		$out = $this->getOutput();
+		$watches = RelatedChangeWatchList::newFromUser( $user );
+		$status = $watches->sendEmail( $user, $this->days );
+		$out->setPageTitle( wfMessage(
+			"periodic-related-changes-fullreport", $user, $this->days
+		) );
+
+		if ( !$status->isOk() ) {
+			$out->addWikiMsg( "periodic-related-changes-sent-email-problem" );
+			$out->addWikiMsg( $status->getWikiText() );
+			return false;
+		}
+		$out->addWikiMsg( "periodic-related-changes-sent-email-success", $user );
+		return true;
+	}
 
 	/**
 	 * Show the full report for all changes
 	 * @param User $user report is for
 	 */
 	public function showFullReport( User $user ) {
+		$out = $this->getOutput();
+		if ( !$this->getRequest()->getCheck( "printable" ) && $user->getEmail() ) {
+			$out->addWikiMsg( "periodic-related-changes-link-to-email", $user );
+		}
 		foreach(
 			PeriodicRelatedChanges::getManager()->getCurrentWatches( $user )
 			as $page
 		) {
 			$this->showRelatedChanges( $user, $page['page']->getTitle() );
 		}
-		$this->getOutput()->setPageTitle( wfMessage(
+		$out->setPageTitle( wfMessage(
 			"periodic-related-changes-fullreport", $user, $this->days
 		) );
 	}
