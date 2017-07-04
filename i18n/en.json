@@ -5,6 +5,7 @@
 	"action-periodic-related-changes": "add periodic related changes",
 	"periodicrelatedchanges": "Periodic related changes",
 	"periodic-related-changes": "Set periodic related change watches",
+	"periodic-related-changes-desc": "Provide a list of related changes to selected users",
 	"periodic-related-changes-added": "Added [[:$1]] to [[User:$2|$2]]'s periodic related change watchlist.",
 	"periodic-related-changes-addtitle": "Add",
 	"periodic-related-changes-anons-not-allowed": "Anonymous users aren't allowed to edit periodic related change watchlists.",
