@@ -123,6 +123,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 
 	/**
 	 * List out all the users who have watches.
+	 * @return boolean false if no permission
 	 */
 	public function listUsers() {
 		if ( $this->canChangeAnyUser ) {
@@ -151,7 +152,6 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		}
 		return false;
 	}
-
 
 	/**
 	 * Send the full report to a user
@@ -188,7 +188,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		) {
 			$out->addWikiMsg( "periodic-related-changes-link-to-email", $user );
 		}
-		foreach(
+		foreach (
 			PeriodicRelatedChanges::getManager()->getCurrentWatches( $user )
 			as $page
 		) {
@@ -253,6 +253,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * Show a page with a link to the changes
 	 * @param string $changeTitle the changed page
 	 * @param array $diff array containing the diff information
+	 * @return bool always true
 	 */
 	public function showChange( $changeTitle, array $diff ) {
 		$count = count( $diff['ts'] );
