@@ -91,6 +91,12 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			= $this->getUser()->isAllowed( 'periodic-related-changes' );
 
 		$this->days = $this->getRequest()->getVal( "days", 7 );
+		if (
+			$this->getRequest()->getVal( "listusers" ) === "true"
+			&& $this->listUsers()
+		) {
+			return;
+		}
 		$doFullReport = $this->getRequest()->getCheck( "fullreport" );
 		$sendEmail = $this->getRequest()->getCheck( "sendemail" );
 		$user = $this->findUser( $userName );
@@ -116,6 +122,38 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	}
 
 	/**
+	 * List out all the users who have watches.
+	 */
+	public function listUsers() {
+		if ( $this->canChangeAnyUser ) {
+			$out = $this->getOutput();
+			$dbr = wfGetDB( DB_SLAVE );
+			$users = $dbr->select(
+				'periodic_related_change', [ 'DISTINCT wc_user as id' ],
+				[], __METHOD__
+			);
+			if ( $users->numRows() > 0 ) {
+				$out->addHTML(
+					wfMessage( 'periodic-related-changes-userlist-prefix' )
+				);
+
+				foreach ( $users as $user ) {
+					$out->addHTML( wfMessage(
+							'periodic-related-changes-list-user',
+							User::newFromId( $user->id )
+						) );
+				}
+				return true;
+			}
+			$out->addHTML(
+				wfMessage( 'periodic-related-changes-no-users' )
+			);
+		}
+		return false;
+	}
+
+
+	/**
 	 * Send the full report to a user
 	 * @param User $user to send to
 	 * @return bool false if problem
@@ -133,7 +171,9 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			$out->addWikiMsg( $status->getWikiText() );
 			return false;
 		}
-		$out->addWikiMsg( "periodic-related-changes-sent-email-success", $user );
+		$out->addWikiMsg(
+			"periodic-related-changes-sent-email-success", $user
+		);
 		return true;
 	}
 
@@ -143,7 +183,9 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 */
 	public function showFullReport( User $user ) {
 		$out = $this->getOutput();
-		if ( !$this->getRequest()->getCheck( "printable" ) && $user->getEmail() ) {
+		if (
+			!$this->getRequest()->getCheck( "printable" ) && $user->getEmail()
+		) {
 			$out->addWikiMsg( "periodic-related-changes-link-to-email", $user );
 		}
 		foreach(
@@ -253,8 +295,9 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * @return User|bool
 	 */
 	public function findUser( $userName ) {
+		$out = $this->getOutput();
 		if ( !$userName && $this->canChangeAnyUser ) {
-			$this->getOutput()->addModules( 'ext.periodicRelatedChanges.user' );
+			$out->addModules( 'ext.periodicRelatedChanges.user' );
 
 			$formDescriptor = [
 				'username' => [
@@ -270,6 +313,10 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 									   $this->getContext() );
 			$form->setSubmitCallback( [ $this, 'findUserSubmit' ] );
 			$form->setSubmitTextMsg( 'periodic-related-changes-getuser' );
+			$out->setSubTitle(
+				wfMessage( "periodic-related-changes-listusers" )
+			);
+
 			$form->show();
 			return false;
 		}
@@ -280,7 +327,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			 && ( !isset( $userName )
 				  || $userName !== $this->getUser()->getName() )
 		) {
-			$this->getOutput()->redirect(
+			$out->redirect(
 				$this->getTitle()->getLinkURL() . "/"
 				. $this->getUser()->getName()
 			);
@@ -339,7 +386,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	}
 
 	/**
-	 * Manage the watchlist for this user for this user
+	 * Manage the watchlist for this user
 	 * @param User $user to list watches for
 	 */
 	public function manageWatchList( User $user ) {
