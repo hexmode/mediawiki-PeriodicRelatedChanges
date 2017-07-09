@@ -1,0 +1,17 @@
+{
+	"name": "hexmode/periodic-related-changes",
+	"description": "MediaWiki extension to set up periodic notifications of related changes",
+	"type": "mediawiki-extension",
+	"homepage": "https://github.com/hexmode/mediawiki-PeriodicRelatedChanges",
+	"license": "GPL3.0",
+	"authors": [
+		{
+			"name": "Mark A. Hershberger",
+			"email": "mah@nichework.com"
+		}
+	],
+	"minimum-stability": "beta",
+	"require": {
+		"phpoffice/phpexcel": "^1.8"
+	}
+}

@@ -16,12 +16,12 @@
 		]
 	},
 	"AutoloadClasses": {
-		"PeriodicRelatedChanges\\PeriodicRelatedChanges": "src/PeriodicRelatedChanges.php",
-		"PeriodicRelatedChanges\\RelatedChangeWatcher": "src/RelatedChangeWatcher.php",
-		"PeriodicRelatedChanges\\RelatedChangeWatchList": "src/RelatedChangeWatchList.php",
-		"PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges": "src/specials/PeriodicRelatedChanges.php",
+		"PeriodicRelatedChanges\\Hook": "src/Hook.php",
 		"PeriodicRelatedChanges\\MySpecialRelatedChanges": "src/specials/MySpecialRelatedChanges.php",
-		"PeriodicRelatedChanges\\Hook": "src/Hook.php"
+		"PeriodicRelatedChanges\\PeriodicRelatedChanges": "src/PeriodicRelatedChanges.php",
+		"PeriodicRelatedChanges\\RelatedChangeWatchList": "src/RelatedChangeWatchList.php",
+		"PeriodicRelatedChanges\\RelatedChangeWatcher": "src/RelatedChangeWatcher.php",
+		"PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges": "src/specials/PeriodicRelatedChanges.php"
 	},
 	"SpecialPages": {
 		"PeriodicRelatedChanges": "PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges"

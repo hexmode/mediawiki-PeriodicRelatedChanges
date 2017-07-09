@@ -3,3 +3,6 @@
 \#*\#
 .\#*
 .tramp_history
+
+# composer
+/vendor/
