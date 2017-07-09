@@ -217,6 +217,62 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * Parse a single row
 	 * format is:
 	 *    ID, CATEGORY, USER|EMAIL*
+	 * @param string $catval value from cell
+	 * @return array|Title array with errror if there are problems
+	 */
+    protected function parseTitleCell( $catVal ) {
+        try {
+            $title = Title::newFromTextThrow( $catVal, NS_CATEGORY );
+        } catch ( MWException $e ) {
+            return [ $this->msg(
+                'periodic-related-changes-bad-title', $e->getMessage()
+            )->text() ];
+        }
+
+        if ( !$title->exists() ) {
+            return [ $this->msg(
+                'periodic-related-changes-title-not-exist', $title
+            )->text() ];
+        }
+        return $title;
+    }
+
+	/**
+	 * Parse a single row
+	 * format is:
+	 *    ID, CATEGORY, USER|EMAIL*
+	 * @param string $userVal value from cell
+	 * @return null|array|User array with errror if there are problems
+	 */
+    protected function parseUserCell( $userVal ) {
+        if ( !$userVal ) {
+            return null;
+        }
+
+        $user = User::newFromName( $userVal );
+        if ( $user->loadFromDatabase() === false
+             && strstr( $userVal, '@' ) !== false ) {
+            $user = $this->findUserByEmail( $userVal );
+            if ( !$user ) {
+                return $this->msg(
+                    'periodic-related-changes-no-matching-email', $userVal
+                )->text();
+            }
+        }
+
+        if ( !$user ) {
+            return $this->msg(
+                'periodic-related-changes-no-user', $userVal
+            )->text();
+        }
+
+        return $user;
+    }
+
+	/**
+	 * Parse a single row
+	 * format is:
+	 *    ID, CATEGORY, USER|EMAIL*
 	 * @param string $rowName for reference
 	 * @param PHPExcel_Worksheet_Row $row to parse
 	 * @return array problems
@@ -226,6 +282,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		$cellIter->setIterateOnlyExistingCells( true );
 		$errors = [];
 		$title = null;
+		$prc = PeriodicRelatedChanges::getManager();
 
 		foreach ( $cellIter as $cell ) {
 			$key = $cellIter->key();
@@ -234,53 +291,35 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			}
 
 			if ( $key === "B" ) {
-				$catVal = $cell->getValue();
+                $title = $this->parseTitleCell( $cell->getValue() );
+                if ( is_array( $title ) ) {
+                    return $title;
+                }
+                continue;
+            }
 
-				try {
-					$title = Title::newFromTextThrow( $catVal, NS_CATEGORY );
-				} catch ( MWException $e ) {
-					return [ $this->msg(
-						'periodic-related-changes-bad-title', $e->getMessage()
-					)->text() ];
-				}
+            $user = $this->parseUserCell( $cell->getValue() );
+            if ( $user === null ) {
+                continue;
+            }
+            if ( !( $user instanceof User ) ) {
+                $errors[] = $user;
+                continue;
+            }
 
-				if ( !$title->exists() ) {
-					return [ $this->msg(
-						'periodic-related-changes-title-not-exist', $title
-					)->text() ];
-				}
-				continue;
-			}
-
-			$userVal = $cell->getValue();
-			if ( !$userVal ) {
-				continue;
-			}
-
-			$user = User::newFromName( $userVal );
-			if ( $user->loadFromDatabase() === false
-				 && strstr( $userVal, '@' ) !== false ) {
-				$user = $this->findUserByEmail( $userVal );
-				if ( !$user ) {
-					$errors[] = $this->msg(
-						'periodic-related-changes-no-matching-email', $userVal
-					)->text();
-					continue;
-				}
-			}
-
-			if ( !$user ) {
-				$errors[] = $this->msg(
-					'periodic-related-changes-no-user', $userVal
-				)->text();
-				continue;
-			}
-
-			if ( !$prc->add( $user, $title ) ) {
+            try {
+                !$prc->add( $user, $title );
+            } catch ( Exception $e ) {
 				$errors[] = $this->msg(
 					"periodic-related-changes-add-fail", $user, $title
 				);
+                continue;
 			}
+
+            $this->getOutput()->addWikiMsg(
+                "periodic-related-changes-add-fail", $user, $title
+            );
+
 		}
 		return $errors;
 	}
