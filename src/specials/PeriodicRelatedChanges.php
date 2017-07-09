@@ -164,7 +164,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * @return User|null first one found
 	 */
 	protected function findUserByEmail( $email ) {
-		$db = wfGetDB( DB_REPLICA );
+		$db = wfGetDB( DB_SLAVE );
 		$id = $db->selectField( 'user', 'user_id', [ 'user_email' => $email ] );
 
 		return $id ? User::newFromId( $id ) : null;
