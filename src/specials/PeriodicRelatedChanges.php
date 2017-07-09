@@ -269,6 +269,27 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
         return $user;
     }
 
+    /**
+     * Add a watch
+     * @param User $user who is watching
+     * @param Title $title being watched
+     * @return null|string string if an error
+     */
+    protected function addWatch( User $user, Title $title ) {
+        $watch = $prc->get( $user, $title );
+        if ( $watch->exists() ) {
+            return $this->msg(
+                "periodic-related-changes-already-watches", $user, $title
+            );
+        }
+        try {
+            !$prc->add( $user, $title );
+        } catch ( Exception $e ) {
+            return $this->msg(
+                "periodic-related-changes-add-fail", $user, $title
+            );
+        }
+    }
 	/**
 	 * Parse a single row
 	 * format is:
@@ -307,14 +328,11 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
                 continue;
             }
 
-            try {
-                !$prc->add( $user, $title );
-            } catch ( Exception $e ) {
-				$errors[] = $this->msg(
-					"periodic-related-changes-add-fail", $user, $title
-				);
-                continue;
-			}
+            $error = $this->addWatch( $user, $title );
+            if ( $error !== false ) {
+                $errors[] = $error;
+                contineue;
+            }
 
             $this->getOutput()->addWikiMsg(
                 "periodic-related-changes-add-fail", $user, $title
