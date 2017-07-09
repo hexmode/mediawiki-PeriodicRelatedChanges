@@ -220,22 +220,22 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * @param string $catval value from cell
 	 * @return array|Title array with errror if there are problems
 	 */
-    protected function parseTitleCell( $catVal ) {
-        try {
-            $title = Title::newFromTextThrow( $catVal, NS_CATEGORY );
-        } catch ( MWException $e ) {
-            return [ $this->msg(
-                'periodic-related-changes-bad-title', $e->getMessage()
-            )->text() ];
-        }
+	protected function parseTitleCell( $catVal ) {
+		try {
+			$title = Title::newFromTextThrow( $catVal, NS_CATEGORY );
+		} catch ( MWException $e ) {
+			return [ $this->msg(
+				'periodic-related-changes-bad-title', $e->getMessage()
+			)->text() ];
+		}
 
-        if ( !$title->exists() ) {
-            return [ $this->msg(
-                'periodic-related-changes-title-not-exist', $title
-            )->text() ];
-        }
-        return $title;
-    }
+		if ( !$title->exists() ) {
+			return [ $this->msg(
+				'periodic-related-changes-title-not-exist', $title
+			)->text() ];
+		}
+		return $title;
+	}
 
 	/**
 	 * Parse a single row
@@ -244,53 +244,53 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * @param string $userVal value from cell
 	 * @return null|array|User array with errror if there are problems
 	 */
-    protected function parseUserCell( $userVal ) {
-        if ( !$userVal ) {
-            return null;
-        }
+	protected function parseUserCell( $userVal ) {
+		if ( !$userVal ) {
+			return null;
+		}
 
-        $user = User::newFromName( $userVal );
-        if ( $user->loadFromDatabase() === false
-             && strstr( $userVal, '@' ) !== false ) {
-            $user = $this->findUserByEmail( $userVal );
-            if ( !$user ) {
-                return $this->msg(
-                    'periodic-related-changes-no-matching-email', $userVal
-                )->text();
-            }
-        }
+		$user = User::newFromName( $userVal );
+		if ( $user->loadFromDatabase() === false
+			 && strstr( $userVal, '@' ) !== false ) {
+			$user = $this->findUserByEmail( $userVal );
+			if ( !$user ) {
+				return $this->msg(
+					'periodic-related-changes-no-matching-email', $userVal
+				)->text();
+			}
+		}
 
-        if ( !$user ) {
-            return $this->msg(
-                'periodic-related-changes-no-user', $userVal
-            )->text();
-        }
+		if ( !$user ) {
+			return $this->msg(
+				'periodic-related-changes-no-user', $userVal
+			)->text();
+		}
 
-        return $user;
-    }
+		return $user;
+	}
 
-    /**
-     * Add a watch
-     * @param User $user who is watching
-     * @param Title $title being watched
-     * @return null|string string if an error
-     */
-    protected function addWatch( User $user, Title $title ) {
+	/**
+	 * Add a watch
+	 * @param User $user who is watching
+	 * @param Title $title being watched
+	 * @return null|string string if an error
+	 */
+	protected function addWatch( User $user, Title $title ) {
 		$prc = PeriodicRelatedChanges::getManager();
-        $watch = $prc->get( $user, $title );
-        if ( $watch->exists() ) {
-            return $this->msg(
-                "periodic-related-changes-already-watches", $user, $user->getEmail(), $title
-            );
-        }
-        try {
-            !$prc->add( $user, $title );
-        } catch ( Exception $e ) {
-            return $this->msg(
-                "periodic-related-changes-add-fail", $user, $user->getEmail(), $title
-            );
-        }
-    }
+		$watch = $prc->get( $user, $title );
+		if ( $watch->exists() ) {
+			return $this->msg(
+				"periodic-related-changes-already-watches", $user, $user->getEmail(), $title
+			);
+		}
+		try {
+			!$prc->add( $user, $title );
+		} catch ( Exception $e ) {
+			return $this->msg(
+				"periodic-related-changes-add-fail", $user, $user->getEmail(), $title
+			);
+		}
+	}
 
 	/**
 	 * Parse a single row
@@ -313,31 +313,31 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			}
 
 			if ( $key === "B" ) {
-                $title = $this->parseTitleCell( $cell->getValue() );
-                if ( is_array( $title ) ) {
-                    return $title;
-                }
-                continue;
-            }
+				$title = $this->parseTitleCell( $cell->getValue() );
+				if ( is_array( $title ) ) {
+					return $title;
+				}
+				continue;
+			}
 
-            $user = $this->parseUserCell( $cell->getValue() );
-            if ( $user === null ) {
-                continue;
-            }
-            if ( !( $user instanceof User ) ) {
-                $errors[] = $user;
-                continue;
-            }
+			$user = $this->parseUserCell( $cell->getValue() );
+			if ( $user === null ) {
+				continue;
+			}
+			if ( !( $user instanceof User ) ) {
+				$errors[] = $user;
+				continue;
+			}
 
-            $error = $this->addWatch( $user, $title );
-            if ( $error !== false ) {
-                $errors[] = $error;
-                continue;
-            }
+			$error = $this->addWatch( $user, $title );
+			if ( $error !== false ) {
+				$errors[] = $error;
+				continue;
+			}
 
-            $this->getOutput()->addWikiMsg(
-                "periodic-related-changes-add-fail", $user, $title
-            );
+			$this->getOutput()->addWikiMsg(
+				"periodic-related-changes-add-fail", $user, $title
+			);
 
 		}
 		return $errors;
@@ -347,10 +347,11 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * The actual form. Cribbed from SpecialImport.
 	 */
 	public function showForm() {
-        $filename = $this->getRequest()->getVal( "fileimport", "" );
-        $comment = $this->getRequest()->getVal(
-            "log-comment", $this->msg( "periodic-related-changes-import-log-msg" )
-        );
+		$filename = $this->getRequest()->getUpload( "fileimport" )->getName();
+		$comment = $this->getRequest()->getVal(
+			"log-comment", $this->msg( "periodic-related-changes-import-log-msg" )
+		);
+
 		$action = $this->getPageTitle()->getLocalURL( [ 'action' => 'submit' ] );
 		$user = $this->getUser();
 		$this->getOutput()->addHTML(
@@ -372,8 +373,8 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			"<tr><td class='mw-label'>" .
 			Xml::label( $this->msg( 'import-upload-filename' )->text(), 'fileimport' ) .
 			"</td><td class='mw-input'>" .
-			Html::input( 'fileimport', $filename, 'file', [ 'id' => 'import' ] ) . ' ' .
-			"</td></tr><tr><td class='mw-label'>" .
+			Html::input( 'fileimport', $filename, 'file', [ 'id' => 'fileimport' ] ) .
+			" </td></tr><tr><td class='mw-label'>" .
 			Xml::label( $this->msg( 'import-comment' )->text(), 'mw-import-comment' ) .
 			"</td><td class='mw-input'>" .
 			Xml::input(
@@ -392,7 +393,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * List out all the users who have watches.
 	 * @return boolean false if no permission or not requested
 	 */
-	public function  listUsers() {
+	public function listUsers() {
 		if ( $this->getRequest()->getVal( "listusers" ) !== "true" ) {
 			return false;
 		}
