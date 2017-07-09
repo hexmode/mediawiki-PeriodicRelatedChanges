@@ -276,20 +276,22 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
      * @return null|string string if an error
      */
     protected function addWatch( User $user, Title $title ) {
+		$prc = PeriodicRelatedChanges::getManager();
         $watch = $prc->get( $user, $title );
         if ( $watch->exists() ) {
             return $this->msg(
-                "periodic-related-changes-already-watches", $user, $title
+                "periodic-related-changes-already-watches", $user, $user->getEmail(), $title
             );
         }
         try {
             !$prc->add( $user, $title );
         } catch ( Exception $e ) {
             return $this->msg(
-                "periodic-related-changes-add-fail", $user, $title
+                "periodic-related-changes-add-fail", $user, $user->getEmail(), $title
             );
         }
     }
+
 	/**
 	 * Parse a single row
 	 * format is:
@@ -303,7 +305,6 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		$cellIter->setIterateOnlyExistingCells( true );
 		$errors = [];
 		$title = null;
-		$prc = PeriodicRelatedChanges::getManager();
 
 		foreach ( $cellIter as $cell ) {
 			$key = $cellIter->key();
@@ -331,7 +332,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
             $error = $this->addWatch( $user, $title );
             if ( $error !== false ) {
                 $errors[] = $error;
-                contineue;
+                continue;
             }
 
             $this->getOutput()->addWikiMsg(
@@ -346,6 +347,10 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * The actual form. Cribbed from SpecialImport.
 	 */
 	public function showForm() {
+        $filename = $this->getRequest()->getVal( "fileimport", "" );
+        $comment = $this->getRequest()->getVal(
+            "log-comment", $this->msg( "periodic-related-changes-import-log-msg" )
+        );
 		$action = $this->getPageTitle()->getLocalURL( [ 'action' => 'submit' ] );
 		$user = $this->getUser();
 		$this->getOutput()->addHTML(
@@ -367,12 +372,12 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			"<tr><td class='mw-label'>" .
 			Xml::label( $this->msg( 'import-upload-filename' )->text(), 'fileimport' ) .
 			"</td><td class='mw-input'>" .
-			Html::input( 'fileimport', '', 'file', [ 'id' => 'import' ] ) . ' ' .
+			Html::input( 'fileimport', $filename, 'file', [ 'id' => 'import' ] ) . ' ' .
 			"</td></tr><tr><td class='mw-label'>" .
 			Xml::label( $this->msg( 'import-comment' )->text(), 'mw-import-comment' ) .
 			"</td><td class='mw-input'>" .
 			Xml::input(
-				'log-comment', 50, $this->msg( "periodic-related-changes-import-log-msg" ),
+				'log-comment', 50, $comment,
 				[ 'id' => 'mw-import-comment', 'type' => 'text' ]
 			) . "</td><td></td><td class='mw-submit'>" .
 			Xml::submitButton( $this->msg( 'uploadbtn' )->text() ) .
@@ -387,7 +392,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * List out all the users who have watches.
 	 * @return boolean false if no permission or not requested
 	 */
-	public function listUsers() {
+	public function  listUsers() {
 		if ( $this->getRequest()->getVal( "listusers" ) !== "true" ) {
 			return false;
 		}

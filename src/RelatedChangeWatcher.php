@@ -24,6 +24,7 @@ use Page;
 use ResultWrapper;
 use Title;
 use User;
+use WikiPage;
 
 class RelatedChangeWatcher {
 	protected $user;
@@ -46,6 +47,16 @@ class RelatedChangeWatcher {
 		$this->table = "periodic_related_change";
 		$this->exists = null;
 	}
+
+    /**
+     * Constructor if you have a title.
+     *
+	 * @param User $user who is watching
+	 * @param Title $title what they're watching
+	 */
+    public static function newFromUserTitle( User $user, Title $title ) {
+        return new self( $user, WikiPage::factory( $title ) );
+    }
 
 	/**
 	 * Get data ready for row query and insert

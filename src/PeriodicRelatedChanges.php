@@ -44,7 +44,7 @@ class PeriodicRelatedChanges {
      * @return RelatedChangeWatcher object
      */
     public function get( User $user, Title $title ) {
-        return new RelatedChangeWatcher( $user, $page );
+        return RelatedChangeWatcher::newFromUserTitle( $user, $title );
     }
 
 	/**
