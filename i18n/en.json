@@ -17,6 +17,7 @@
 	"periodic-related-changes-error": "Error",
 	"periodic-related-changes-fullreport": "All related changes for $1 over the last {{PLURAL:$2|day|$2 days}}",
 	"periodic-related-changes-link-to-email": "<small class='noprint'>([{{fullurl:Special:PeriodicRelatedChanges/$1|sendemail}} email this to the user])</small>",
+	"periodic-related-changes-show-full-report": "Show full report",
 	"periodic-related-changes-getuser": "fetch",
 	"periodic-related-changes-link-from": "== Pages that are linked from [[:$1]] ==",
 	"periodic-related-changes-link-to": "== Pages that link to [[:$1]] ==",
@@ -24,9 +25,9 @@
 	"periodic-related-changes-page-created": "* [[:$1]]: created",
 	"periodic-related-changes-lookup-user": "User to check",
 	"periodic-related-changes-invalid-form-data": "invalid form data",
-	"periodic-related-changes-lookupuser": "[[Special:PeriodicRelatedChanges|Look up another user]]",
+	"periodic-related-changes-lookup-another-user": "[[Special:PeriodicRelatedChanges|Look up another user]]",
 	"periodic-related-changes-no-user-title": "$1 does not have [[:$2]] on {{GENDER:$1|his|her|their}} related changes watchlists.",
-	"periodic-related-changes-no-user-title-days": "There have not been any related changes for [[:$2]] in the past {{PLURAL:$3|day|$3 days}}.\n\nSee [{{fullurl:Special:RecentChangesLinked/$2|days=30}} the related changes for $2 in the past 30 days].",
+	"periodic-related-changes-no-user-title-days": "There have not been any related changes for [[:$2]] in the past {{PLURAL:$3|day|$3 days}}.",
 	"periodic-related-changes-nosuchtitle": "No such title",
 	"periodic-related-changes-nosuchuser": "No such user",
 	"periodic-related-changes-nowatches": "Currently, there are no related change watches for $1",
@@ -57,5 +58,6 @@
 	"periodic-related-changes-no-user": "$1: No such user.",
 	"periodic-related-changes-already-watches": "$1 ($2) is alreading watching $3.",
 	"periodic-related-changes-ignore-errors": "Ignore any problems and import anyway",
-	"periodic-related-changes-import-no-data": "<span class='error'>No data found. Is this a valid document?</span>"
+    "periodic-related-changes-import-no-data": "<span class='error'>No data found. Is this a valid document?</span>",
+	"periodic-related-changes-change-period": "Change observation period"
 }

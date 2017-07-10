@@ -69,7 +69,9 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		$this->canChangeSelf
 			= $this->getUser()->isAllowed( 'periodic-related-changes' );
 
-		$this->days = $this->getRequest()->getVal( "days", 7 );
+		$this->days = $this->getRequest()
+                    ->getVal( "days", $this->getRequest()
+                              ->getVal( "wpdays", 7 ) );
 	}
 
 	/**
@@ -451,23 +453,56 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		return true;
 	}
 
+    /**
+     * Header for the non-printable full report
+	 * @param User $user report is for
+     */
+    protected function showFullReportHeader( User $user ) {
+        $out = $this->getOutput();
+        if ( $user->getEmail() ) {
+			$out->addWikiMsg( "periodic-related-changes-link-to-email", $user );
+		}
+        $formDescriptor = [
+            'fullreport' => [
+                'type' => "hidden",
+                'value' => 1
+            ],
+			'days' => [
+				'label-message' =>
+				wfMessage( 'periodic-related-changes-change-period' ),
+				'type'          => 'text',
+                'value'         => $this->days,
+                'size'          => 3,
+                'width'          => 3,
+				'autofocus'     => true
+			] ];
+
+		$form = HTMLForm::factory( 'ooui', $formDescriptor, $this->getContext(),
+								   'periodic-related-changes' );
+
+        $form->setMethod( "GET" );
+		$form->setFormIdentifier( __METHOD__ );
+		$form->setSubmitCallback( [ $this, 'findUserSubmit' ] );
+		$form->show();
+
+   }
 	/**
 	 * Show the full report for all changes
 	 * @param User $user report is for
 	 * @return bool true if report was shown
 	 */
 	public function showFullReport( User $user ) {
-		$doFullReport = $this->getRequest()->getCheck( "fullreport" );
+		$doFullReport = $this->getRequest()->getCheck( "fullreport" )
+                      || $this->getRequest()->getCheck( "wpfullreport" );
 		if ( !$user || !$doFullReport ) {
 			return false;
 		}
 
 		$out = $this->getOutput();
-		if (
-			!$this->getRequest()->getCheck( "printable" ) && $user->getEmail()
-		) {
-			$out->addWikiMsg( "periodic-related-changes-link-to-email", $user );
-		}
+		if ( !$this->getRequest()->getCheck( "printable" ) ) {
+            $this->showFullReportHeader( $user );
+        }
+
 		foreach (
 			PeriodicRelatedChanges::getManager()->getCurrentWatches( $user )
 			as $watch
@@ -489,14 +524,18 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 */
 	public function showRelatedChanges( User $user, $page ) {
 		$out = $this->getOutput();
-		try {
-			$title = Title::newFromTextThrow( $page );
-		} catch ( MalFormedTitleException $ex ) {
-			$out->addWikiMsg(
-				"periodic-related-changes-invalid-title", $page, $ex
-			);
-			return true;
-		}
+        if ( $page instanceof Title ) {
+            $title = $page;
+        } else {
+            try {
+                $title = Title::newFromTextThrow( $page );
+            } catch ( MalFormedTitleException $ex ) {
+                $out->addWikiMsg(
+                    "periodic-related-changes-invalid-title", $page, $ex
+                );
+                return true;
+            }
+        }
 		$watches = RelatedChangeWatchList::newFromUser( $user );
 		if ( !$watches->hasTitle( $title ) ) {
 			$out->addWikiMsg(
@@ -696,6 +735,30 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		}
 	}
 
+    /**
+     * Provide subtitle links on manage watchlist
+     * @return string
+     */
+    protected function getManageWatchListSubtitle( User $user ) {
+        $titleTxt = "PeriodicRelatedChanges/$user";
+		$thisTitle = Title::newFromText( $titleTxt, NS_SPECIAL );
+		$action = [];
+
+		if ( $this->canChangeAnyUser ) {
+            $action[] = Linker::link(
+                $thisTitle,
+                wfMessage( "periodic-related-changes-lookup-another-user" )
+            );
+            $action[] = Linker::link(
+                $thisTitle,
+                wfMessage( "periodic-related-changes-show-full-report" ),
+                [], [ 'fullreport' => 1 ]
+            );
+		}
+
+        return $this->getLanguage()->commaList( $action );
+	}
+
 	/**
 	 * Manage the watchlist for this user
 	 * @param User $user to list watches for
@@ -703,11 +766,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 */
 	public function manageWatchList( User $user ) {
 		$out = $this->getOutput();
-		if ( $this->canChangeAnyUser ) {
-			$out->setSubTitle(
-				wfMessage( "periodic-related-changes-lookupuser" )
-			);
-		}
+        $out->setSubTitle( $this->getManageWatchListSubtitle( $user ) );
 
 		$this->addTitleFormHandler();
 		$this->listAndRemoveTitlesFormHandler();
