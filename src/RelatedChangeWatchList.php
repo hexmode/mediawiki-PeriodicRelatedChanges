@@ -1,7 +1,9 @@
 <?php
 
-/*
- * Copyright (C) 2016  Mark A. Hershberger
+/**
+ * Handle the user's list of watches
+ *
+ * Copyright (C) 2016, 2017  Mark A. Hershberger
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,6 +46,20 @@ class RelatedChangeWatchList extends ResultWrapper {
 	}
 
 	/**
+	 * Returns an array of the current result
+	 *
+	 * @return array|boolean
+	 */
+	public function current() {
+		$cur = parent::current();
+		$res = false;
+		if ( $cur !== false ) {
+			return RelatedChangeWatcher::newFromRow( $cur );
+		}
+		return $res;
+	}
+
+	/**
 	 * Return an iterable list of watches for a user
 	 *
 	 * @param User $user whose related watches to fetch.
@@ -52,7 +68,10 @@ class RelatedChangeWatchList extends ResultWrapper {
 	public static function newFromUser( User $user ) {
 		$dbr = wfGetDB( DB_SLAVE );
 		$res = $dbr->select( 'periodic_related_change',
-							 [ 'wc_page as page', 'wc_timestamp as timestamp' ],
+							 [
+								 'wc_page as page', 'wc_timestamp as timestamp',
+								 'wc_user as user'
+							 ],
 							 [ 'wc_user' => $user->getId() ],
 							 __METHOD__ );
 
@@ -67,30 +86,15 @@ class RelatedChangeWatchList extends ResultWrapper {
 	 * @return bool
 	 */
 	public function hasTitle( Title $title ) {
-        $obj = $this->fetchObject();
-        while( $obj !== false ) {
-            if ( $title->equals( Title::newFromId( $obj->page ) ) ) {
-                $this->rewind();
-                return true;
-            }
-            $obj = $this->fetchObject();
-        }
-        return false;
-	}
-
-	/**
-	 * Returns an array of the current result
-	 *
-	 * @return array|boolean
-	 */
-	public function current() {
-		$cur = parent::current();
-		$res = false;
-		if ( $cur !== false ) {
-			$res = [ 'page' => WikiPage::newFromID( $cur->page ),
-					 'timestamp' => $cur->timestamp ];
+		$obj = $this->fetchObject();
+		while( $obj !== false ) {
+			if ( $title->equals( Title::newFromId( $obj->page ) ) ) {
+				$this->rewind();
+				return true;
+			}
+			$obj = $this->fetchObject();
 		}
-		return $res;
+		return false;
 	}
 
 	/**
@@ -141,8 +145,8 @@ class RelatedChangeWatchList extends ResultWrapper {
 
 		foreach ( $watches as $watch ) {
 			$title = Title::newFromText(
-                $watch->rc_title, $watch->rc_namespace
-            )->getPrefixedText();
+				$watch->rc_title, $watch->rc_namespace
+			)->getPrefixedText();
 			$rev = $watch->rc_id;
 
 			if ( !isset( $change[$title] ) ) {
@@ -187,11 +191,11 @@ class RelatedChangeWatchList extends ResultWrapper {
 		}
 		$to = $user->getEmail();
 
-        if ( !$to ) {
-            throw new MWException( "No email for $user.\n" );
-        }
+		if ( !$to ) {
+			throw new MWException( "No email for $user.\n" );
+		}
 		$thisPage = Title::newFromText( "PeriodicRelatedChanges/$user", NS_SPECIAL );
-        $req = RequestContext::newExtraneousContext(
+		$req = RequestContext::newExtraneousContext(
 			$thisPage,
 			[
 				"fullreport" => true,

@@ -1,7 +1,9 @@
 <?php
 
-/*
- * Copyright (C) 2016  Mark A. Hershberger
+/**
+ * Keeps track of related changes.
+ *
+ * Copyright (C) 2016, 2017  Mark A. Hershberger
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,23 +42,67 @@ class RelatedChangeWatcher {
 	 *
 	 * @param User $user who is watching
 	 * @param Page $page what they're watching
+	 * @param int $timestamp
 	 */
-	public function __construct( User $user, Page $page ) {
+	public function __construct( User $user, Page $page, $timestamp = null ) {
 		$this->user = $user;
 		$this->page = $page;
+		$this->timestamp = $timestamp;
 		$this->table = "periodic_related_change";
 		$this->exists = null;
 	}
 
-    /**
-     * Constructor if you have a title.
-     *
+	/**
+	 * Constructor if you have a title.
+	 *
 	 * @param User $user who is watching
 	 * @param Title $title what they're watching
+	 * @return RelatedChangeWatcher
 	 */
-    public static function newFromUserTitle( User $user, Title $title ) {
-        return new self( $user, WikiPage::factory( $title ) );
-    }
+	public static function newFromUserTitle( User $user, Title $title ) {
+		return new self( $user, WikiPage::factory( $title ) );
+	}
+
+	/**
+	 * Construct from a form id.
+	 *
+	 * @param string $formID that we're given
+	 * @param string $prefix defaults to "watch"
+	 * @return RelatedChangeWatcher
+	 */
+	public static function newFromFormID( $formID, $prefix = "watch" ) {
+		list( $watch, $userId, $titleNS, $title ) = explode( "-", $formID, 4 );
+		if ( $watch === $prefix ) {
+			return self::newFromUserTitle(
+				User::newFromID( $userId ), Title::newFromTextThrow( $title, $titleNS )
+			);
+		}
+	}
+
+	/**
+	 * Construct from a DB row of RelatedChangeWatchList
+	 * @param StdObj result
+	 * @return RelatedChangeWatcher
+	 */
+	public static function newFromRow( $row ) {
+		return new self(
+			User::newFromID( $row->user ), WikiPage::newFromID( $row->page ),
+			$row->timestamp
+		);
+	}
+
+	/**
+	 * Get an identifier for a form.
+	 * @param string $prefix defaults to "watch"
+	 * @return string
+	 */
+	public function getFormID( $prefix = "watch" ) {
+		$title = $this->getTitle();
+		return implode(
+			"-", [ $prefix, $this->user->getId(), $title->getNamespace(),
+				   $title->getDBkey() ]
+		);
+	}
 
 	/**
 	 * Get data ready for row query and insert
@@ -128,6 +174,14 @@ class RelatedChangeWatcher {
 	}
 
 	/**
+	 * Get the corresponding Title object.
+	 * @return Title
+	 */
+	public function getTitle() {
+		return $this->page->getTitle();
+	}
+
+	/**
 	 * Limit the query in time
 	 * @param int $days days to look at
 	 */
@@ -152,7 +206,9 @@ class RelatedChangeWatcher {
 		if ( is_integer( $this->limit ) ) {
 			$changes->setLimit( $this->limit );
 		}
-		$changes->addCond( "rc_timestamp > now() - " . abs( $this->sinceDays ) * 24 * 3600 );
+		$changes->addCond(
+			"rc_timestamp > now() - " . abs( $this->sinceDays ) * 24 * 3600
+		);
 		return $changes->getResult();
 	}
 
