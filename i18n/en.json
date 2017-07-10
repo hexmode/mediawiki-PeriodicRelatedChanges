@@ -58,6 +58,7 @@
 	"periodic-related-changes-no-user": "$1: No such user.",
 	"periodic-related-changes-already-watches": "$1 ($2) is alreading watching $3.",
 	"periodic-related-changes-ignore-errors": "Ignore any problems and import anyway",
-    "periodic-related-changes-import-no-data": "<span class='error'>No data found. Is this a valid document?</span>",
+	"periodic-related-changes-import-no-data": "<span class='error'>No data found. Is this a valid document?</span>",
+	"periodic-related-changes-list-watch-groups": "List watch groups",
 	"periodic-related-changes-change-period": "Change observation period"
 }

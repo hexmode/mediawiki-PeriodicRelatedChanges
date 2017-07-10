@@ -70,8 +70,8 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			= $this->getUser()->isAllowed( 'periodic-related-changes' );
 
 		$this->days = $this->getRequest()
-                    ->getVal( "days", $this->getRequest()
-                              ->getVal( "wpdays", 7 ) );
+					->getVal( "days", $this->getRequest()
+							  ->getVal( "wpdays", 7 ) );
 	}
 
 	/**
@@ -107,6 +107,10 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			return;
 		}
 
+		if ( $this->listWatchGroups() ) {
+			return;
+		}
+
 		if ( $this->importUsers() ) {
 			return;
 		}
@@ -135,12 +139,45 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	}
 
 	/**
+	 * List all PRCs, grouping users into lists for each one
+	 * @return boolean false if no permission or not requested
+	 */
+	protected function listWatchGroups() {
+		$request = $this->getRequest();
+		$out = $this->getOutput();
+		if (
+			!$request->getCheck( "listwatchgroups" ) ||
+			!$this->canChangeAnyUser
+		) {
+			return false;
+		}
+
+		$prc = PeriodicRelatedChanges::getManager();
+		$groups = $prc->getWatchGroups();
+
+		if ( $groups->count() === 0 ) {
+			$out->addWikiMsg( "periodic-related-changes-no-users" );
+			return true;
+		}
+
+		$this->reallyListWatchGroups();
+
+		return true;
+	}
+
+	/**
+	 * Permissions have been checked.  Do the listing.
+	 */
+	protected function reallyListWatchGroups() {
+	}
+
+	/**
 	 * Import users and their watches.
 	 * @return boolean false if no permission or not requested
 	 */
-	public function importUsers() {
+	protected function importUsers() {
 		$request = $this->getRequest();
-		if ( $request->getVal( "importusers" ) !== "true" ) {
+		if ( !$request->getCheck( "importusers" ) ) {
 			return false;
 		}
 		$user = $this->getUser();
@@ -346,9 +383,9 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	}
 
 	/**
-	 * The actual form. Cribbed from SpecialImport.
+	 * The actual import form. Cribbed from SpecialImport.
 	 */
-	public function showForm() {
+	protected function showForm() {
 		$filename = $this->getRequest()->getUpload( "fileimport" )->getName();
 		$comment = $this->getRequest()->getVal(
 			"log-comment", $this->msg( "periodic-related-changes-import-log-msg" )
@@ -453,34 +490,34 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		return true;
 	}
 
-    /**
-     * Header for the non-printable full report
+	/**
+	 * Header for the non-printable full report
 	 * @param User $user report is for
-     */
-    protected function showFullReportHeader( User $user ) {
-        $out = $this->getOutput();
-        if ( $user->getEmail() ) {
+	 */
+	protected function showFullReportHeader( User $user ) {
+		$out = $this->getOutput();
+		if ( $user->getEmail() ) {
 			$out->addWikiMsg( "periodic-related-changes-link-to-email", $user );
 		}
-        $formDescriptor = [
-            'fullreport' => [
-                'type' => "hidden",
-                'value' => 1
-            ],
+		$formDescriptor = [
+			'fullreport' => [
+				'type' => "hidden",
+				'value' => 1
+			],
 			'days' => [
 				'label-message' =>
 				wfMessage( 'periodic-related-changes-change-period' ),
 				'type'          => 'text',
-                'value'         => $this->days,
-                'size'          => 3,
-                'width'          => 3,
+				'value'         => $this->days,
+				'size'          => 3,
+				'width'          => 3,
 				'autofocus'     => true
 			] ];
 
 		$form = HTMLForm::factory( 'ooui', $formDescriptor, $this->getContext(),
 								   'periodic-related-changes' );
 
-        $form->setMethod( "GET" );
+		$form->setMethod( "GET" );
 		$form->setFormIdentifier( __METHOD__ );
 		$form->setSubmitCallback( [ $this, 'findUserSubmit' ] );
 		$form->show();
@@ -493,15 +530,15 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 */
 	public function showFullReport( User $user ) {
 		$doFullReport = $this->getRequest()->getCheck( "fullreport" )
-                      || $this->getRequest()->getCheck( "wpfullreport" );
+					  || $this->getRequest()->getCheck( "wpfullreport" );
 		if ( !$user || !$doFullReport ) {
 			return false;
 		}
 
 		$out = $this->getOutput();
 		if ( !$this->getRequest()->getCheck( "printable" ) ) {
-            $this->showFullReportHeader( $user );
-        }
+			$this->showFullReportHeader( $user );
+		}
 
 		foreach (
 			PeriodicRelatedChanges::getManager()->getCurrentWatches( $user )
@@ -524,18 +561,18 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 */
 	public function showRelatedChanges( User $user, $page ) {
 		$out = $this->getOutput();
-        if ( $page instanceof Title ) {
-            $title = $page;
-        } else {
-            try {
-                $title = Title::newFromTextThrow( $page );
-            } catch ( MalFormedTitleException $ex ) {
-                $out->addWikiMsg(
-                    "periodic-related-changes-invalid-title", $page, $ex
-                );
-                return true;
-            }
-        }
+		if ( $page instanceof Title ) {
+			$title = $page;
+		} else {
+			try {
+				$title = Title::newFromTextThrow( $page );
+			} catch ( MalFormedTitleException $ex ) {
+				$out->addWikiMsg(
+					"periodic-related-changes-invalid-title", $page, $ex
+				);
+				return true;
+			}
+		}
 		$watches = RelatedChangeWatchList::newFromUser( $user );
 		if ( !$watches->hasTitle( $title ) ) {
 			$out->addWikiMsg(
@@ -631,6 +668,10 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 				[], [ 'listusers' => 'true' ] ),
 			Linker::link(
 				$thisTitle,
+				wfMessage( "periodic-related-changes-list-watch-groups" ),
+				[], [ 'listwatchgroups' => 'true' ] ),
+			Linker::link(
+				$thisTitle,
 				wfMessage( "periodic-related-changes-importusers" ),
 				[], [ 'importusers' => "true" ] )
 		];
@@ -639,16 +680,76 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	}
 
 	/**
-	 * Display the auto-complete form for a user
-	 *
-	 * @param string|bool $userName false if form is needed, username otherwise
-	 *
-	 * @return User|bool
+	 * Provide subtitle links on manage watchlist
+	 * @return string
 	 */
-	public function findUser( $userName ) {
+	protected function getManageWatchListSubtitle( User $user ) {
+		$titleTxt = "PeriodicRelatedChanges/$user";
+		$thisTitle = Title::newFromText( $titleTxt, NS_SPECIAL );
+		$action = [];
+
+		if ( $this->canChangeAnyUser ) {
+			$action = [
+				Linker::link(
+					$thisTitle,
+					wfMessage( "periodic-related-changes-lookup-another-user" ) ),
+				Linker::link(
+					$thisTitle,
+					wfMessage( "periodic-related-changes-list-watch-groups" ),
+					[], [ 'listwatchgroups' => 'true' ] ),
+				Linker::link(
+					$thisTitle,
+					wfMessage( "periodic-related-changes-show-full-report" ),
+					[], [ 'fullreport' => 1 ] )
+			];
+		}
+
+		return $this->getLanguage()->commaList( $action );
+	}
+
+	/**
+	 * Manage the watchlist for this user
+	 * @param User $user to list watches for
+	 * @return bool Did we show this?
+	 */
+	public function manageWatchList( User $user ) {
 		$out = $this->getOutput();
+		$out->setSubTitle( $this->getManageWatchListSubtitle( $user ) );
+
+		$this->addTitleFormHandler();
+		$this->listAndRemoveTitlesFormHandler();
+		return true;
+	}
+
+	/**
+	 * Redirect to the user's page if that is all their permissions allow.
+	 * @param string $userName
+	 * @return bool
+	 */
+	protected function maybeRedirectToOwnPage( $userName ) {
+		// If you can't edit just anyone's, you can only see your own.
+		if (
+			( $userName === false || !isset( $userName )
+			  || $userName !== $this->getUser()->getName() )
+			&& !$this->canChangeAnyUser
+			&& $this->getUser()->isAllowed( 'periodic-related-changes' )
+		) {
+			$this->getOutput()->redirect(
+				$this->getTitle()->getLinkURL() . "/"
+				. $this->getUser()->getName()
+			);
+			return true;
+		}
+	}
+
+	/**
+	 * Show the find user form
+	 * @param string $userName
+	 * @return bool
+	 */
+	protected function showFindUserForm( $userName ) {
 		if ( !$userName && $this->canChangeAnyUser ) {
-			$out->addModules( 'ext.periodicRelatedChanges.user' );
+			$this->getOutput()->addModules( 'ext.periodicRelatedChanges.user' );
 
 			$formDescriptor = [
 				'username' => [
@@ -668,20 +769,25 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			$this->addOtherActions();
 
 			$form->show();
-			return false;
+			return true;
+		}
+	}
+
+	/**
+	 * Display the auto-complete form for a user
+	 *
+	 * @param string|bool $userName false if form is needed, username otherwise
+	 *
+	 * @return User|bool
+	 */
+	public function findUser( $userName ) {
+		$out = $this->getOutput();
+		if ( $this->maybeRedirectToOwnPage( $userName ) ) {
+			return true;
 		}
 
-		// If you can't edit just anyone's, you can only see your own.
-		if ( !$this->canChangeAnyUser
-			 && $this->getUser()->isAllowed( 'periodic-related-changes' )
-			 && ( !isset( $userName )
-				  || $userName !== $this->getUser()->getName() )
-		) {
-			$out->redirect(
-				$this->getTitle()->getLinkURL() . "/"
-				. $this->getUser()->getName()
-			);
-			return false;
+		if ( $this->showFindUserForm( $userName ) ) {
+			return true;
 		}
 
 		$user = User::newFromName( trim( $userName, "/" ) );
@@ -733,44 +839,6 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 				$this->getTitle()->getLinkURL() . "/" . $formData['username']
 			);
 		}
-	}
-
-    /**
-     * Provide subtitle links on manage watchlist
-     * @return string
-     */
-    protected function getManageWatchListSubtitle( User $user ) {
-        $titleTxt = "PeriodicRelatedChanges/$user";
-		$thisTitle = Title::newFromText( $titleTxt, NS_SPECIAL );
-		$action = [];
-
-		if ( $this->canChangeAnyUser ) {
-            $action[] = Linker::link(
-                $thisTitle,
-                wfMessage( "periodic-related-changes-lookup-another-user" )
-            );
-            $action[] = Linker::link(
-                $thisTitle,
-                wfMessage( "periodic-related-changes-show-full-report" ),
-                [], [ 'fullreport' => 1 ]
-            );
-		}
-
-        return $this->getLanguage()->commaList( $action );
-	}
-
-	/**
-	 * Manage the watchlist for this user
-	 * @param User $user to list watches for
-	 * @return bool Did we show this?
-	 */
-	public function manageWatchList( User $user ) {
-		$out = $this->getOutput();
-        $out->setSubTitle( $this->getManageWatchListSubtitle( $user ) );
-
-		$this->addTitleFormHandler();
-		$this->listAndRemoveTitlesFormHandler();
-		return true;
 	}
 
 	/**
