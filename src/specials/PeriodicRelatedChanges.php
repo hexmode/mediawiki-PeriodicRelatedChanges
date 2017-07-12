@@ -160,15 +160,27 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			return true;
 		}
 
-		$this->reallyListWatchGroups();
+		foreach ( $groups as $group ) {
+			$out->addWikiMsg(
+				"periodic-related-changes-group-header", $group->getName()
+			);
+			$this->showGroupSubcribers( $group );
+		}
 
 		return true;
 	}
 
 	/**
-	 * Permissions have been checked.  Do the listing.
+	 * Show subscribers to this group
+	 * @param mixed $group the group
 	 */
-	protected function reallyListWatchGroups() {
+	protected function showGroupSubscribers( $group ) {
+		$out = $this->getOutput();
+		foreach ( $group->getSubscribers() as $user ) {
+			$out->addWikiMsg(
+				"periodic-related-changes-group-subscriber", $user
+			);
+		}
 	}
 
 	/**
@@ -256,7 +268,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * Parse a single row
 	 * format is:
 	 *    ID, CATEGORY, USER|EMAIL*
-	 * @param string $catval value from cell
+	 * @param string $catVal value from cell
 	 * @return array|Title array with errror if there are problems
 	 */
 	protected function parseTitleCell( $catVal ) {
@@ -521,8 +533,8 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		$form->setFormIdentifier( __METHOD__ );
 		$form->setSubmitCallback( [ $this, 'findUserSubmit' ] );
 		$form->show();
+	}
 
-   }
 	/**
 	 * Show the full report for all changes
 	 * @param User $user report is for
@@ -681,6 +693,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 
 	/**
 	 * Provide subtitle links on manage watchlist
+	 * @param User $user user so we can see permissions
 	 * @return string
 	 */
 	protected function getManageWatchListSubtitle( User $user ) {
@@ -723,7 +736,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 
 	/**
 	 * Redirect to the user's page if that is all their permissions allow.
-	 * @param string $userName
+	 * @param string $userName so we can get permissions
 	 * @return bool
 	 */
 	protected function maybeRedirectToOwnPage( $userName ) {
@@ -744,7 +757,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 
 	/**
 	 * Show the find user form
-	 * @param string $userName
+	 * @param string $userName If one is supplied, then use that.
 	 * @return bool
 	 */
 	protected function showFindUserForm( $userName ) {
