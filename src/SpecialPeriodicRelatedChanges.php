@@ -98,7 +98,9 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * @param string|null $userName parameters passed to the page
 	 */
 	public function execute( $userName = null ) {
-		parent::execute( $userName );
+		$this->setHeaders();
+		$this->checkPermissions();
+		$this->outputHeader();
 
 		/**
 		 * These first two should be their own special page.
@@ -980,6 +982,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		foreach ( $watchesToRemove as $watch ) {
 			$watch->remove();
 		}
+		$this->listAndRemoveTitlesFormHandler();
 		return true;
 	}
 }
