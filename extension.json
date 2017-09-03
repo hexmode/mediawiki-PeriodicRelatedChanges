@@ -17,11 +17,11 @@
 	},
 	"AutoloadClasses": {
 		"PeriodicRelatedChanges\\Hook": "src/Hook.php",
-		"PeriodicRelatedChanges\\MySpecialRelatedChanges": "src/specials/MySpecialRelatedChanges.php",
+		"PeriodicRelatedChanges\\MySpecialRelatedChanges": "src/MySpecialRelatedChanges.php",
 		"PeriodicRelatedChanges\\PeriodicRelatedChanges": "src/PeriodicRelatedChanges.php",
 		"PeriodicRelatedChanges\\RelatedChangeWatchList": "src/RelatedChangeWatchList.php",
 		"PeriodicRelatedChanges\\RelatedChangeWatcher": "src/RelatedChangeWatcher.php",
-		"PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges": "src/specials/PeriodicRelatedChanges.php"
+		"PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges": "src/SpecialPeriodicRelatedChanges.php"
 	},
 	"SpecialPages": {
 		"PeriodicRelatedChanges": "PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges"

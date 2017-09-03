@@ -16,6 +16,7 @@
 	"periodic-related-changes-email-body": "The following pages linked from [[:$1]] have been changed.  Each page is listed with the number of changes made to it and a link that shows the differences before and after the changes were made.",
 	"periodic-related-changes-error": "Error",
 	"periodic-related-changes-fullreport": "All related changes for $1 over the last {{PLURAL:$2|day|$2 days}}",
+	"periodic-related-changes-link-to-top": "[[Special:PeriodicRelatedChanges|top]]",
 	"periodic-related-changes-link-to-email": "<small class='noprint'>([{{fullurl:Special:PeriodicRelatedChanges/$1|sendemail}} email this to the user])</small>",
 	"periodic-related-changes-show-full-report": "Show full report",
 	"periodic-related-changes-getuser": "fetch",
