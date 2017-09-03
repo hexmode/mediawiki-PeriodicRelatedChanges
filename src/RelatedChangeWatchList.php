@@ -48,7 +48,7 @@ class RelatedChangeWatchList extends ResultWrapper {
 	/**
 	 * Returns an array of the current result
 	 *
-	 * @return array|boolean
+	 * @return array|bool
 	 */
 	public function current() {
 		$cur = parent::current();
@@ -87,7 +87,7 @@ class RelatedChangeWatchList extends ResultWrapper {
 	 */
 	public function hasTitle( Title $title ) {
 		$obj = $this->fetchObject();
-		while( $obj !== false ) {
+		while ( $obj !== false ) {
 			if ( $title->equals( Title::newFromId( $obj->page ) ) ) {
 				$this->rewind();
 				return true;
@@ -209,7 +209,7 @@ class RelatedChangeWatchList extends ResultWrapper {
 		$wgAllowHTMLEmail = true;
 
 		return UserMailer::send( MailAddress::newFromUser( $user ),
-						  new MailAddress($wgPasswordSender),
+						  new MailAddress( $wgPasswordSender ),
 						  $req->getOutput()->getPageTitle(),
 						  [
 							  "text" => "nothing here ... See the HTML part!",

@@ -42,7 +42,7 @@ class RelatedChangeWatcher {
 	 *
 	 * @param User $user who is watching
 	 * @param Page $page what they're watching
-	 * @param int $timestamp
+	 * @param int|null $timestamp of change
 	 */
 	public function __construct( User $user, Page $page, $timestamp = null ) {
 		$this->user = $user;
@@ -81,7 +81,7 @@ class RelatedChangeWatcher {
 
 	/**
 	 * Construct from a DB row of RelatedChangeWatchList
-	 * @param StdObj result
+	 * @param StdObj $row result
 	 * @return RelatedChangeWatcher
 	 */
 	public static function newFromRow( $row ) {

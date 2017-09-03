@@ -37,15 +37,15 @@ class PeriodicRelatedChanges {
 		return new self();
 	}
 
-    /**
-     * Get a RelatedChangeWatcher object
+	/**
+	 * Get a RelatedChangeWatcher object
 	 * @param User $user the user.
 	 * @param Title $title the page name.
-     * @return RelatedChangeWatcher object
-     */
-    public function get( User $user, Title $title ) {
-        return RelatedChangeWatcher::newFromUserTitle( $user, $title );
-    }
+	 * @return RelatedChangeWatcher object
+	 */
+	public function get( User $user, Title $title ) {
+		return RelatedChangeWatcher::newFromUserTitle( $user, $title );
+	}
 
 	/**
 	 * Add a watcher.
@@ -80,10 +80,10 @@ class PeriodicRelatedChanges {
 	 */
 	public function addWatch( User $user, Page $page ) {
 		$watch = new RelatedChangeWatcher( $user, $page );
-        if ( !$watch->exists() ) {
-            return $watch->save();
-        }
-        return false;
+		if ( !$watch->exists() ) {
+			return $watch->save();
+		}
+		return false;
 	}
 
 	/**
