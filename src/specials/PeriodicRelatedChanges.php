@@ -140,7 +140,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 
 	/**
 	 * List all PRCs, grouping users into lists for each one
-	 * @return boolean false if no permission or not requested
+	 * @return bool false if no permission or not requested
 	 */
 	protected function listWatchGroups() {
 		$request = $this->getRequest();
@@ -185,7 +185,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 
 	/**
 	 * Import users and their watches.
-	 * @return boolean false if no permission or not requested
+	 * @return bool false if no permission or not requested
 	 */
 	protected function importUsers() {
 		$request = $this->getRequest();
@@ -442,7 +442,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 
 	/**
 	 * List out all the users who have watches.
-	 * @return boolean false if no permission or not requested
+	 * @return bool false if no permission or not requested
 	 */
 	public function listUsers() {
 		if ( $this->getRequest()->getVal( "listusers" ) !== "true" ) {
@@ -858,24 +858,26 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * Here's the form for adding titles to the watch list.
 	 */
 	public function addTitleFormHandler() {
-		$formDescriptor = [
-			'addTitle' => [
-				'section'             => 'addtitle',
-				'label-message'       =>
-				wfMessage( 'periodic-related-changes-user-addtitle',
-						   [ $this->userSubject->getName() ]
-				),
-				'type'                => 'title',
-				'autofocus'           => true,
-				'validation-callback' => [ $this, 'addTitleValidate' ],
-			] ];
+		if ( $this->userSubject ) {
+			$formDescriptor = [
+				'addTitle' => [
+					'section'             => 'addtitle',
+					'label-message'       =>
+					wfMessage( 'periodic-related-changes-user-addtitle',
+							   [ $this->userSubject->getName() ]
+					),
+					'type'                => 'title',
+					'autofocus'           => true,
+					'validation-callback' => [ $this, 'addTitleValidate' ],
+				] ];
 
-		$form = HTMLForm::factory( 'ooui', $formDescriptor, $this->getContext(),
-								   'periodic-related-changes' );
-		$form->setFormIdentifier( __METHOD__ );
-		$form->setSubmitCallback( [ $this, 'addTitleSubmit' ] );
-		$form->setSubmitTextMsg( 'periodic-related-changes-addtitle' );
-		$form->show();
+			$form = HTMLForm::factory( 'ooui', $formDescriptor, $this->getContext(),
+									   'periodic-related-changes' );
+			$form->setFormIdentifier( __METHOD__ );
+			$form->setSubmitCallback( [ $this, 'addTitleSubmit' ] );
+			$form->setSubmitTextMsg( 'periodic-related-changes-addtitle' );
+			$form->show();
+		}
 	}
 
 	/**
@@ -935,24 +937,26 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	public function listAndRemoveTitlesFormHandler() {
 		$prc = PeriodicRelatedChanges::getManager();
 		$formDescriptor = [];
-		foreach ( $prc->getCurrentWatches( $this->userSubject ) as $watch ) {
-			$formDescriptor[$watch->getFormID()] = [
-				'section' => 'currentwatchlist',
-				'label'   => $watch->getTitle(),
-				'type'    => 'check',
-				'size'    => 30,
-			];
+		if ( $this->userSubject ) {
+			foreach ( $prc->getCurrentWatches( $this->userSubject ) as $watch ) {
+				$formDescriptor[$watch->getFormID()] = [
+					'section' => 'currentwatchlist',
+					'label'   => $watch->getTitle(),
+					'type'    => 'check',
+					'size'    => 30,
+				];
+			}
+			$form = HTMLForm::factory(
+				'ooui', $formDescriptor,
+				$this->getContext(),
+				"periodic-related-changes"
+			);
+			$form->setFormIdentifier( __METHOD__ );
+			$form->setSubmitDestructive();
+			$form->setSubmitCallback( [ $this, 'handleWatchRemoval' ] );
+			$form->setSubmitTextMsg( 'periodic-related-changes-removetitles' );
+			$form->show();
 		}
-		$form = HTMLForm::factory(
-			'ooui', $formDescriptor,
-			$this->getContext(),
-			"periodic-related-changes"
-		);
-		$form->setFormIdentifier( __METHOD__ );
-		$form->setSubmitDestructive();
-		$form->setSubmitCallback( [ $this, 'handleWatchRemoval' ] );
-		$form->setSubmitTextMsg( 'periodic-related-changes-removetitles' );
-		$form->show();
 	}
 
 	/**
@@ -966,8 +970,9 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		$watchesToRemove = array_filter(
 			array_map(
 					function ( $item ) use ( $formData ) {
-						if ( $formData[$item] === true )
+						if ( $formData[$item] === true ) {
 							return RelatedChangeWatcher::newFromFormID( $item );
+						}
 					}, array_keys( $formData )
 			) );
 		wfDebugLog( __METHOD__, var_export( $watchesToRemove, true ) );
