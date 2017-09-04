@@ -21,7 +21,8 @@
 		"PeriodicRelatedChanges\\PeriodicRelatedChanges": "src/PeriodicRelatedChanges.php",
 		"PeriodicRelatedChanges\\RelatedChangeWatchList": "src/RelatedChangeWatchList.php",
 		"PeriodicRelatedChanges\\RelatedChangeWatcher": "src/RelatedChangeWatcher.php",
-		"PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges": "src/SpecialPeriodicRelatedChanges.php"
+		"PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges": "src/SpecialPeriodicRelatedChanges.php",
+		"PeriodicRelatedChanges\\RelatedChangeWatchGroupList": "src/RelatedChangeWatchGroupList.php"
 	},
 	"SpecialPages": {
 		"PeriodicRelatedChanges": "PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges"

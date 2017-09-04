@@ -34,6 +34,8 @@
 	"periodic-related-changes-nowatches": "Currently, there are no related change watches for $1",
 	"periodic-related-changes-nowatches-title": "No periodic related change watches",
 	"periodic-related-changes-removetitles": "Remove selected titles",
+	"periodic-related-changes-removedtitle": "Removed $1 from {{GENDER:$2|his|her|their}} periodic related changes watchlist",
+	"periodic-related-changes-list-title": "* [[$1]]",
 	"periodic-related-changes-return": "[[{{FULLPAGENAME}}|Set up another periodic related change watch]].",
 	"periodic-related-changes-sent-email-success": "Problem sending email:",
 	"periodic-related-changes-sent-email-success": "Sent email to $1",
