@@ -796,13 +796,12 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * @return User|bool
 	 */
 	public function findUser( $userName ) {
-		$out = $this->getOutput();
 		if ( $this->maybeRedirectToOwnPage( $userName ) ) {
-			return true;
+			return false;
 		}
 
 		if ( $this->showFindUserForm( $userName ) ) {
-			return true;
+			return false;
 		}
 
 		$user = User::newFromName( trim( $userName, "/" ) );

@@ -34,8 +34,9 @@ class RelatedChangeWatcher {
 	protected $sinceDays;
 	protected $limit;
 	protected $collectedChanges;
-	protected $table;
 	protected $exists;
+	protected static $table = "periodic_related_change";
+	protected static $titleCache = [];
 
 	/**
 	 * Constructor
@@ -48,8 +49,46 @@ class RelatedChangeWatcher {
 		$this->user = $user;
 		$this->page = $page;
 		$this->timestamp = $timestamp;
-		$this->table = "periodic_related_change";
 		$this->exists = null;
+	}
+
+	/**
+	 * Do we have them or not?
+	 *
+	 * @param Title $title to check
+	 * @return bool
+	 */
+	public static function titleHasCategoryWatchers( Title $title ) {
+		return count( self::titleCategoryWatchers( $title ) ) > 0;
+	}
+
+	/**
+	 * Get the people watching this title's categories
+	 *
+	 * @param Title $title to check
+	 * @return array
+	 */
+	public static function titleCategoryWatchers( Title $title ) {
+		$key = $title->getPrefixedText();
+		if ( !isset( self::$titleCache[$key] ) ) {
+			self::$titleCache[$key] = [];
+			$categoryIDs = array_map(
+				function ( $category ) use ( $linkCache ) {
+					$title = Title::newFromText( $category );
+					return $title->getArticleID();
+				}, $title->getParentCategories()
+			);
+
+			$dbr = wfGetDB( DB_SLAVE );
+			$res = $dbr->select(
+				self::$table, 'wc_user', [ 'wc_title' => $categoryIDs ],
+				__METHOD__, [ 'DISTINCT' ]
+			);
+			foreach ( $res as $row ) {
+				self::$titleCache[$key][] = $row->wc_user;
+			}
+		}
+		return self::$titleCache[$key];
 	}
 
 	/**
@@ -74,13 +113,15 @@ class RelatedChangeWatcher {
 		list( $watch, $userId, $titleNS, $title ) = explode( "-", $formID, 4 );
 		if ( $watch === $prefix ) {
 			return self::newFromUserTitle(
-				User::newFromID( $userId ), Title::newFromTextThrow( $title, $titleNS )
+				User::newFromID( $userId ),
+				Title::newFromTextThrow( $title, $titleNS )
 			);
 		}
 	}
 
 	/**
 	 * Construct from a DB row of RelatedChangeWatchList
+	 *
 	 * @param StdObj $row result
 	 * @return RelatedChangeWatcher
 	 */
@@ -93,6 +134,7 @@ class RelatedChangeWatcher {
 
 	/**
 	 * Get an identifier for a form.
+	 *
 	 * @param string $prefix defaults to "watch"
 	 * @return string
 	 */
@@ -106,6 +148,7 @@ class RelatedChangeWatcher {
 
 	/**
 	 * Get data ready for row query and insert
+	 *
 	 * @return array
 	 */
 	protected function getRowData() {
@@ -120,12 +163,13 @@ class RelatedChangeWatcher {
 	 */
 	public function save() {
 		$dbw = wfGetDB( DB_MASTER );
-		$dbw->insert( $this->table, $this->getRowData(), __METHOD__ );
+		$dbw->insert( self::$table, $this->getRowData(), __METHOD__ );
 		return true;
 	}
 
 	/**
 	 * See if this watch pair already exists
+	 *
 	 * @param Database $dbr requestor
 	 * @return bool
 	 */
@@ -137,7 +181,9 @@ class RelatedChangeWatcher {
 				$dbr = wfGetDB( DB_SLAVE );
 			}
 			$row = $this->getRowData();
-			$res = $dbr->select( $this->table, array_keys( $row ), $row, __METHOD__ );
+			$res = $dbr->select(
+				self::$table, array_keys( $row ), $row, __METHOD__
+			);
 
 			if ( $res->numRows() > 0 ) {
 				$this->exists = true;
@@ -154,7 +200,7 @@ class RelatedChangeWatcher {
 		$dbw->startAtomic( __METHOD__ );
 		if ( $this->exists( $dbw ) ) {
 			$row = $this->getRowData();
-			$dbw->delete( $this->table, $row, __METHOD__ );
+			$dbw->delete( self::$table, $row, __METHOD__ );
 		}
 		$dbw->endAtomic( __METHOD__ );
 	}
@@ -211,5 +257,4 @@ class RelatedChangeWatcher {
 		);
 		return $changes->getResult();
 	}
-
 }

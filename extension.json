@@ -22,7 +22,8 @@
 		"PeriodicRelatedChanges\\RelatedChangeWatchList": "src/RelatedChangeWatchList.php",
 		"PeriodicRelatedChanges\\RelatedChangeWatcher": "src/RelatedChangeWatcher.php",
 		"PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges": "src/SpecialPeriodicRelatedChanges.php",
-		"PeriodicRelatedChanges\\RelatedChangeWatchGroupList": "src/RelatedChangeWatchGroupList.php"
+		"PeriodicRelatedChanges\\RelatedChangeWatchGroupList": "src/RelatedChangeWatchGroupList.php",
+		"PeriodicRelatedChanges\\EventPresentationModel": "src/EventPresentationModel.php"
 	},
 	"SpecialPages": {
 		"PeriodicRelatedChanges": "PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges"
@@ -45,6 +46,21 @@
 	"Hooks": {
 		"LoadExtensionSchemaUpdates": [
 			"PeriodicRelatedChanges\\Hook::onLoadExtensionSchemaUpdates"
+		],
+		"BeforeCreateEchoEvent": [
+			"PeriodicRelatedChanges\\Hook::onBeforeCreateEchoEvent"
+		],
+		"EchoGetBundleRules": [
+			"PeriodicRelatedChanges\\Hook::onEchoGetBundleRules"
+		],
+		"CategoryAfterPageAdded": [
+			"PeriodicRelatedChanges\\Hook::onCategoryAfterPageAdded"
+		],
+		"CategoryAfterPageRemoved": [
+			"PeriodicRelatedChanges\\Hook::onCategoryAfterPageRemoved"
+		],
+		"PageContentSaveComplete": [
+			"PeriodicRelatedChanges\\Hook::onPageContentSaveComplete"
 		]
 	},
 	"config": {
