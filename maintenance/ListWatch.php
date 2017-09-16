@@ -141,9 +141,11 @@ class ListWatch extends Maintenance {
 			$this->error( "$user does not have any periodic notices!\n", 1 );
 		}
 
-		$width = $this->getLongestInList( 5, $watches, function ( $arg ) {
-			return $arg['page']->getTitle();
-		} );
+		$width = $this->getLongestInList(
+            5, $watches, function ( $arg ) {
+                return $arg->getTitle();
+            }
+        );
 
 		$this->output( "$user has these periodic notices:\n" );
 		$this->output( "Title" . str_repeat( " ", $width - 4 ) );
@@ -180,10 +182,10 @@ class ListWatch extends Maintenance {
 	 * @return bool
 	 */
 	public function printWatch( $width, $res ) {
-		$titleLen = strlen( $res['page']->getTitle() );
-		$title = $res['page']->getTitle()
+		$titleLen = strlen( $res->getTitle() );
+		$title = $res->getTitle()
 			   . str_repeat( " ", $width - $titleLen + 1 );
-		$timestamp = $res['timestamp'] ? $res['timestamp'] : "(not checked)";
+		$timestamp = $res->getTimestamp() ? $res->getTimestamp() : "(not checked)";
 		$this->output( $title );
 		$this->output( "$timestamp\n" );
 

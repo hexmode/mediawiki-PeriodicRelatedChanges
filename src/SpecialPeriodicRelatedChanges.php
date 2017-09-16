@@ -819,7 +819,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		if ( !$user || $user->getId() === 0 ) {
 			throw new ErrorPageError(
 				"periodic-related-changes-error",
-				"periodic-related-changes-userdoesnotexist",
+				"periodic-related-changes-user-not-exist",
 				[ $user ]
 			);
 		}
@@ -837,7 +837,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		if ( $userName ) {
 			$user = User::newFromName( $userName );
 			if ( $user->getID() === 0 ) {
-				return wfMessage( 'periodic-related-changes-nosuchuser' );
+				return wfMessage( 'periodic-related-changes-user-not-exist', $user );
 			}
 		}
 		return true;
@@ -891,7 +891,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		if ( $titleString ) {
 			$title = Title::newFromText( $titleString );
 			if ( !$title->exists() ) {
-				return wfMessage( 'periodic-related-changes-nosuchtitle' );
+				return wfMessage( 'periodic-related-changes-title-not-exist', $title );
 			}
 		}
 

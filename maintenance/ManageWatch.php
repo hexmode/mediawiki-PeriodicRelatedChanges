@@ -1,6 +1,8 @@
 <?php
 
-/*
+/**
+ * Utility to add a page to the watchlist.
+ *
  * Copyright (C) 2016  Mark A. Hershberger
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,6 +23,8 @@ namespace PeriodicRelatedChanges;
 
 use MWException;
 use Maintenance;
+use Title;
+use User;
 
 $IP = getenv( 'MW_INSTALL_PATH' );
 if ( $IP === false ) {
@@ -33,35 +37,58 @@ if ( !file_exists( $maint ) ) {
 }
 require_once $maint;
 
-class AddWatch extends Maintenance {
+class ManageWatch extends Maintenance {
 
 	/**
 	 * The constructor, of course.
 	 */
 	public function __construct() {
 		parent::__construct();
-		$this->addDescription( "Add a watch to the periodic watches." );
-		$this->addArg( "user", "User to send notices to.  Must have an email address.",
-					   true );
-		$this->addArg( "page", "The page to summarize RelatedChanges for.  Must exist.",
-					   true );
+		$this->addDescription( "Manage watches on the periodic watchlist." );
+		$this->addOption(
+			"add", "(default) Add the page to the watchlist.", false, false, "a"
+		);
+		$this->addOption(
+			"remove", "(default) Add the page to the watchlist.", false, false, "r"
+		);
+		$this->addArg(
+			"user", "User to send notices to.  Must have an email address.", true
+		);
+		$this->addArg(
+			"page", "The page to summarize RelatedChanges for.  Must exist.", true
+		);
 	}
 
 	/**
 	 * Where all the business happens.
 	 */
 	public function execute() {
-		$prc = PeriodicRelatedChanges::getManager();
+		$userName = $this->getArg( 0 );
+		$titleText = $this->getArg( 1 );
 
-		try {
-			if ( $prc->add( $this->getArg( 0 ), $this->getArg( 1 ) ) === true ) {
-				$this->output( "Success!\n" );
-			}
-		} catch ( MWException $e ) {
-			$this->error( $e->getMessage(), 1 );
+		$user = User::newFromName( $userName );
+		if ( !( $user && $user instanceof User ) ) {
+			$this->error( "Couldn't find $userName!", 1 );
+		}
+
+		$title = Title::newFromText( $titleText );
+		if ( !( $title && $title instanceof Title ) ) {
+			$this->error( "No such title ($titleText)!", 1 );
+		}
+
+		$prc = PeriodicRelatedChanges::getManager();
+		if ( $this->hasOption( "remove" ) ) {
+			$stat = $prc->removeWatch( $user, $title );
+		} else {
+			$stat = $prc->addWatch( $user, $title );
+		}
+		if ( $stat->isOK() ) {
+			$this->output( "Success!\n" );
+		} else {
+			$this->error( $stat->getMessage()->plain() );
 		}
 	}
 }
 
-$maintClass = "PeriodicRelatedChanges\\AddWatch";
+$maintClass = "PeriodicRelatedChanges\\ManageWatch";
 require_once DO_MAINTENANCE;

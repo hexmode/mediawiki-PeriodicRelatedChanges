@@ -21,6 +21,7 @@ namespace PeriodicRelatedChanges;
 use MWException;
 use Page;
 use ResultWrapper;
+use Status;
 use Title;
 use User;
 use WikiPage;
@@ -48,42 +49,71 @@ class PeriodicRelatedChanges {
 	}
 
 	/**
-	 * Add a watcher.
+	 * Make sure user is known and not anon.  Make sure title exists.
 	 *
 	 * @param User $user the user.
 	 * @param Title $title the page name.
 	 *
-	 * @return bool
+	 * @return Status
 	 */
-	public function add( User $user, Title $title ) {
+	public function checkUserTitle( User $user, Title $title ) {
 		if ( $user->isAnon() ) {
-			throw new MWException( "Anonymous user not allowed." );
+			return Status::newFatal( "periodic-related-changes-no-anon", $user );
 		}
 		if ( $user->getID() === 0 ) {
-			throw new MWException( "User doesn't exist." );
+			return Status::newFatal( "periodic-related-changes-user-not-exist", $user );
 		}
 
 		if ( !$title->exists() ) {
-			throw new MWException( "Page doesn't exist." );
+			return Status::newFatal( "periodic-related-changes-title-not-exist", $title );
+		}
+		return Status::newGood();
+	}
+
+	/**
+	 * Remove a watcher.
+	 *
+	 * @param User $user the user.
+	 * @param Title $title the page name.
+	 *
+	 * @return Status
+	 */
+	public function removeWatch( User $user, Title $title ) {
+		$check = $this->checkUserTitle( $user, $title );
+		if ( !$check->isGood() ) {
+			return $check;
 		}
 
-		return $this->addWatch( $user, WikiPage::factory( $title ) );
+		$watch = new RelatedChangeWatcher( $user, WikiPage::factory( $title ) );
+		if ( !$watch->exists() ) {
+			return Status::newFatal(
+				"periodic-related-changes-does-not-exist", $title, $user
+			);
+		}
+		return $watch->remove();
 	}
 
 	/**
 	 * Store a watch for the user.  SQL schema ensures that there can only be one.
 	 *
 	 * @param User $user the user
-	 * @param Page $page what to watch for related changes.
+	 * @param Title $title what to watch for related changes.
 	 *
-	 * @return bool
+	 * @return Status
 	 */
-	public function addWatch( User $user, Page $page ) {
-		$watch = new RelatedChangeWatcher( $user, $page );
+	public function addWatch( User $user, Title $title ) {
+		$check = $this->checkUserTitle( $user, $title );
+		if ( !$check->isGood() ) {
+			return $check;
+		}
+
+		$watch = new RelatedChangeWatcher( $user, WikiPage::factory( $title ) );
 		if ( !$watch->exists() ) {
 			return $watch->save();
 		}
-		return false;
+		return Status::newFatal(
+			"periodic-related-changes-already-exists", $title, $user
+		);
 	}
 
 	/**

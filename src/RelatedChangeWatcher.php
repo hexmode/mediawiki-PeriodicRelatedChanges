@@ -24,6 +24,7 @@ namespace PeriodicRelatedChanges;
 use MediaWiki\Changes\LinkedRecentChanges;
 use Page;
 use ResultWrapper;
+use Status;
 use Title;
 use User;
 use WikiPage;
@@ -73,21 +74,28 @@ class RelatedChangeWatcher {
 		if ( !isset( self::$titleCache[$key] ) ) {
 			self::$titleCache[$key] = [];
 			$categoryIDs = array_map(
-				function ( $category ) use ( $linkCache ) {
-					$title = Title::newFromText( $category );
-					return $title->getArticleID();
+				function ( $category ) {
+					$catObj = Title::newFromText( $category );
+					return $catObj->getArticleID();
 				}, $title->getParentCategories()
 			);
-
-			$dbr = wfGetDB( DB_SLAVE );
-			$res = $dbr->select(
-				self::$table, 'wc_user', [ 'wc_title' => $categoryIDs ],
-				__METHOD__, [ 'DISTINCT' ]
-			);
-			foreach ( $res as $row ) {
-				self::$titleCache[$key][] = $row->wc_user;
+			if ( $categoryIDs ) {
+				$dbr = wfGetDB( DB_SLAVE );
+				$res = $dbr->select(
+					self::$table, 'wc_user', [ 'wc_page' => $categoryIDs ],
+					__METHOD__, [ 'DISTINCT' ]
+				);
+echo __METHOD__, " before loop\n";
+				foreach ( $res as $row ) {
+echo __METHOD__, " for $row\n";
+					self::$titleCache[$key][] = $row->wc_user;
+				}
 			}
+echo __METHOD__, " after loop\n";
 		}
+echo __METHOD__, " 3\n";
+		error_log("category watchers for $key: "
+				  . implode(", ", self::$titleCache[$key] ) );
 		return self::$titleCache[$key];
 	}
 
@@ -159,12 +167,15 @@ class RelatedChangeWatcher {
 	/**
 	 * Save the watch
 	 *
-	 * @return bool
+	 * @return Status
 	 */
 	public function save() {
 		$dbw = wfGetDB( DB_MASTER );
-		$dbw->insert( self::$table, $this->getRowData(), __METHOD__ );
-		return true;
+		$ret = Status::newGood();
+		if ( !$dbw->insert( self::$table, $this->getRowData(), __METHOD__ ) ) {
+			$ret->setResult( false, "periodic-relatedchanges-no-save" );
+		}
+		return $ret;
 	}
 
 	/**
@@ -198,11 +209,19 @@ class RelatedChangeWatcher {
 	public function remove() {
 		$dbw = wfGetDB( DB_MASTER );
 		$dbw->startAtomic( __METHOD__ );
+		$ret = Status::newGood();
 		if ( $this->exists( $dbw ) ) {
 			$row = $this->getRowData();
-			$dbw->delete( self::$table, $row, __METHOD__ );
+			$result = $dbw->delete( self::$table, $row, __METHOD__ );
+			if ( !$result ) {
+				$ret->setResult(
+					false, "periodic-related-changes-no-remove",
+					$this->getUser(), $this->getPage()->getTitle()
+				);
+			}
 		}
 		$dbw->endAtomic( __METHOD__ );
+		return $ret;
 	}
 
 	/**
@@ -217,6 +236,14 @@ class RelatedChangeWatcher {
 	 */
 	public function getPage() {
 		return $this->page;
+	}
+
+	/**
+	 * Get the corresponding timestamp
+	 * @return xxx
+	 */
+	public function getTimestamp() {
+		return $this->timestamp;
 	}
 
 	/**

@@ -19,7 +19,13 @@
 
 namespace PeriodicRelatedChanges;
 
+use Category;
+use Content;
 use DatabaseUpdater;
+use Revision;
+use Status;
+use User;
+use WikiPage;
 
 class Hook {
 	/**
@@ -137,6 +143,10 @@ class Hook {
 	public static function onCategoryAfterPageAdded(
 		Category $cat, WikiPage $wikiPage
 	) {
+echo "before add\n\n\n";
+error_reporting( -1 );
+ini_set( 'display_startup_errors', 1 );
+ini_set( 'display_errors', 1 );
 		if ( RelatedChangeWatcher::titleHasCategoryWatchers(
 			$cat->getTitle()
 		) ) {
@@ -154,6 +164,7 @@ class Hook {
 					'agent' => $user,
 				] );
 		}
+echo "after add\n\n\n";
 	}
 
 	/**
@@ -162,12 +173,17 @@ class Hook {
 	 *
 	 * @param Category $cat the category removed
 	 * @param WikiPage $wikiPage page removed
+	 * @param int $id page id
 	 *
 	 * @see https://www.mediawiki.org/wiki/Manual:Hooks/CategoryAfterPageRemoved
 	 */
 	public static function onCategoryAfterPageRemoved(
-		Category $cat, WikiPage $wikiPage
+		Category $cat, WikiPage $wikiPage, $id
 	) {
+echo "before remove\n\n\n";
+error_reporting( -1 );
+ini_set( 'display_startup_errors', 1 );
+ini_set( 'display_errors', 1 );
 		if ( RelatedChangeWatcher::titleHasCategoryWatchers(
 			$cat->getTitle()
 		) ) {
@@ -185,6 +201,7 @@ class Hook {
 				'agent' => $user,
 			] );
 		}
+echo "after remove\n\n\n";
 	}
 
 	/**
