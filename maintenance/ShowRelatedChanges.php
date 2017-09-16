@@ -43,18 +43,23 @@ class ShowRelatedChanges extends Maintenance {
 	 */
 	public function __construct() {
 		parent::__construct();
-		$this->addDescription( "List out the related changes for a page that a user wants ".
-							   "to be notified about. The user must have already added ".
-							   "the page to their periodic watches." );
+		$this->addDescription(
+			"List out the related changes for a page that a user wants ".
+			"to be notified about. The user must have already added ".
+			"the page to their periodic watches."
+		);
 		$this->addArg( "user", "The user who list last-seen time will be used.",
 					   true );
-		$this->addArg( "page", "The page to summarize RelatedChanges for. Must exist. ".
-					   "Must be on the user's list of periodic watches.",
-					   true );
-		$this->addOption( "period", "The period, in days, to cover. (7)", false, true,
-						  "p" );
-		$this->addOption( "limit", "Max number to show (unlimited)", false, true,
-						  "l" );
+		$this->addArg(
+			"page", "The page to summarize RelatedChanges for. Must exist. ".
+			"Must be on the user's list of periodic watches.", true
+		);
+		$this->addOption(
+			"period", "The period, in days, to cover. (7)", false, true, "p"
+		);
+		$this->addOption(
+			"limit", "Max number to show (unlimited)", false, true, "l"
+		);
 	}
 
 	/**

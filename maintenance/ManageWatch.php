@@ -49,13 +49,16 @@ class ManageWatch extends Maintenance {
 			"add", "(default) Add the page to the watchlist.", false, false, "a"
 		);
 		$this->addOption(
-			"remove", "(default) Add the page to the watchlist.", false, false, "r"
+			"remove", "(default) Add the page to the watchlist.",
+			false, false, "r"
 		);
 		$this->addArg(
-			"user", "User to send notices to.  Must have an email address.", true
+			"user", "User to send notices to.  Must have an email address.",
+			true
 		);
 		$this->addArg(
-			"page", "The page to summarize RelatedChanges for.  Must exist.", true
+			"page", "The page to summarize RelatedChanges for.  Must exist.",
+			true
 		);
 	}
 

@@ -46,9 +46,13 @@ class ListWatch extends Maintenance {
 	 */
 	public function __construct() {
 		parent::__construct();
-		$this->addDescription( "Given a user, show all that user's watches.  Provided" .
-							   "with a title as well, show the related page changes" );
-		$this->addOption( "days", "How many days back to look (7)", false, true, "d" );
+		$this->addDescription(
+			"Given a user, show all that user's watches.  Provided" .
+			"with a title as well, show the related page changes"
+		);
+		$this->addOption(
+			"days", "How many days back to look (7)", false, true, "d"
+		);
 		$this->addOption( "mail", "Send an email instead of printing out.",
 						  false, false, "m" );
 		$this->addArg( "user", "User to list watch for.", true );
@@ -64,7 +68,9 @@ class ListWatch extends Maintenance {
 		$user = User::newFromName( $this->getArg( 0 ) );
 		$page = null;
 		if ( $this->getArg( 1 ) ) {
-			$page = WikiPage::factory( Title::newFromText( $this->getArg( 1 ) ) );
+			$page = WikiPage::factory(
+				Title::newFromText( $this->getArg( 1 ) )
+			);
 		}
 
 		if ( $user === false || $user->getID() === 0 ) {
@@ -111,7 +117,7 @@ class ListWatch extends Maintenance {
 
 		$width = $this->getLongestInList(
 			5, array_keys( array_merge( $changesTo, $changesFrom ) ),
-						   function( $arg ) {
+						   function ( $arg ) {
 							   return $arg;
 						   } );
 
@@ -136,16 +142,18 @@ class ListWatch extends Maintenance {
 	 * @param RelatedChangeWatchList $watches object
 	 * @return null
 	 */
-	protected function printWatchedTitles( User $user, RelatedChangeWatchList $watches ) {
+	protected function printWatchedTitles(
+		User $user, RelatedChangeWatchList $watches
+	) {
 		if ( $watches->numRows() === 0 ) {
 			$this->error( "$user does not have any periodic notices!\n", 1 );
 		}
 
 		$width = $this->getLongestInList(
-            5, $watches, function ( $arg ) {
-                return $arg->getTitle();
-            }
-        );
+			5, $watches, function ( $arg ) {
+				return $arg->getTitle();
+			}
+		);
 
 		$this->output( "$user has these periodic notices:\n" );
 		$this->output( "Title" . str_repeat( " ", $width - 4 ) );
@@ -164,7 +172,7 @@ class ListWatch extends Maintenance {
 	 * @return int length of longest
 	 */
 	protected function getLongestInList( $init, $list, $extractor ) {
-		$longest =  $init;
+		$longest = $init;
 		foreach ( $list as $item ) {
 			$length = strlen( call_user_func( $extractor, $item ) );
 			if ( $length > $longest ) {

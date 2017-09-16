@@ -105,7 +105,9 @@ class RelatedChangeWatchList extends ResultWrapper {
 	 * @param string $style which direction
 	 * @return array
 	 */
-	public function getChangesFor( WikiPage $page, $startTime = 0, $style = "to" ) {
+	public function getChangesFor(
+		WikiPage $page, $startTime = 0, $style = "to"
+	) {
 		global $wgHooks;
 
 		# Don't let any hooks mess us up
@@ -194,7 +196,9 @@ class RelatedChangeWatchList extends ResultWrapper {
 		if ( !$to ) {
 			throw new MWException( "No email for $user.\n" );
 		}
-		$thisPage = Title::newFromText( "PeriodicRelatedChanges/$user", NS_SPECIAL );
+		$thisPage = Title::newFromText(
+			"PeriodicRelatedChanges/$user", NS_SPECIAL
+		);
 		$req = RequestContext::newExtraneousContext(
 			$thisPage,
 			[

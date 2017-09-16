@@ -49,17 +49,23 @@ class EventPresentationModel extends \EchoEventPresentationModel {
 	 */
 	public function getHeaderMessage() {
 		if ( $this->isBundled() ) {
-		    // This is the header message for the bundle that contains
-		    // several notifications of this type
+			// This is the header message for the bundle that contains
+			// several notifications of this type
 			$msg = $this->msg( 'notification-bundle-myext-topic-word' );
 			$msg->params( $this->getBundleCount() );
-			$msg->params( $this->getTruncatedTitleText( $this->event->getTitle(), true ) );
+			$msg->params( $this->getTruncatedTitleText(
+				$this->event->getTitle(), true
+			) );
 			$msg->params( $this->getViewingUserForGender() );
 			return $msg;
 		} else {
-		    // This is the header message for individual non-bundle message
-			$msg = $this->getMessageWithAgent( 'notification-myext-topic-word' );
-			$msg->params( $this->getTruncatedTitleText( $this->event->getTitle(), true ) );
+			// This is the header message for individual non-bundle message
+			$msg = $this->getMessageWithAgent(
+				'notification-myext-topic-word'
+			);
+			$msg->params( $this->getTruncatedTitleText(
+				$this->event->getTitle(), true
+			) );
 			$msg->params( $this->getViewingUserForGender() );
 			return $msg;
 		}
@@ -98,7 +104,9 @@ class EventPresentationModel extends \EchoEventPresentationModel {
 	public function getPrimaryLink() {
 		return [
 			'url' => $this->getPageLink( $this->event->getTitle(), null, true ),
-			'label' => $this->msg( 'notification-myext-topic-word-view-page' )->text(),
+			'label' => $this->msg(
+				'notification-myext-topic-word-view-page'
+			)->text(),
 		];
 	}
 
@@ -109,11 +117,11 @@ class EventPresentationModel extends \EchoEventPresentationModel {
 	 */
 	public function getSecondaryLinks() {
 		if ( $this->isBundled() ) {
-		    // For the bundle, we don't need secondary actions
+			// For the bundle, we don't need secondary actions
 			return [];
 		} else {
-		    // For individual items, display a link to the user
-		    // that created this page
+			// For individual items, display a link to the user
+			// that created this page
 			return [ $this->getAgentLink() ];
 		}
 	}

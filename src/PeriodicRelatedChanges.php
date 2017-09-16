@@ -58,14 +58,20 @@ class PeriodicRelatedChanges {
 	 */
 	public function checkUserTitle( User $user, Title $title ) {
 		if ( $user->isAnon() ) {
-			return Status::newFatal( "periodic-related-changes-no-anon", $user );
+			return Status::newFatal(
+				"periodic-related-changes-no-anon", $user
+			);
 		}
 		if ( $user->getID() === 0 ) {
-			return Status::newFatal( "periodic-related-changes-user-not-exist", $user );
+			return Status::newFatal(
+				"periodic-related-changes-user-not-exist", $user
+			);
 		}
 
 		if ( !$title->exists() ) {
-			return Status::newFatal( "periodic-related-changes-title-not-exist", $title );
+			return Status::newFatal(
+				"periodic-related-changes-title-not-exist", $title
+			);
 		}
 		return Status::newGood();
 	}
@@ -94,7 +100,8 @@ class PeriodicRelatedChanges {
 	}
 
 	/**
-	 * Store a watch for the user.  SQL schema ensures that there can only be one.
+	 * Store a watch for the user.  SQL schema ensures that there can
+	 * only be one.
 	 *
 	 * @param User $user the user
 	 * @param Title $title what to watch for related changes.
@@ -152,7 +159,8 @@ class PeriodicRelatedChanges {
 			$this->collectedChanges['user'][$user]++;
 			if (
 				!isset( $this->collectedChanges['page'][$title]['oldestId'] ) ||
-				$this->collectedChanges['page'][$title]['oldestId'] > $change->rc_this_oldid
+				$this->collectedChanges['page'][$title]['oldestId']
+				> $change->rc_this_oldid
 			) {
 				$this->collectedChanges['page'][$title]['oldestId']
 					= $change->rc_this_oldid;
@@ -163,7 +171,8 @@ class PeriodicRelatedChanges {
 
 	/**
 	 * Return an aggreate list of changes
-	 * @param RelatedChangeWatcher $changes the list of individual changes to aggregate
+	 * @param RelatedChangeWatcher $changes the list of individual
+	 *        changes to aggregate
 	 * @return Iterator
 	 */
 	public function getCollectedChanges( RelatedChangeWatcher $changes ) {

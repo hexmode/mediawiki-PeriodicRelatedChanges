@@ -687,10 +687,13 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			Linker::link(
 				$thisTitle,
 				wfMessage( "periodic-related-changes-importusers" ),
-				[], [ 'importusers' => "true" ] )
+				[], [ 'importusers' => "true" ]
+			)
 		];
 
-		$this->getOutput()->setSubTitle( $this->getLanguage()->commaList( $action ) );
+		$this->getOutput()->setSubTitle(
+			$this->getLanguage()->commaList( $action )
+		);
 	}
 
 	/**
@@ -707,15 +710,18 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			$action = [
 				Linker::link(
 					$thisTitle,
-					wfMessage( "periodic-related-changes-lookup-another-user" ) ),
+					wfMessage( "periodic-related-changes-lookup-another-user" )
+				),
 				Linker::link(
 					$thisTitle,
 					wfMessage( "periodic-related-changes-list-watch-groups" ),
-					[], [ 'listwatchgroups' => 'true' ] ),
+					[], [ 'listwatchgroups' => 'true' ]
+				),
 				Linker::link(
 					$thisTitle,
 					wfMessage( "periodic-related-changes-show-full-report" ),
-					[], [ 'fullreport' => 1 ] )
+					[], [ 'fullreport' => 1 ]
+				)
 			];
 		}
 
@@ -837,7 +843,9 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		if ( $userName ) {
 			$user = User::newFromName( $userName );
 			if ( $user->getID() === 0 ) {
-				return wfMessage( 'periodic-related-changes-user-not-exist', $user );
+				return wfMessage(
+					'periodic-related-changes-user-not-exist', $user
+				);
 			}
 		}
 		return true;
@@ -872,8 +880,10 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 					'validation-callback' => [ $this, 'addTitleValidate' ],
 				] ];
 
-			$form = HTMLForm::factory( 'ooui', $formDescriptor, $this->getContext(),
-									   'periodic-related-changes' );
+			$form = HTMLForm::factory(
+				'ooui', $formDescriptor, $this->getContext(),
+				'periodic-related-changes'
+			);
 			$form->setFormIdentifier( __METHOD__ );
 			$form->setSubmitCallback( [ $this, 'addTitleSubmit' ] );
 			$form->setSubmitTextMsg( 'periodic-related-changes-addtitle' );
@@ -891,7 +901,9 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		if ( $titleString ) {
 			$title = Title::newFromText( $titleString );
 			if ( !$title->exists() ) {
-				return wfMessage( 'periodic-related-changes-title-not-exist', $title );
+				return wfMessage(
+					'periodic-related-changes-title-not-exist', $title
+				);
 			}
 		}
 
@@ -939,7 +951,9 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		$prc = PeriodicRelatedChanges::getManager();
 		$formDescriptor = [];
 		if ( $this->userSubject ) {
-			foreach ( $prc->getCurrentWatches( $this->userSubject ) as $watch ) {
+			foreach (
+				$prc->getCurrentWatches( $this->userSubject ) as $watch
+			) {
 				$formDescriptor[$watch->getFormID()] = [
 					'section' => 'currentwatchlist',
 					'label'   => $watch->getTitle(),
