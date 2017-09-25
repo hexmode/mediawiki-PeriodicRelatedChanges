@@ -12,6 +12,12 @@ This is MediaWiki extension to specify that a user should get the related change
 wfLoadExtension( 'PeriodicRelatedChanges' );
 </source>
 
+* Run update.php:
+
+<source lang="sh">
+$ php maintenance/update.php --quick
+</source>
+
 * Done - Navigate to Special:Version on your wiki to verify that the extension is successfully installed.
 
 * Current issues
