@@ -9,7 +9,6 @@
 	"url": "https://www.mediawiki.org/wiki/Extension:PeriodicRelatedChanges",
 	"descriptionmsg": "periodic-related-changes-desc",
 	"type": "specialpage",
-	"callback": "PeriodicRelatedChanges\\Hook::initExtension",
 	"MessagesDirs": {
 		"PeriodicRelatedChanges": [
 			"i18n"

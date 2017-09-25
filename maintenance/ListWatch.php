@@ -55,47 +55,15 @@ class ListWatch extends Maintenance {
 		);
 		$this->addOption( "mail", "Send an email instead of printing out.",
 						  false, false, "m" );
-		$this->addArg( "user", "User to list watch for.", true );
-		$this->addArg( "page", "The watch to show a report for.  If not " .
-					   "given, list the user's watches.",
-					   false );
+		$this->addArg( "page", "User to list watch for.", true );
 	}
 
 	/**
 	 * Where all the business happens.
 	 */
 	public function execute() {
-		$user = User::newFromName( $this->getArg( 0 ) );
-		$page = null;
-		if ( $this->getArg( 1 ) ) {
-			$page = WikiPage::factory(
-				Title::newFromText( $this->getArg( 1 ) )
-			);
-		}
-
-		if ( $user === false || $user->getID() === 0 ) {
-			$this->error( "Invalid user.", 1 );
-		}
-
-		if ( $page !== null && !$page->exists() ) {
-			$this->error( "Page does not exist.", 1 );
-		}
-
-		$watches = RelatedChangeWatchList::newFromUser( $user );
-
-		$this->days = $this->getOption( "days", 7 );
-
-		if ( $this->hasOption( "mail" ) ) {
-			$watches->sendEmail( $user, $this->days );
-			return;
-		}
-
-		if ( $page === null ) {
-			$this->printWatchedTitles( $user, $watches );
-			return;
-		}
-
-		$this->printRelatedChanges( $user, $watches, $page );
+		$title = Title::newFromText( $this->getArg( 0 ) );
+		var_dump( RelatedChangeWatcher::getRelatedChangeWatchers( $title ) );
 	}
 
 	/**

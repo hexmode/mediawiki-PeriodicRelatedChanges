@@ -85,17 +85,11 @@ class RelatedChangeWatcher {
 					self::$table, 'wc_user', [ 'wc_page' => $categoryIDs ],
 					__METHOD__, [ 'DISTINCT' ]
 				);
-echo __METHOD__, " before loop\n";
 				foreach ( $res as $row ) {
-echo __METHOD__, " for $row\n";
 					self::$titleCache[$key][] = $row->wc_user;
 				}
 			}
-echo __METHOD__, " after loop\n";
 		}
-echo __METHOD__, " 3\n";
-		error_log("category watchers for $key: "
-				  . implode(", ", self::$titleCache[$key] ) );
 		return self::$titleCache[$key];
 	}
 
@@ -284,4 +278,81 @@ echo __METHOD__, " 3\n";
 		);
 		return $changes->getResult();
 	}
+
+	/**
+	 * Get a list of pages that are being watched and, for each page,
+	 * a list of people watching them.
+	 *
+	 * @return array
+	 */
+	public static function getWatchGroups() {
+		$dbr = wfGetDB( DB_SLAVE );
+		$res = $dbr->select(
+			self::$table, [ 'wc_page as page', 'wc_user as user' ], null, __METHOD__, [ 'DISTINCT' ]
+		);
+		$group = [];
+		foreach ( $res as $row ) {
+			$group[$row->page][] = $row->user;
+		}
+		return $group;
+	}
+
+	/**
+	 * True if users are watching this page's categories or pages
+	 * that link to this one.
+	 *
+	 * @param Title $title to check for
+	 * @return bool
+	 */
+	public static function hasRelatedChangeWatchers( Title $title ) {
+		return count( self::getRelatedChangeWatchers( $title ) ) > 0;
+	}
+
+	/**
+	 * Get a list of users watching this page's categories or pages
+	 * that link to this one.
+	 *
+	 * @param Title $title to check for
+	 * @return array
+	 */
+	public static function getRelatedChangeWatchers( Title $title ) {
+		$dbr = wfGetDB( DB_SLAVE );
+		$categories = array_map(
+			function ( $category ) {
+				return Title::newFromText( $category, NS_CATEGORY )->getArticleID();
+			}, array_keys( $title->getParentCategories() )
+		);
+
+		$res = $dbr->select(
+			'pagelinks',
+			'pl_from as id',
+			[
+				'pl_title' => $title->getDBKey(),
+				'pl_namespace' => $title->getNamespace()
+			],
+			__METHOD__ . '-getLinksTo'
+		);
+		$pages = array_map(
+			function ( $row ) {
+				return $row->id;
+			}, iterator_to_array( $res )
+		);
+
+		$res = $dbr->select(
+			self::$table,
+			[ 'wc_page as page', 'wc_user as user' ],
+			[
+				'wc_page' => array_merge( $categories, $pages )
+			],
+			__METHOD__ . '-getWatchers',
+			[ 'DISTINCT' ]
+		);
+
+		$ret = [];
+		foreach ( $res as $row ) {
+			$ret[ User::newFromID( $row->user )->getName() ] = Title::newFromID( $row->page )->getDBKey();
+		}
+		return $ret;
+	}
+
 }

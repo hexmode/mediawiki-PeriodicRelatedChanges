@@ -1,6 +1,8 @@
 <?php
 
-/*
+/**
+ * Hooks for PeriodicRelatedChanges
+ *
  * Copyright (C) 2016  Mark A. Hershberger
  *
  * This program is free software: you can redistribute it and/or modify
@@ -29,26 +31,62 @@ use WikiPage;
 
 class Hook {
 	/**
-	 * Fired when MediaWiki is updated to allow extensions to update
-	 * the database.
+	 * Bundling handler
 	 *
-	 * @param DatabaseUpdater $updater the db handle
-	 * @return bool always true
-	 *
-	 * @see https://www.mediawiki.org/wiki/Manual:Hooks/LoadExtensionSchemaUpdates
+	 * @param Event $event to bundle
+	 * @param string &$bundleString to use
 	 */
-	public static function onLoadExtensionSchemaUpdates(
-		DatabaseUpdater $updater
+	public static function onEchoGetBundleRules(
+		EchoEvent $event, &$bundleString
 	) {
-		$updater->addExtensionTable( 'periodic_related_change', __DIR__
-									 . "/../sql/periodic_related_change.sql" );
-		return true;
+		switch ( $event->getType() ) {
+		case 'periodic-related-changes':
+			$bundleString = 'periodic-related-changes';
+		break;
+		}
 	}
 
 	/**
-	 * Any extension-specific initialisation?
+	 * Define the PeriodicRelatedChanges notifications
+	 *
+	 * @param array &$notifications assoc array of notification types
+	 * @param array &$notificationCategories assoc array describing
+	 *        categories
+	 * @param array &$icons assoc array of icons we define
 	 */
-	public static function initExtension() {
+	public static function onBeforeCreateEchoEvent(
+		array &$notifications, array &$notificationCategories, array &$icons
+	) {
+		$icons['periodic-related-changes']['path']
+			= 'PeriodicRelatedChanges/assets/periodic.svg';
+
+		$notifications['periodic-related-changes'] = [
+			'bundle' => [
+				'web' => true,
+				'email' => true,
+				'expandable' => true,
+			],
+			'category' => 'periodic-related-changes',
+			'group' => 'neutral',
+			'user-locators' => [ 'PeriodicRelatredChanges\\Hook::userLocater' ],
+			'user-filters' => [ 'PeriodicRelatredChanges\\Hook::userFilter' ],
+			'presentation-model'
+			=> 'PeriodicRelatredChanges\\EchoEventPresentationModel',
+		];
+
+		$notificationCategories['periodic-related-changes'] = [
+			'priority' => 2
+		];
+	}
+
+	public static function userLocater( EchoEvent $event ) {
+		return RelatedChangeWatcher::getRelatedChangeWatchers(
+			$event->getTitle()
+		);
+	}
+
+	public static function userFilter( EchoEvent $event ) {
+		return [ $event->getAgent() ];
 	}
 
 	/**
@@ -58,150 +96,6 @@ class Hook {
 	 */
 	public function makeConfig() {
 		return new GlobalVarConfig( "PeriodicRelatedChanges" );
-	}
-
-	/**
-	 * Define the PeriodicRelatedChanges notifications
-	 *
-	 * @param array &$notifications assoc array of notification types
-	 * @param array &$notificationCategories assoc array describing categories
-	 * @param array &$icons assoc array of icons we define
-	 *
-	 * @see https://www.mediawiki.org/wiki/Extension:Echo/BeforeCreateEchoEvent
-	 */
-	public static function onBeforeCreateEchoEvent(
-		array &$notifications, array &$notificationCategories, array &$icons
-	) {
-		$icons['periodicrelatedchanges']['path']
-			= 'PeriodicRelatedChanges/assets/periodicrelatedchanges.svg';
-
-		$notifications['periodicrelatedchanges-page-added'] = [
-			'category' => 'periodicrelatedchanges-follow',
-			'group' => 'neutral',
-			'user-locators' => [ __CLASS__, 'userLocator' ],
-			'user-filters' => [ __CLASS__, 'userFilter' ],
-			'presentation-model'
-			=> 'PeriodicRelatedChanges\EventPresentationModel',
-			'bundle' => [ 'web' => true, 'email' => true, 'expandable' => true ]
-		];
-
-		$notifications['periodicrelatedchanges-page-removed'] = [
-			'category' => 'periodicrelatedchanges-follow',
-			'group' => 'neutral',
-			'user-locators' => [ __CLASS__, 'userLocator' ],
-			'user-filters' => [ __CLASS__, 'userFilter' ],
-			'presentation-model'
-			=> 'PeriodicRelatedChanges\EventPresentationModel',
-			'bundle' => [ 'web' => true, 'email' => true, 'expandable' => true ]
-		];
-
-		$notifications['periodicrelatedchanges-page-changed'] = [
-			'category' => 'periodicrelatedchanges-follow',
-			'group' => 'neutral',
-			'user-locators' => [ __CLASS__, 'userLocator' ],
-			'user-filters' => [ __CLASS__, 'userFilter' ],
-			'presentation-model'
-			=> 'PeriodicRelatedChanges\EventPresentationModel',
-			'bundle' => [ 'web' => true, 'email' => true, 'expandable' => true ]
-		];
-
-		$notificationCategories['periodicrelatedchanges-follow'] = [
-			'priority' => 2
-		];
-	}
-
-	/**
-	 * Return those users who should get notified about this category change
-	 */
-	public static function userLocator() {
-		echo "<b>UserLocator</b><pre>";
-		debug_print_backtrace();
-		exit;
-	}
-
-	/**
-	 * Return those users who should *not* get notified about this
-	 *  category change
-	 */
-	public static function userFilter() {
-		// They'll get two notices if the page is removed.
-		// They should only get one.
-		echo "<b>UserFilter</b><pre>";
-		debug_print_backtrace();
-		exit;
-	}
-
-	/**
-	 * Hook used when a category is added.  Called in a deffered update or job,
-	 * not immediately after edit.
-	 *
-	 * @param Category $cat the category added
-	 * @param WikiPage $wikiPage page added
-	 *
-	 * @see https://www.mediawiki.org/wiki/Manual:Hooks/CategoryAfterPageAdded
-	 */
-	public static function onCategoryAfterPageAdded(
-		Category $cat, WikiPage $wikiPage
-	) {
-echo "before add\n\n\n";
-error_reporting( -1 );
-ini_set( 'display_startup_errors', 1 );
-ini_set( 'display_errors', 1 );
-		if ( RelatedChangeWatcher::titleHasCategoryWatchers(
-			$cat->getTitle()
-		) ) {
-				global $wgContLang;
-				EchoEvent::create( [
-					'type' => 'periodicrelatedchanges-page-added',
-					'title' => $title,
-					'extra' => [
-						'revid' => $revision->getId(),
-						'source' => $source,
-						'excerpt' => EchoDiscussionParser::getEditExcerpt(
-							$revision, $wgContLang
-						)
-					],
-					'agent' => $user,
-				] );
-		}
-echo "after add\n\n\n";
-	}
-
-	/**
-	 * Hook used when a category is removed. Called in a deffered update or job,
-	 * not immediately after edit.
-	 *
-	 * @param Category $cat the category removed
-	 * @param WikiPage $wikiPage page removed
-	 * @param int $id page id
-	 *
-	 * @see https://www.mediawiki.org/wiki/Manual:Hooks/CategoryAfterPageRemoved
-	 */
-	public static function onCategoryAfterPageRemoved(
-		Category $cat, WikiPage $wikiPage, $id
-	) {
-echo "before remove\n\n\n";
-error_reporting( -1 );
-ini_set( 'display_startup_errors', 1 );
-ini_set( 'display_errors', 1 );
-		if ( RelatedChangeWatcher::titleHasCategoryWatchers(
-			$cat->getTitle()
-		) ) {
-			global $wgContLang;
-			EchoEvent::create( [
-				'type' => 'periodicrelatedchanges-page-removed',
-				'title' => $title,
-				'extra' => [
-					'revid' => $revision->getId(),
-					'source' => $source,
-					'excerpt' => EchoDiscussionParser::getEditExcerpt(
-						$revision, $wgContLang
-					),
-				],
-				'agent' => $user,
-			] );
-		}
-echo "after remove\n\n\n";
 	}
 
 	/**
@@ -230,12 +124,14 @@ echo "after remove\n\n\n";
 		$isWatch, $section, &$flags, Revision $revision, Status $status,
 		$baseRevId, $undidRevId
 	) {
-		if ( RelatedChangeWatcher::titleHasCategoryWatchers(
-			$article->getTitle()
-		) ) {
+		if (
+			RelatedChangeWatcher::hasRelatedChangeWatchers(
+				$article->getTitle()
+			)
+		) {
 			global $wgContLang;
 			EchoEvent::create( [
-				'type' => 'periodicrelatedchanges-page-changed',
+				'type' => 'periodic-related-changes',
 				'title' => $title,
 				'extra' => [
 					'revid' => $revision->getId(),
@@ -246,25 +142,6 @@ echo "after remove\n\n\n";
 				],
 				'agent' => $user,
 			] );
-		}
-	}
-
-	/**
-	 * Determine how our echo bundles are handled
-	 *
-	 * @param EchoEvent $event notification type
-	 * @param string &$bundleString which bundle this goes into
-	 *
-	 * @see https://www.mediawiki.org/wiki/Manual:Hooks/EchoGetBundleRules
-	 */
-	public static function onEchoGetBundleRules(
-		EchoEvent $event, &$bundleString
-	) {
-		switch ( $event->getType() ) {
-		case 'periodicrelatedchanges-page-added':
-		case 'periodicrelatedchanges-page-removed':
-		case 'periodicrelatedchanges-page-changed':
-			$bundleString = 'perodicrelatedchanges';
 		}
 	}
 }

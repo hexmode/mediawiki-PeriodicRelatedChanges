@@ -188,4 +188,8 @@ class PeriodicRelatedChanges {
 	public function getCurrentWatches( User $user ) {
 		return RelatedChangeWatchList::newFromUser( $user );
 	}
+
+	public function getWatchGroups() {
+		return RelatedChangeWatcher::getWatchGroups();
+	}
 }

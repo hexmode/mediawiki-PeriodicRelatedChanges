@@ -101,11 +101,12 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		$this->setHeaders();
 		$this->checkPermissions();
 		$this->outputHeader();
+		$this->addOtherActions();
 
 		/**
 		 * These first two should be their own special page.
 		 */
-		if ( $this->listUsers() ) {
+		if ( $this->listAllUsers() ) {
 			return;
 		}
 
@@ -138,6 +139,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 
 			$this->showRelatedChanges( $user, $page );
 		}
+
 	}
 
 	/**
@@ -157,16 +159,18 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		$prc = PeriodicRelatedChanges::getManager();
 		$groups = $prc->getWatchGroups();
 
-		if ( $groups->count() === 0 ) {
+		if ( count( $groups ) === 0 ) {
 			$out->addWikiMsg( "periodic-related-changes-no-users" );
 			return true;
 		}
 
-		foreach ( $groups as $group ) {
+		$out->addWikiMsg( "periodic-related-changes-listwatchgroups-header" );
+
+		foreach ( $groups as $pageName => $watcher ) {
 			$out->addWikiMsg(
-				"periodic-related-changes-group-header", $group->getName()
+				"periodic-related-changes-group-header", Title::newFromId( $pageName )
 			);
-			$this->showGroupSubcribers( $group );
+			$this->listUsers( $watcher );
 		}
 
 		return true;
@@ -174,13 +178,13 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 
 	/**
 	 * Show subscribers to this group
-	 * @param mixed $group the group
+	 * @param array $watcher list of users
 	 */
-	protected function showGroupSubscribers( $group ) {
+	protected function showGroupSubscribers( array $watcher ) {
 		$out = $this->getOutput();
-		foreach ( $group->getSubscribers() as $user ) {
+		foreach ( $watcher as $user ) {
 			$out->addWikiMsg(
-				"periodic-related-changes-group-subscriber", $user
+				"periodic-related-changes-group-subscriber", User::newFromId( $user )
 			);
 		}
 	}
@@ -446,7 +450,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * List out all the users who have watches.
 	 * @return bool false if no permission or not requested
 	 */
-	public function listUsers() {
+	public function listAllUsers() {
 		if ( $this->getRequest()->getVal( "listusers" ) !== "true" ) {
 			return false;
 		}
@@ -459,15 +463,10 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			);
 			if ( $users->numRows() > 0 ) {
 				$out->addHTML(
-					wfMessage( 'periodic-related-changes-userlist-prefix' )
+					wfMessage( 'periodic-related-changes-listusers-header' )
 				);
 
-				foreach ( $users as $user ) {
-					$out->addHTML( wfMessage(
-							'periodic-related-changes-list-user',
-							User::newFromId( $user->id )
-						) );
-				}
+				$this->listUsers( $users );
 				return true;
 			}
 			$out->addHTML(
@@ -475,6 +474,22 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			);
 		}
 		return false;
+	}
+
+	/**
+	 * Show a list of users.
+	 *
+	 * @param array $users list
+	 */
+	protected function listUsers( array $users ) {
+		foreach ( $users as $user ) {
+			if ( !is_object( $user ) ) {
+				$user = User::newFromId( $user );
+			}
+			$this->getOutput()->addHTML( wfMessage(
+				'periodic-related-changes-list-user', $user
+			) );
+		}
 	}
 
 	/**
@@ -675,24 +690,20 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 */
 	protected function addOtherActions() {
 		$thisTitle = Title::newFromText( "PeriodicRelatedChanges", NS_SPECIAL );
-		$action = [
-			Linker::link(
-				$thisTitle,
-				wfMessage( "periodic-related-changes-listusers" ),
-				[], [ 'listusers' => 'true' ] ),
-			Linker::link(
-				$thisTitle,
-				wfMessage( "periodic-related-changes-list-watch-groups" ),
-				[], [ 'listwatchgroups' => 'true' ] ),
-			Linker::link(
-				$thisTitle,
-				wfMessage( "periodic-related-changes-importusers" ),
-				[], [ 'importusers' => "true" ]
-			)
-		];
+		$actionList = [];
+		$links = [ "listusers", "listwatchgroups", "importusers" ];
+
+		foreach ( $links as $action ) {
+			$msg = wfMessage( "periodic-related-changes-$action" );
+			if ( $this->getRequest()->getVal( $action ) !== "true" ) {
+				$msg = Linker::link( $thisTitle, $msg, [], [ $action => 'true' ] );
+			}
+
+			$actionList[] = $msg;
+		}
 
 		$this->getOutput()->setSubTitle(
-			$this->getLanguage()->commaList( $action )
+			$this->getLanguage()->commaList( $actionList )
 		);
 	}
 
@@ -701,49 +712,21 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * @param User $user user so we can see permissions
 	 * @return string
 	 */
-	protected function getManageWatchListSubtitle( User $user ) {
-		$titleTxt = "PeriodicRelatedChanges/$user";
-		$thisTitle = Title::newFromText( $titleTxt, NS_SPECIAL );
-		$action = [];
-
-		if ( $this->canChangeAnyUser ) {
-			$action = [
-				Linker::link(
-					$thisTitle,
-					wfMessage( "periodic-related-changes-lookup-another-user" )
-				),
-				Linker::link(
-					$thisTitle,
-					wfMessage( "periodic-related-changes-list-watch-groups" ),
-					[], [ 'listwatchgroups' => 'true' ]
-				),
-				Linker::link(
-					$thisTitle,
-					wfMessage( "periodic-related-changes-show-full-report" ),
-					[], [ 'fullreport' => 1 ]
-				)
-			];
-		}
-
-		return $this->getLanguage()->commaList( $action );
-	}
-
 	/**
 	 * Manage the watchlist for this user
 	 * @param User $user to list watches for
 	 * @return bool Did we show this?
 	 */
 	public function manageWatchList( User $user ) {
-		$out = $this->getOutput();
-		$out->setSubTitle( $this->getManageWatchListSubtitle( $user ) );
-
-		$this->addTitleFormHandler();
+		$this->getOutput()->addWikiMsg( "periodic-related-changes-user-list-header", $user );
+		$this->addOtherActions();
 		$this->listAndRemoveTitlesFormHandler();
+		$this->addTitleFormHandler();
 		return true;
 	}
 
 	/**
-	 * Redirect to the user's page if that is all their permissions allow.
+	 * Redirect to the user's page if that is all their permissions allow.a
 	 * @param string $userName so we can get permissions
 	 * @return bool
 	 */
@@ -787,7 +770,6 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			$form->setFormIdentifier( __METHOD__ );
 			$form->setSubmitCallback( [ $this, 'findUserSubmit' ] );
 			$form->setSubmitTextMsg( 'periodic-related-changes-getuser' );
-			$this->addOtherActions();
 
 			$form->show();
 			return true;
@@ -931,7 +913,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	public function addTitleSubmit( array $formData ) {
 		$prc = PeriodicRelatedChanges::getManager();
 		// Chance of race condition here that would result in an exception?
-		if ( $prc->add( $this->userSubject, $this->titleSubject ) ) {
+		if ( $prc->addWatch( $this->userSubject, $this->titleSubject ) ) {
 			$this->getOutput()->addWikiMsg( "periodic-related-changes-added",
 											$this->titleSubject,
 											$this->userSubject
