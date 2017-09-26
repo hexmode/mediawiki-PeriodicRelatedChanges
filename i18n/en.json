@@ -71,6 +71,6 @@
 	"periodic-related-changes-watchalreadyexists": "There is already a periodic related change watch for [[$1]]",
 	"periodic-related-changes-watchlist-titles": "Titles on the periodic related change watchlist for $1",
 	"periodic-related-changes-group-header": "== Subscribers to [[:$1]] ==",
-	"periodic-related-changes-group-subscriber": "* [[User:$1]]"
+	"periodic-related-changes-group-subscriber": "* [[User:$1]]",
 	"periodic-related-changes-default-header": "Type a user name into the following to examine their periodic related change watchlist.."
 }
