@@ -31,6 +31,7 @@ use PermissionsError;
 use PHPExcel_IOFactory;
 use PHPExcel_Reader_Exception;
 use PHPExcel_Worksheet_Row;
+use ResultWrapper;
 use Title;
 use User;
 use WikiPage;
@@ -52,6 +53,9 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	// The PRCs we have queued
 	protected $queuedPRCs;
 
+	// Possible actions and the method they call
+	protected $actionMap = [];
+
 	/**
 	 * Constructor
 	 * @param string $name Name of the special page, as seen in links and URLs
@@ -66,6 +70,15 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		$this->canChangeAnyUser = $this->getUser()->isAllowed(
 			'periodic-related-changes-any-user'
 		);
+		if ( $this->canChangeAnyUser ) {
+			$this->actionMap = [
+				'finduser' => 'showFindUserForm',
+				"listusers" => 'listAllUsers',
+				"listwatchgroups" => 'listWatchGroups',
+				"importusers" => 'importUsers',
+			];
+		}
+
 		$this->canChangeSelf
 			= $this->getUser()->isAllowed( 'periodic-related-changes' );
 
@@ -103,43 +116,41 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		$this->outputHeader();
 		$this->addOtherActions();
 
-		/**
-		 * These first two should be their own special page.
-		 */
-		if ( $this->listAllUsers() ) {
-			return;
-		}
-
-		if ( $this->listWatchGroups() ) {
-			return;
-		}
-
-		if ( $this->importUsers() ) {
-			return;
-		}
-
 		$page = null;
 		if ( strstr( $userName, "/" ) !== false ) {
 			list( $userName, $page ) = explode( "/", $userName, 2 );
 		}
+
+		if ( !$userName && $this->delegateAction() === true ) {
+			return;
+		}
+
 		$user = $this->findUser( $userName );
-
 		if ( $user ) {
-			if ( $this->sendEmail( $user ) ) {
-				return;
-			}
-
-			if ( $this->showFullReport( $user ) ) {
-				return;
-			}
-
 			if ( !$page && $this->manageWatchList( $user ) ) {
 				return;
 			}
 
 			$this->showRelatedChanges( $user, $page );
 		}
+	}
 
+	/**
+	 * Delegate an action based on the action parameter.
+	 *
+	 * @return bool true if nothing else needs to be done.
+	 */
+	protected function delegateAction() {
+		$action = $this->getRequest()->getVal( "action" );
+		$method = isset( $this->actionMap[$action] )
+				? $this->actionMap[$action]
+				: null;
+		$ret = false;
+
+		if ( $method && method_exists( $this, $method ) ) {
+			$ret = $this->$method();
+		}
+		return $ret;
 	}
 
 	/**
@@ -149,10 +160,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	protected function listWatchGroups() {
 		$request = $this->getRequest();
 		$out = $this->getOutput();
-		if (
-			!$request->getCheck( "listwatchgroups" ) ||
-			!$this->canChangeAnyUser
-		) {
+		if ( !$this->canChangeAnyUser ) {
 			return false;
 		}
 
@@ -168,7 +176,8 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 
 		foreach ( $groups as $pageName => $watcher ) {
 			$out->addWikiMsg(
-				"periodic-related-changes-group-header", Title::newFromId( $pageName )
+				"periodic-related-changes-group-header",
+				Title::newFromId( $pageName )
 			);
 			$this->listUsers( $watcher );
 		}
@@ -184,7 +193,8 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		$out = $this->getOutput();
 		foreach ( $watcher as $user ) {
 			$out->addWikiMsg(
-				"periodic-related-changes-group-subscriber", User::newFromId( $user )
+				"periodic-related-changes-group-subscriber",
+				User::newFromId( $user )
 			);
 		}
 	}
@@ -195,8 +205,11 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 */
 	protected function importUsers() {
 		$request = $this->getRequest();
-		if ( !$request->getCheck( "importusers" ) ) {
-			return false;
+		if ( !class_exists( 'PHPExcel_IOFactory' ) ) {
+			$this->getOutput()->addWikiMsg(
+				"periodic-related-changes-run-composer"
+			);
+			return true;
 		}
 		$user = $this->getUser();
 		$perm = 'periodic-related-changes-any-user';
@@ -207,7 +220,10 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 
 		$this->checkReadOnly();
 
-		if ( $request->wasPosted() && $request->getVal( 'action' ) == 'submit' ) {
+		if (
+			$request->wasPosted()
+			&& $request->getVal( 'upload' ) == 'submit'
+		) {
 			$this->doImport();
 		}
 
@@ -240,7 +256,9 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			try {
 				$xl = PHPExcel_IOFactory::load( $file->getTempName() );
 			} catch ( PHPExcel_Reader_Exception $e ) {
-				$out->addWikiMsg( 'periodic-related-changes-import-file-error', $e );
+				$out->addWikiMsg(
+					'periodic-related-changes-import-file-error', $e
+				);
 				return;
 			}
 
@@ -251,7 +269,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 				return;
 			}
 
-			$rowIter = $xl->getActiveSheet()->getRowIterator( 2 );
+			$rowIter = $xl->getActiveSheet()->getRowIterator( 1 );
 			$errors = [];
 			foreach ( $rowIter as $row ) {
 				$errors = array_merge(
@@ -260,7 +278,9 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			}
 
 			if ( count( $errors ) ) {
-				$out->addWikiMsg( 'periodic-related-changes-import-error-intro' );
+				$out->addWikiMsg(
+					'periodic-related-changes-import-error-intro'
+				);
 				foreach ( $errors as $error ) {
 					$out->addWikiMsg(
 						'periodic-related-changes-import-error-item', $error
@@ -279,7 +299,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 */
 	protected function parseTitleCell( $catVal ) {
 		try {
-			$title = Title::newFromTextThrow( $catVal, NS_CATEGORY );
+			$title = Title::newFromTextThrow( $catVal );
 		} catch ( MWException $e ) {
 			return [ $this->msg(
 				'periodic-related-changes-bad-title', $e->getMessage()
@@ -307,7 +327,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		}
 
 		$user = User::newFromName( $userVal );
-		if ( $user->loadFromDatabase() === false
+		if ( $user->getId() === 0
 			 && strstr( $userVal, '@' ) !== false ) {
 			$user = $this->findUserByEmail( $userVal );
 			if ( !$user ) {
@@ -337,16 +357,19 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		$watch = $prc->get( $user, $title );
 		if ( $watch->exists() ) {
 			return $this->msg(
-				"periodic-related-changes-already-watches", $user, $user->getEmail(), $title
+				"periodic-related-changes-already-watches", $user,
+				$user->getEmail(), $title
 			);
 		}
 		try {
-			!$prc->add( $user, $title );
+			$prc->addWatch( $user, $title );
 		} catch ( Exception $e ) {
 			return $this->msg(
-				"periodic-related-changes-add-fail", $user, $user->getEmail(), $title
+				"periodic-related-changes-add-fail", $user,
+				$user->getEmail(), $title
 			);
 		}
+		return true;
 	}
 
 	/**
@@ -363,6 +386,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		$errors = [];
 		$title = null;
 
+		$out = $this->getOutput();
 		foreach ( $cellIter as $cell ) {
 			$key = $cellIter->key();
 			if ( $key === "A" ) {
@@ -386,14 +410,14 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 				continue;
 			}
 
-			$error = $this->addWatch( $user, $title );
-			if ( $error !== false ) {
-				$errors[] = $error;
+			$ret = $this->addWatch( $user, $title );
+			if ( $ret !== true ) {
+				$errors[] = $ret;
 				continue;
 			}
 
 			$this->getOutput()->addWikiMsg(
-				"periodic-related-changes-add-fail", $user, $title
+				"periodic-related-changes-add-success", $user, $title
 			);
 
 		}
@@ -406,13 +430,19 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	protected function showForm() {
 		$filename = $this->getRequest()->getUpload( "fileimport" )->getName();
 		$comment = $this->getRequest()->getVal(
-			"log-comment", $this->msg( "periodic-related-changes-import-log-msg" )
+			"log-comment", $this->msg(
+				"periodic-related-changes-import-log-msg"
+			)
 		);
 
-		$action = $this->getPageTitle()->getLocalURL( [ 'action' => 'submit' ] );
+		$action = $this->getPageTitle()->getLocalURL(
+			[ 'action' => 'importusers' ]
+		);
 		$user = $this->getUser();
 		$this->getOutput()->addHTML(
-			Xml::fieldset( $this->msg( 'periodic-related-changes-import' )->text() ) .
+			Xml::fieldset(
+				$this->msg( 'periodic-related-changes-import' )->text()
+			) .
 			Xml::openElement(
 				'form',
 				[
@@ -422,17 +452,25 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 					'id' => 'mw-import-upload-form'
 				]
 			) .
-			$this->msg( 'periodic-related-changes-import-intro' )->parseAsBlock() .
-			Html::hidden( 'action', 'submit' ) .
+			$this->msg(
+				'periodic-related-changes-import-intro'
+			)->parseAsBlock() .
+			Html::hidden( 'upload', 'submit' ) .
 			Html::hidden( 'importusers', 'true' ) .
 			Html::hidden( 'editToken', $user->getEditToken() ) .
 			Xml::openElement( 'table', [ 'id' => 'mw-import-table-upload' ] ) .
 			"<tr><td class='mw-label'>" .
-			Xml::label( $this->msg( 'import-upload-filename' )->text(), 'fileimport' ) .
+			Xml::label(
+				$this->msg( 'import-upload-filename' )->text(), 'fileimport'
+			) .
 			"</td><td class='mw-input'>" .
-			Html::input( 'fileimport', $filename, 'file', [ 'id' => 'fileimport' ] ) .
+			Html::input(
+				'fileimport', $filename, 'file', [ 'id' => 'fileimport' ]
+			) .
 			" </td></tr><tr><td class='mw-label'>" .
-			Xml::label( $this->msg( 'import-comment' )->text(), 'mw-import-comment' ) .
+			Xml::label(
+				$this->msg( 'import-comment' )->text(), 'mw-import-comment'
+			) .
 			"</td><td class='mw-input'>" .
 			Xml::input(
 				'log-comment', 50, $comment,
@@ -451,9 +489,6 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * @return bool false if no permission or not requested
 	 */
 	public function listAllUsers() {
-		if ( $this->getRequest()->getVal( "listusers" ) !== "true" ) {
-			return false;
-		}
 		if ( $this->canChangeAnyUser ) {
 			$out = $this->getOutput();
 			$dbr = wfGetDB( DB_SLAVE );
@@ -481,10 +516,10 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 *
 	 * @param array $users list
 	 */
-	protected function listUsers( array $users ) {
+	protected function listUsers( ResultWrapper $users ) {
 		foreach ( $users as $user ) {
-			if ( !is_object( $user ) ) {
-				$user = User::newFromId( $user );
+			if ( !( $user instanceof User ) ) {
+				$user = User::newFromId( $user->id );
 			}
 			$this->getOutput()->addHTML( wfMessage(
 				'periodic-related-changes-list-user', $user
@@ -498,25 +533,6 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * @return bool false if not sent
 	 */
 	public function sendEmail( User $user ) {
-		if ( !$this->getRequest()->getCheck( "sendemail" ) ) {
-			return false;
-		}
-		$out = $this->getOutput();
-		$watches = RelatedChangeWatchList::newFromUser( $user );
-		$status = $watches->sendEmail( $user, $this->days );
-		$out->setPageTitle( wfMessage(
-			"periodic-related-changes-fullreport", $user, $this->days
-		) );
-
-		if ( !$status->isOk() ) {
-			$out->addWikiMsg( "periodic-related-changes-sent-email-problem" );
-			$out->addWikiMsg( $status->getWikiText() );
-			return false;
-		}
-		$out->addWikiMsg(
-			"periodic-related-changes-sent-email-success", $user
-		);
-		return true;
 	}
 
 	/**
@@ -558,28 +574,6 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * @return bool true if report was shown
 	 */
 	public function showFullReport( User $user ) {
-		$doFullReport = $this->getRequest()->getCheck( "fullreport" )
-					  || $this->getRequest()->getCheck( "wpfullreport" );
-		if ( !$user || !$doFullReport ) {
-			return false;
-		}
-
-		$out = $this->getOutput();
-		if ( !$this->getRequest()->getCheck( "printable" ) ) {
-			$this->showFullReportHeader( $user );
-		}
-
-		foreach (
-			PeriodicRelatedChanges::getManager()->getCurrentWatches( $user )
-			as $watch
-		) {
-			$this->showRelatedChanges( $user, $watch->getTitle() );
-		}
-		$out->setPageTitle( wfMessage(
-			"periodic-related-changes-fullreport", $user, $this->days
-		) );
-
-		return true;
 	}
 
 	/**
@@ -691,12 +685,18 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	protected function addOtherActions() {
 		$thisTitle = Title::newFromText( "PeriodicRelatedChanges", NS_SPECIAL );
 		$actionList = [];
-		$links = [ "listusers", "listwatchgroups", "importusers" ];
+		$links = array_keys( $this->actionMap );
+		$request = $this->getRequest();
 
+		if ( !$request->getVal( 'action' ) ) {
+			$request->setVal( 'action', "finduser" );
+		}
 		foreach ( $links as $action ) {
 			$msg = wfMessage( "periodic-related-changes-$action" );
-			if ( $this->getRequest()->getVal( $action ) !== "true" ) {
-				$msg = Linker::link( $thisTitle, $msg, [], [ $action => 'true' ] );
+			if ( $request->getVal( 'action' ) !== $action ) {
+				$msg = Linker::link(
+					$thisTitle, $msg, [], [ "action" => $action ]
+				);
 			}
 
 			$actionList[] = $msg;
@@ -718,7 +718,9 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * @return bool Did we show this?
 	 */
 	public function manageWatchList( User $user ) {
-		$this->getOutput()->addWikiMsg( "periodic-related-changes-user-list-header", $user );
+		$this->getOutput()->addWikiMsg(
+			"periodic-related-changes-user-list-header", $user
+		);
 		$this->addOtherActions();
 		$this->listAndRemoveTitlesFormHandler();
 		$this->addTitleFormHandler();
@@ -748,11 +750,10 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 
 	/**
 	 * Show the find user form
-	 * @param string $userName If one is supplied, then use that.
 	 * @return bool
 	 */
-	protected function showFindUserForm( $userName ) {
-		if ( !$userName && $this->canChangeAnyUser ) {
+	protected function showFindUserForm() {
+		if ( $this->canChangeAnyUser ) {
 			$this->getOutput()->addModules( 'ext.periodicRelatedChanges.user' );
 
 			$formDescriptor = [
@@ -783,12 +784,8 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 *
 	 * @return User|bool
 	 */
-	public function findUser( $userName ) {
+	public function findUser( $userName = false ) {
 		if ( $this->maybeRedirectToOwnPage( $userName ) ) {
-			return false;
-		}
-
-		if ( $this->showFindUserForm( $userName ) ) {
 			return false;
 		}
 
@@ -804,7 +801,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			$user = $this->getUser();
 		}
 
-		if ( !$user || $user->getId() === 0 ) {
+		if ( $user instanceof User && $user->getId() === 0 ) {
 			throw new ErrorPageError(
 				"periodic-related-changes-error",
 				"periodic-related-changes-user-not-exist",

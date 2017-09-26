@@ -3,6 +3,7 @@
 		"authors": []
 	},
 	"action-periodic-related-changes": "add periodic related changes",
+	"action-periodic-related-changes-any-user": "affect any other user",
 	"periodicrelatedchanges": "Periodic related changes",
 	"periodic-related-changes": "Set periodic related change watches",
 	"periodic-related-changes-already-exists": "[[:$1]] is already on [[User:$2|$2]]'s periodic related change watchlist",
@@ -69,6 +70,9 @@
 	"periodic-related-changes-watch-count": "$1 is tracking {{PLURAL:$2|one page|$2 pages}} for any related changes.{{PLURAL:$2|| <small>([{{fullurl:Special:PeriodicRelatedChanges/$1|fullreport}} see entire report])</small>}}",
 	"periodic-related-changes-watch-item": "* [[:$1]] <small>([[{{FULLPAGENAME}}/$1|see related changes]])</small>",
 	"periodic-related-changes-watchalreadyexists": "There is already a periodic related change watch for [[$1]]",
+        "periodic-related-changes-run-composer": "<span class='error'>The dependency manager [[mw:composer|composer]] needs to be run in this extension's directory before importing will work.</span>",
+        "periodic-related-changes-finduser": "Look up user",
+        "periodic-related-changes-user-no-email": "<span class='error'>[[User:$1|$1]] has no email</span>",
 	"periodic-related-changes-watchlist-titles": "Titles on the periodic related change watchlist for $1",
 	"periodic-related-changes-group-header": "== Subscribers to [[:$1]] ==",
 	"periodic-related-changes-group-subscriber": "* [[User:$1]]",
