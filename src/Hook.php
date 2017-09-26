@@ -31,6 +31,20 @@ use WikiPage;
 
 class Hook {
 	/**
+	 * Schema update handler
+	 *
+	 * @param DatabaseUpdater $db to for upddates
+	 */
+	public static function onLoadExtensionSchemaUpdates(
+		DatabaseUpdater $db
+	) {
+		$db->addExtensionTable(
+			'periodic_related_change',
+			__DIR__ . '/../sql/periodic_related_change.sql'
+		);
+	}
+
+	/**
 	 * Bundling handler
 	 *
 	 * @param Event $event to bundle
@@ -79,12 +93,24 @@ class Hook {
 		];
 	}
 
+	/**
+	 * Locate users to notify for our events
+	 *
+	 * @param EchoEvent $event we are handling
+	 * @return array of users
+	 */
 	public static function userLocater( EchoEvent $event ) {
 		return RelatedChangeWatcher::getRelatedChangeWatchers(
 			$event->getTitle()
 		);
 	}
 
+	/**
+	 * Filter out these users
+	 *
+	 * @param EchoEvent $event we are handling
+	 * @return array of users
+	 */
 	public static function userFilter( EchoEvent $event ) {
 		return [ $event->getAgent() ];
 	}
