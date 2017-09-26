@@ -148,7 +148,7 @@ class Hook {
 	public static function onPageContentSaveComplete(
 		WikiPage $article, User $user, Content $content, $summary, $isMinor,
 		$isWatch, $section, &$flags, Revision $revision, Status $status,
-		$baseRevId, $undidRevId
+		$baseRevId, $undidRevId = 0
 	) {
 		if (
 			RelatedChangeWatcher::hasRelatedChangeWatchers(
