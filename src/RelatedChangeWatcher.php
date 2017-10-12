@@ -292,7 +292,7 @@ class RelatedChangeWatcher {
 		);
 		$group = [];
 		foreach ( $res as $row ) {
-			$group[$row->page][] = $row->user;
+			$group[$row->page][] = User::newFromId( $row->user );
 		}
 		return $group;
 	}

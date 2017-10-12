@@ -174,12 +174,12 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 
 		$out->addWikiMsg( "periodic-related-changes-listwatchgroups-header" );
 
-		foreach ( $groups as $pageName => $watcher ) {
+		foreach ( $groups as $pageName => $watchers ) {
 			$out->addWikiMsg(
 				"periodic-related-changes-group-header",
 				Title::newFromId( $pageName )
 			);
-			$this->listUsers( $watcher );
+			$this->listUsers( $watchers );
 		}
 
 		return true;
@@ -516,7 +516,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 *
 	 * @param array $users list
 	 */
-	protected function listUsers( ResultWrapper $users ) {
+	protected function listUsers( $users ) {
 		foreach ( $users as $user ) {
 			if ( !( $user instanceof User ) ) {
 				$user = User::newFromId( $user->id );
