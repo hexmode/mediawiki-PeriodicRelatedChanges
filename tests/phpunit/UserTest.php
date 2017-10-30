@@ -38,8 +38,10 @@ class UserTest extends \MediaWikiTestCase {
 		);
 
 		// Cleanup after previous tests
-		$mgr->removeWatch( $user, $title );
-
+		$this->assertTrue(
+			get_class( $mgr->removeWatch( $user, $title ) ) === 'Status',
+			"Got a status object"
+		);
 		$this->assertFalse(
 			$mgr->isWatched( $user, $title ),
 			'Page should not initially be watched'
