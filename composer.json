@@ -24,7 +24,7 @@
 	"autoload" : {
 		"psr-4": {
 			"MediaWiki\\Extension\\PeriodicRelatedChanges\\Tests\\" : "tests/phpunit",
-			"MediaWiki\\Extension\\PeriodicRelatedChanges\\" : "src"
+			"MediaWiki\\Extension\\PeriodicRelatedChanges\\" : "src",
 			"MediaWiki\\Extension\\PeriodicRelatedChanges" : "src/PeriodicRelatedChanges.php"
 		}
 	},
