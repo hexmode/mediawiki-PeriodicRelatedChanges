@@ -24,7 +24,7 @@ class UserTest extends \MediaWikiTestCase {
 	}
 
 	private function getManager() {
-		return PeriodicRelatedChanges::getManager();
+		return PeriodicRelatedChanges\Manager::getManager();
 	}
 
 	public function testWatchAndUnWatchItem() {
