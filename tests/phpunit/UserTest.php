@@ -30,7 +30,7 @@ class UserTest extends \MediaWikiTestCase {
 	public function testWatchAndUnWatchItem() {
 		$user = $this->getUser();
 		$title = Title::newFromText( 'PRCTestPage' );
-		$mgr = PeriodicRelatedChanges::getManager();
+		$mgr = $this->getManager();
 
 		$this->assertTrue(
 			$mgr->isValidUserTitle( $user, $title )->isGood(),
