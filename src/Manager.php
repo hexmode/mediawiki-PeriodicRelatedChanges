@@ -18,7 +18,7 @@
  * @author Mark A. Hershberger <mah@nichework.com>
  */
 
-namespace MediaWiki\Extension;
+namespace MediaWiki\Extension\PeriodicRelatedChanges;
 
 use MWException;
 use Page;
@@ -28,7 +28,7 @@ use Title;
 use User;
 use WikiPage;
 
-class PeriodicRelatedChanges {
+class Manager {
 	protected $collectedChanges = [];
 
 	/**
