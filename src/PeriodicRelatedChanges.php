@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * Copyright (C) 2016  NicheWork, LLC
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  * @author Mark A. Hershberger <mah@nichework.com>
  */
 
-namespace PeriodicRelatedChanges;
+namespace MediaWiki\Extension;
 
 use MWException;
 use Page;
@@ -58,7 +58,7 @@ class PeriodicRelatedChanges {
 	 *
 	 * @return Status
 	 */
-	public function checkUserTitle( User $user, Title $title ) {
+	public function isValidUserTitle( User $user, Title $title ) {
 		if ( $user->isAnon() ) {
 			return Status::newFatal(
 				"periodic-related-changes-no-anon", $user
@@ -79,6 +79,27 @@ class PeriodicRelatedChanges {
 	}
 
 	/**
+	 * See if this is watched
+	 *
+	 * @param User $user the user.
+	 * @param Title $title the page name.
+	 *
+	 * @return bool
+	 */
+	public function isWatched( User $user, Title $title ) {
+		$check = $this->isValidUserTitle( $user, $title );
+		if ( !$check->isGood() ) {
+			return false;
+		}
+
+		$watch = new RelatedChangeWatcher( $user, WikiPage::factory( $title ) );
+		if ( !$watch->exists() ) {
+			return false;
+		}
+		return true;
+	}
+
+	/**
 	 * Remove a watcher.
 	 *
 	 * @param User $user the user.
@@ -87,7 +108,7 @@ class PeriodicRelatedChanges {
 	 * @return Status
 	 */
 	public function removeWatch( User $user, Title $title ) {
-		$check = $this->checkUserTitle( $user, $title );
+		$check = $this->isValidUserTitle( $user, $title );
 		if ( !$check->isGood() ) {
 			return $check;
 		}
@@ -111,7 +132,7 @@ class PeriodicRelatedChanges {
 	 * @return Status
 	 */
 	public function addWatch( User $user, Title $title ) {
-		$check = $this->checkUserTitle( $user, $title );
+		$check = $this->isValidUserTitle( $user, $title );
 		if ( !$check->isGood() ) {
 			return $check;
 		}

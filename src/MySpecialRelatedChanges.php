@@ -21,7 +21,7 @@
  * @ingroup SpecialPage
  */
 
-namespace PeriodicRelatedChanges;
+namespace MediaWiki\Extension\PeriodicRelatedChanges;
 
 /**
  * This special page is a stub to get some functionality we need

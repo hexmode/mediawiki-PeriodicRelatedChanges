@@ -21,11 +21,12 @@
  * @author Mark A. Hershberger <mah@nichework.com>
  */
 
-namespace PeriodicRelatedChanges;
+namespace MediaWiki\Extension\PeriodicRelatedChanges;
 
 use Category;
 use Content;
 use DatabaseUpdater;
+use GlobalVarConfig;
 use Revision;
 use Status;
 use User;
@@ -122,7 +123,7 @@ class Hook {
 	 *
 	 * @return GlobalVarConfig
 	 */
-	public function makeConfig() {
+	public static function makeConfig() {
 		return new GlobalVarConfig( "PeriodicRelatedChanges" );
 	}
 

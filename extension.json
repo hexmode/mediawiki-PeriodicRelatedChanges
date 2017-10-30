@@ -15,17 +15,17 @@
 		]
 	},
 	"AutoloadClasses": {
-		"PeriodicRelatedChanges\\Hook": "src/Hook.php",
-		"PeriodicRelatedChanges\\MySpecialRelatedChanges": "src/MySpecialRelatedChanges.php",
-		"PeriodicRelatedChanges\\PeriodicRelatedChanges": "src/PeriodicRelatedChanges.php",
-		"PeriodicRelatedChanges\\RelatedChangeWatchList": "src/RelatedChangeWatchList.php",
-		"PeriodicRelatedChanges\\RelatedChangeWatcher": "src/RelatedChangeWatcher.php",
-		"PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges": "src/SpecialPeriodicRelatedChanges.php",
-		"PeriodicRelatedChanges\\RelatedChangeWatchGroupList": "src/RelatedChangeWatchGroupList.php",
-		"PeriodicRelatedChanges\\EventPresentationModel": "src/EventPresentationModel.php"
+		"MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook": "src/Hook.php",
+		"MediaWiki\\Extension\\PeriodicRelatedChanges\\MySpecialRelatedChanges": "src/MySpecialRelatedChanges.php",
+		"MediaWiki\\Extension\\PeriodicRelatedChanges\\PeriodicRelatedChanges": "src/PeriodicRelatedChanges.php",
+		"MediaWiki\\Extension\\PeriodicRelatedChanges\\RelatedChangeWatchList": "src/RelatedChangeWatchList.php",
+		"MediaWiki\\Extension\\PeriodicRelatedChanges\\RelatedChangeWatcher": "src/RelatedChangeWatcher.php",
+		"MediaWiki\\Extension\\PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges": "src/SpecialPeriodicRelatedChanges.php",
+		"MediaWiki\\Extension\\PeriodicRelatedChanges\\RelatedChangeWatchGroupList": "src/RelatedChangeWatchGroupList.php",
+		"MediaWiki\\Extension\\PeriodicRelatedChanges\\EventPresentationModel": "src/EventPresentationModel.php"
 	},
 	"SpecialPages": {
-		"PeriodicRelatedChanges": "PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges"
+		"PeriodicRelatedChanges": "MediaWiki\\Extension\\PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges"
 	},
 	"GroupPermissions": {
 		"sysop": {
@@ -40,26 +40,26 @@
 		"periodic-related-changes"
 	],
 	"ConfigRegistry": {
-		"PeriodicRelatedChanges": "PeriodicRelatedChanges\\Hook::makeConfig"
+		"PeriodicRelatedChanges": "MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::makeConfig"
 	},
 	"Hooks": {
 		"LoadExtensionSchemaUpdates": [
-			"PeriodicRelatedChanges\\Hook::onLoadExtensionSchemaUpdates"
+			"MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::onLoadExtensionSchemaUpdates"
 		],
 		"BeforeCreateEchoEvent": [
-			"PeriodicRelatedChanges\\Hook::onBeforeCreateEchoEvent"
+			"MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::onBeforeCreateEchoEvent"
 		],
 		"EchoGetBundleRules": [
-			"PeriodicRelatedChanges\\Hook::onEchoGetBundleRules"
+			"MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::onEchoGetBundleRules"
 		],
 		"CategoryAfterPageAdded": [
-			"PeriodicRelatedChanges\\Hook::onCategoryAfterPageAdded"
+			"MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::onCategoryAfterPageAdded"
 		],
 		"CategoryAfterPageRemoved": [
-			"PeriodicRelatedChanges\\Hook::onCategoryAfterPageRemoved"
+			"MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::onCategoryAfterPageRemoved"
 		],
 		"PageContentSaveComplete": [
-			"PeriodicRelatedChanges\\Hook::onPageContentSaveComplete"
+			"MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::onPageContentSaveComplete"
 		]
 	},
 	"config": {

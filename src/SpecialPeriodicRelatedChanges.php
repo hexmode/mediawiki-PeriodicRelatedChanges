@@ -21,7 +21,7 @@
  * @author Mark A. Hershberger <mah@nichework.com>
  */
 
-namespace PeriodicRelatedChanges;
+namespace MediaWiki\Extension\PeriodicRelatedChanges;
 
 use ErrorPageError;
 use HTML;
