@@ -13,7 +13,12 @@ class UserTest extends \MediaWikiTestCase {
 
 	public function setUp() {
 		parent::setUp();
+<<<<<<< HEAD
 		$user = \User::newFromId( 1 );
+=======
+		$user = new \TestUser( 'PRCTestUser' );
+		$user->save();
+>>>>>>> d28a0005a2039a01bfc5087a0a95939f48bea8cf
 		self::$users['PRCTestUser'] = $user;
 
 		// $this->hideDeprecated( 'WatchedItem::fromUserTitle' );
