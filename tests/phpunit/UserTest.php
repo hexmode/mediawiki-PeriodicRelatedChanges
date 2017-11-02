@@ -13,14 +13,14 @@ class UserTest extends \MediaWikiTestCase {
 
 	public function setUp() {
 		parent::setUp();
-		self::$users['PRCTestUser']
-			= new \TestUser( 'PRCTestUser' );
+		$user = \User::newFromId( 1 );
+		self::$users['PRCTestUser'] = $user;
 
 		// $this->hideDeprecated( 'WatchedItem::fromUserTitle' );
 	}
 
 	private function getUser() {
-		return self::$users['PRCTestUser']->getUser();
+		return self::$users['PRCTestUser'];
 	}
 
 	private function getManager() {
@@ -29,29 +29,32 @@ class UserTest extends \MediaWikiTestCase {
 
 	public function testWatchAndUnWatchItem() {
 		$user = $this->getUser();
-		$title = Title::newFromText( 'PRCTestPage' );
+		$title = Title::newFromDBkey( "Category:Test" );
 		$mgr = $this->getManager();
 
+		var_dump($mgr->isValidUserTitle( $user, $title ));exit;
 		$this->assertTrue(
 			$mgr->isValidUserTitle( $user, $title )->isGood(),
 			"User is valid"
 		);
 
 		// Cleanup after previous tests
-		$mgr->removeWatch( $user, $title );
-
+		$this->assertTrue(
+			get_class( $mgr->removeWatch( $user, $title ) ) === 'Status',
+			"Got a status object"
+		);
 		$this->assertFalse(
 			$mgr->isWatched( $user, $title ),
 			'Page should not initially be watched'
 		);
-		WatchedItem::fromUserTitle( $user, $title )->addWatch();
+		$mgr->addWatch( $user, $title );
 		$this->assertTrue(
-			WatchedItem::fromUserTitle( $user, $title )->isWatched(),
+			$mgr->isWatched($user, $title ),
 			'Page should be watched'
 		);
-		WatchedItem::fromUserTitle( $user, $title )->removeWatch();
+		$mgr->removeWatch( $user, $title );
 		$this->assertFalse(
-			WatchedItem::fromUserTitle( $user, $title )->isWatched(),
+			$mgr->isWatched( $user, $title ),
 			'Page should be unwatched'
 		);
 	}
