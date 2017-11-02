@@ -114,7 +114,7 @@ class RelatedChangeWatcher {
 	 * @return RelatedChangeWatcher
 	 */
 	public static function newFromFormID( $formID, $prefix = "watch" ) {
-		list( $watch, $userId, $titleNS, $title ) = explode( "-", $formID, 4 );
+		list( $watch, $userId, $titleNS, $title ) = explode( '-', $formID, 4 );
 		if ( $watch === $prefix ) {
 			return self::newFromUserTitle(
 				User::newFromID( $userId ),
