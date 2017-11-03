@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Handle the user's list of watches
+ * Get related pages and changes
  *
- * Copyright (C) 2016, 2017  NicheWork, LLC
+ * Copyright (C) 2017  NicheWork, LLC
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,8 @@ use User;
 use UserMailer;
 use WikiPage;
 
-class RelatedChangeWatchList extends ResultWrapper {
+class RelatedPageList extends ResultWrapper {
+	protected $title;
 	protected $user;
 
 	/**
@@ -48,67 +49,50 @@ class RelatedChangeWatchList extends ResultWrapper {
 	}
 
 	/**
-	 * Returns an array of the current result
+	 * Setter for the title.
 	 *
-	 * @return array|bool
+	 * @param Title $title title
 	 */
-	public function current() {
-		$cur = parent::current();
-		$res = false;
-		if ( $cur !== false ) {
-			return RelatedChangeWatcher::newFromRow( $cur );
-		}
-		return $res;
+	public function setTitle( Title $title ) {
+		$this->title = $title;
 	}
 
 	/**
 	 * Return an iterable list of watches for a user
 	 *
-	 * @param User $user whose related watches to fetch.
-	 * @return RelatedChangeWatchList
+	 * @param Title $title that is the basis for related pages
+	 * @return RelatedPageList
 	 */
-	public static function newFromUser( User $user ) {
+	public static function newFromTitle( Title $title ) {
 		$dbr = wfGetDB( DB_SLAVE );
-		$res = $dbr->select( 'periodic_related_change',
-							 [
-								 'wc_page as page', 'wc_timestamp as timestamp',
-								 'wc_user as user'
-							 ],
-							 [ 'wc_user' => $user->getId() ],
-							 __METHOD__ );
 
-		$watches = new self( $dbr, $res );
-		$watches->setUser( $user );
-		return $watches;
+		$linkedRC = new LinkedRecentChangeQuery( $title );
+		$self = new self( $dbr, $linkedRC->runQuery() );
+		$self->setTitle( $title );
+
+		return $self;
 	}
 
 	/**
-	 * Return true if this watchlist contains the given page.
-	 * @param Title $title to look for
-	 * @return bool
+	 * Get the current title
+	 *
+	 * @return Title
 	 */
-	public function hasTitle( Title $title ) {
-		$obj = $this->fetchObject();
-		while ( $obj !== false ) {
-			if ( $title->equals( Title::newFromId( $obj->page ) ) ) {
-				$this->rewind();
-				return true;
-			}
-			$obj = $this->fetchObject();
-		}
-		return false;
+	public function currentTitle() {
+		return Title::newFromText(
+			$this->current()->rc_title, $this->current()->rc_title
+		);
 	}
 
 	/**
 	 * Get a list of changes for a page
 	 *
-	 * @param WikiPage $page to check
 	 * @param int $startTime to check
 	 * @param string $style which direction
 	 * @return array
 	 */
-	public function getChangesFor(
-		WikiPage $page, $startTime = 0, $style = "to"
+	public function getRelatedChangesSince(
+		$startTime = 0, $style = "to"
 	) {
 		global $wgHooks;
 
@@ -117,8 +101,9 @@ class RelatedChangeWatchList extends ResultWrapper {
 		if ( isset( $wgHooks['ChangesListSpecialPageQuery'] ) ) {
 			$oldHooks = $wgHooks['ChangesListSpecialPageQuery'];
 		}
+
 		$rcl = new MySpecialRelatedChanges(
-			$page->getTitle()->getPrefixedText(), $startTime
+			$this->title->getPrefixedText(), $startTime
 		);
 		$rcl->linkedTo( false );
 		if ( $style === "to" ) {
@@ -172,55 +157,4 @@ class RelatedChangeWatchList extends ResultWrapper {
 		return $change;
 	}
 
-	/**
-	 * Set the user associated with this watchlist
-	 * @param User $user to associate
-	 */
-	public function setUser( User $user ) {
-		$this->user = $user;
-	}
-
-	/**
-	 * Send an email with the relevant pages to the user.
-	 * @param User $user the user to send this to
-	 * @param int $days days we look back.
-	 * @return Status
-	 */
-	public function sendEmail( User $user = null, $days = 7 ) {
-		if ( $this->user === null && $user === null ) {
-			throw new MWException( "No user to send to." );
-		}
-		if ( $user === null ) {
-			$user = $this->user;
-		}
-		$to = $user->getEmail();
-
-		if ( !$to ) {
-			throw new MWException( "No email for $user.\n" );
-		}
-		$thisPage = Title::newFromText(
-			"PeriodicRelatedChanges/$user", NS_SPECIAL
-		);
-		$req = RequestContext::newExtraneousContext(
-			$thisPage,
-			[
-				"fullreport" => true,
-				"printable" => "yes",
-				"days" => $days
-			] );
-		$req->setUser( $user );
-		\SpecialPageFactory::executePath( $thisPage, $req );
-
-		global $wgAllowHTMLEmail, $wgPasswordSender;
-		$wgAllowHTMLEmail = true;
-
-		return UserMailer::send( MailAddress::newFromUser( $user ),
-						  new MailAddress( $wgPasswordSender ),
-						  $req->getOutput()->getPageTitle(),
-						  [
-							  "text" => "nothing here ... See the HTML part!",
-							  "html" => $req->getOutput()->getHTML()
-						  ], [ "contentType" => "multipart/alternative" ]
-		);
-	}
 }

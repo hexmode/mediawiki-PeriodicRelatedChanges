@@ -26,7 +26,6 @@ use ResultWrapper;
 use Status;
 use Title;
 use User;
-use WikiPage;
 
 class Manager {
 	protected $collectedChanges = [];
@@ -34,7 +33,7 @@ class Manager {
 	/**
 	 * Get the manager for this
 	 *
-	 * @return PeriodicRelatedChanges
+	 * @return MediaWiki\Extension\PeriodicRelatedChanges\Manager
 	 */
 	public static function getManager() {
 		return new self();
@@ -69,12 +68,12 @@ class Manager {
 				"periodic-related-changes-user-not-exist", $user
 			);
 		}
-
-		if ( !$title->exists() ) {
+		if ( !$title->isValid() ) {
 			return Status::newFatal(
-				"periodic-related-changes-title-not-exist", $title
+				"periodic-related-changes-title-not-valid", $user
 			);
 		}
+
 		return Status::newGood();
 	}
 
@@ -92,7 +91,7 @@ class Manager {
 			return false;
 		}
 
-		$watch = new RelatedChangeWatcher( $user, WikiPage::factory( $title ) );
+		$watch = new RelatedChangeWatcher( $user, $title );
 		if ( !$watch->exists() ) {
 			return false;
 		}
@@ -113,7 +112,7 @@ class Manager {
 			return $check;
 		}
 
-		$watch = new RelatedChangeWatcher( $user, WikiPage::factory( $title ) );
+		$watch = new RelatedChangeWatcher( $user, $title );
 		if ( !$watch->exists() ) {
 			return Status::newFatal(
 				"periodic-related-changes-does-not-exist", $title, $user
@@ -137,7 +136,7 @@ class Manager {
 			return $check;
 		}
 
-		$watch = new RelatedChangeWatcher( $user, WikiPage::factory( $title ) );
+		$watch = new RelatedChangeWatcher( $user, $title );
 		if ( !$watch->exists() ) {
 			return $watch->save();
 		}
@@ -147,7 +146,93 @@ class Manager {
 	}
 
 	/**
+	 * Dumplicate the people watching the title
+	 *
+	 * @param Title $oldTitle original title
+	 * @param Title $newTitle title to dupe watches from old title
+	 *
+	 * @return Status
+	 */
+	public function duplicateEntries( Title $oldTitle, Title $newTitle ) {
+		return RelatedChangeWatcher::duplicateEntries( $oldTitle, $newTitle );
+	}
+
+	/**
+	 * Get the a watcher, ensuring that it exists.
+	 *
+	 * @param User $user the user
+	 * @param Title $title what to watch for related changes.
+	 *
+	 * @return Status|RelatedChangeWatcher
+	 */
+	protected function getExistingWatcher( User $user, Title $title ) {
+		$check = $this->isValidUserTitle( $user, $title );
+		if ( !$check->isGood() ) {
+			return $check;
+		}
+
+		$watch = new RelatedChangeWatcher( $user, $title );
+		if ( !$watch->exists() ) {
+			return Status::newFatal(
+				"periodic-related-changes-does-not-exist", $title, $user
+			);
+		}
+
+		return $watch;
+	}
+
+	/**
+	 * Reset the timestamp
+	 *
+	 * @param User $user the user
+	 * @param Title $title what to watch for related changes.
+	 *
+	 * @return Status|bool
+	 */
+	public function resetNotificationTimestamp( User $user, Title $title ) {
+		return $this->updateNotificationTimestamp( $user, $title, null );
+	}
+
+	/**
+	 * Update the timestamp
+	 *
+	 * @param User $user the user
+	 * @param Title $title what to watch for related changes.
+	 * @param string $ts value
+	 *
+	 * @return Status|bool
+	 */
+	public function updateNotificationTimestamp(
+		User $user, Title $title, $ts
+	) {
+		$watch = $this->getExistingWatcher( $user, $title );
+		if ( $watch instanceof Status ) {
+			return $watch;
+		}
+
+		return $watch->setTimestamp( $ts );
+	}
+
+	/**
+	 * Get this watch's timestamp
+	 *
+	 * @param User $user the user
+	 * @param Title $title what to watch for related changes.
+	 *
+	 * @return Status|string
+	 */
+	public function getNotificationTimestamp( User $user, Title $title ) {
+		$watch = $this->getExistingWatcher( $user, $title );
+		if ( $watch instanceof Status ) {
+			return $watch;
+		}
+
+		return $watch->getTimestamp();
+	}
+
+	/**
 	 * Get related pages
+	 *
 	 * @param User $user the user
 	 * @param Page $page what to watch for related changes.
 	 *
@@ -209,7 +294,7 @@ class Manager {
 	 * @return Iterator
 	 */
 	public function getCurrentWatches( User $user ) {
-		return RelatedChangeWatchList::newFromUser( $user );
+		return RelatedChangeWatchlist::newFromUser( $user );
 	}
 
 	/**
@@ -218,5 +303,30 @@ class Manager {
 	 */
 	public function getWatchGroups() {
 		return RelatedChangeWatcher::getWatchGroups();
+	}
+
+	/**
+	 * Get a list of pages that are "related" to this one.
+	 * @param Title $title we want info on
+	 * @return Iterator
+	 */
+	public function getRelatedPages( Title $title ) {
+		return RelatedPageList::newFromTitle( $title );
+	}
+
+	/**
+	 * Get a list of changes that are made on pages "related" to this one.
+	 * @param Title $title we want info on
+	 * @param string $startTime since this date
+	 * @param string $style direction, to or from
+	 * @return Iterator
+	 */
+	public function getRelatedChangesSince(
+		Title $title, $startTime = 0, $style = "to"
+	) {
+		$rpl = RelatedPageList::newFromTitle( $title );
+		return $rpl->getRelatedChangesSince(
+			$startTime, $style
+		);
 	}
 }

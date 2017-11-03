@@ -23,6 +23,8 @@
 
 namespace MediaWiki\Extension\PeriodicRelatedChanges;
 
+use Wikimedia\Timestamp\ConvertibleTimestamp;
+
 /**
  * This special page is a stub to get some functionality we need
  *
@@ -37,12 +39,12 @@ class MySpecialRelatedChanges extends \SpecialRecentChangesLinked {
 	/**
 	 * Weird, not sure if I should invoke the parent's constructor
 	 * @param string $target page to look at linkings
-	 * @param int $days to look for history
+	 * @param ConvertibleTimestamp $startTime to look for history
 	 */
-	function __construct( $target, $days ) {
+	function __construct( $target, ConvertibleTimestamp $startTime ) {
 		parent::__construct( 'myrelatedchanges' );
 		$this->target = $target;
-		$this->days = $days;
+		$this->days = $startTime->diff( new ConvertibleTimestamp() )->days;
 	}
 
 	/**

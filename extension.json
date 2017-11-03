@@ -18,11 +18,13 @@
 		"MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook": "src/Hook.php",
 		"MediaWiki\\Extension\\PeriodicRelatedChanges\\MySpecialRelatedChanges": "src/MySpecialRelatedChanges.php",
 		"MediaWiki\\Extension\\PeriodicRelatedChanges\\PeriodicRelatedChanges": "src/PeriodicRelatedChanges.php",
-		"MediaWiki\\Extension\\PeriodicRelatedChanges\\RelatedChangeWatchList": "src/RelatedChangeWatchList.php",
+		"MediaWiki\\Extension\\PeriodicRelatedChanges\\RelatedChangeWatchlist": "src/RelatedChangeWatchlist.php",
+		"MediaWiki\\Extension\\PeriodicRelatedChanges\\RelatedPageList": "src/RelatedPageList.php",
 		"MediaWiki\\Extension\\PeriodicRelatedChanges\\RelatedChangeWatcher": "src/RelatedChangeWatcher.php",
 		"MediaWiki\\Extension\\PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges": "src/SpecialPeriodicRelatedChanges.php",
 		"MediaWiki\\Extension\\PeriodicRelatedChanges\\RelatedChangeWatchGroupList": "src/RelatedChangeWatchGroupList.php",
-		"MediaWiki\\Extension\\PeriodicRelatedChanges\\EventPresentationModel": "src/EventPresentationModel.php"
+		"MediaWiki\\Extension\\PeriodicRelatedChanges\\EventPresentationModel": "src/EventPresentationModel.php",
+		"MediaWiki\\Extension\\PeriodicRelatedChanges\\LinkedRecentChangeQuery": "src/LinkedRecentChangeQuery.php"
 	},
 	"SpecialPages": {
 		"PeriodicRelatedChanges": "MediaWiki\\Extension\\PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges"

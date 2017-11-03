@@ -65,18 +65,17 @@ class ListWatch extends Maintenance {
 	 */
 	public function execute() {
 		$title = Title::newFromText( $this->getArg( 0 ) );
-		var_dump( RelatedChangeWatcher::getRelatedChangeWatchers( $title ) );
 	}
 
 	/**
 	 * Produce a report of related changes for a page
 	 * @param User $user to print for
-	 * @param RelatedChangeWatchList $watches object
+	 * @param RelatedChangeWatchlist $watches object
 	 * @param WikiPage $page to examine
 	 * @return null
 	 */
 	protected function printRelatedChanges(
-		User $user, RelatedChangeWatchList $watches, WikiPage $page
+		User $user, RelatedChangeWatchlist $watches, WikiPage $page
 	) {
 		$title = $page->getTitle();
 		$changesTo = $watches->getChangesFor( $page, $this->days, "to" );
@@ -109,11 +108,11 @@ class ListWatch extends Maintenance {
 	/**
 	 * Produce a report of the titles being watched changes for a page
 	 * @param User $user to print for
-	 * @param RelatedChangeWatchList $watches object
+	 * @param RelatedChangeWatchlist $watches object
 	 * @return null
 	 */
 	protected function printWatchedTitles(
-		User $user, RelatedChangeWatchList $watches
+		User $user, RelatedChangeWatchlist $watches
 	) {
 		if ( $watches->numRows() === 0 ) {
 			$this->error( "$user does not have any periodic notices!\n", 1 );

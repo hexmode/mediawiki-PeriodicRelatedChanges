@@ -90,7 +90,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	}
 
 	/**
-	 * We'll be doing some writes
+	 * We do some writes
 	 *
 	 * @return bool
 	 */
@@ -308,11 +308,6 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			)->text() ];
 		}
 
-		if ( !$title->exists() ) {
-			return [ $this->msg(
-				'periodic-related-changes-title-not-exist', $title
-			)->text() ];
-		}
 		return $title;
 	}
 
@@ -598,7 +593,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 				return true;
 			}
 		}
-		$watches = RelatedChangeWatchList::newFromUser( $user );
+		$watches = RelatedChangeWatchlist::newFromUser( $user );
 		if ( !$watches->hasTitle( $title ) ) {
 			$out->addWikiMsg(
 				"periodic-related-changes-no-user-title", $user, $title
@@ -892,7 +887,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			$watch
 				= PeriodicRelatedChanges::getManager()->getRelatedChangeWatcher(
 					$this->userSubject, WikiPage::factory( $title )
-			);
+				);
 
 			if ( $watch->exists() ) {
 				return wfMessage( 'periodic-related-changes-watchalreadyexists',
@@ -965,11 +960,11 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 
 		$watchesToRemove = array_filter(
 			array_map(
-					function ( $item ) use ( $formData ) {
-						if ( $formData[$item] === true ) {
-							return RelatedChangeWatcher::newFromFormID( $item );
-						}
-					}, array_keys( $formData )
+				function ( $item ) use ( $formData ) {
+					if ( $formData[$item] === true ) {
+						return RelatedChangeWatcher::newFromFormID( $item );
+					}
+				}, array_keys( $formData )
 			) );
 		wfDebugLog( __METHOD__, var_export( $watchesToRemove, true ) );
 
