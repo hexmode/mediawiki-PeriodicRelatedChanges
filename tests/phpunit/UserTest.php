@@ -15,6 +15,8 @@ class UserTest extends \MediaWikiTestCase {
 		parent::setUp();
 		$user = \User::newFromId( 1 );
 		self::$users['PRCTestUser'] = $user;
+		$user = \User::newFromId( 2 );
+		self::$users['PRCOtherTestUser'] = $user;
 
 		// $this->hideDeprecated( 'WatchedItem::fromUserTitle' );
 	}
@@ -23,20 +25,27 @@ class UserTest extends \MediaWikiTestCase {
 		return self::$users['PRCTestUser'];
 	}
 
+	private function getOtherUser() {
+		return self::$users['PRCTestUser'];
+	}
+
 	private function getManager() {
 		return PeriodicRelatedChanges\Manager::getManager();
+	}
+
+	public function testUserIsValid() {
+		$user = $this->getUser();
+		$title = Title::newFromDBkey( "Category:Test" );
+		$mgr = $this->getManager();
+
+		$valid = $mgr->isValidUserTitle( $user, $title );
+		$this->assertTrue( $valid->isGood(), "User is valid" );
 	}
 
 	public function testWatchAndUnWatchItem() {
 		$user = $this->getUser();
 		$title = Title::newFromDBkey( "Category:Test" );
 		$mgr = $this->getManager();
-
-		var_dump($mgr->isValidUserTitle( $user, $title ));exit;
-		$this->assertTrue(
-			$mgr->isValidUserTitle( $user, $title )->isGood(),
-			"User is valid"
-		);
 
 		// Cleanup after previous tests
 		$this->assertTrue(
@@ -49,7 +58,7 @@ class UserTest extends \MediaWikiTestCase {
 		);
 		$mgr->addWatch( $user, $title );
 		$this->assertTrue(
-			$mgr->isWatched($user, $title ),
+			$mgr->isWatched( $user, $title ),
 			'Page should be watched'
 		);
 		$mgr->removeWatch( $user, $title );
@@ -61,95 +70,111 @@ class UserTest extends \MediaWikiTestCase {
 
 	public function testUpdateAndResetNotificationTimestamp() {
 		$user = $this->getUser();
-		$otherUser = ( new TestUser( 'WatchedItemIntegrationTestUser_otherUser' ) )->getUser();
+		$otherUser = $this->getOtherUser();
 		$title = Title::newFromText( 'WatchedItemIntegrationTestPage' );
-		WatchedItem::fromUserTitle( $user, $title )->addWatch();
-		$this->assertNull( WatchedItem::fromUserTitle( $user, $title )->getNotificationTimestamp() );
+		$mgr = $this->getManager();
+		$mgr->addWatch( $user, $title );
 
-		EmailNotification::updateWatchlistTimestamp( $otherUser, $title, '20150202010101' );
+		$this->assertNull(
+			$mgr->getNotificationTimestamp( $user, $title ), "Null timetamp"
+		);
+
+		$this->assertTrue(
+			$mgr->updateNotificationTimestamp( $otherUser, $title, '20150202010101' ),
+			"Updated timestamp"
+		);
+
 		$this->assertEquals(
 			'20150202010101',
-			WatchedItem::fromUserTitle( $user, $title )->getNotificationTimestamp()
+			$mgr->getNotificationTimestamp( $user, $title ),
+			"Timestamp was updated"
 		);
 
-		MediaWikiServices::getInstance()->getWatchedItemStore()->resetNotificationTimestamp(
-			$user, $title
+		$this->assertTrue(
+			$mgr->resetNotificationTimestamp( $user, $title ), "Reset timestamp"
 		);
-		$this->assertNull( WatchedItem::fromUserTitle( $user, $title )->getNotificationTimestamp() );
+		$this->assertNull( $mgr->getNotificationTimestamp( $user, $title ) );
 	}
 
 	public function testDuplicateAllAssociatedEntries() {
 		$user = $this->getUser();
 		$titleOld = Title::newFromText( 'WatchedItemIntegrationTestPageOld' );
 		$titleNew = Title::newFromText( 'WatchedItemIntegrationTestPageNew' );
-		WatchedItem::fromUserTitle( $user, $titleOld->getSubjectPage() )->addWatch();
-		WatchedItem::fromUserTitle( $user, $titleOld->getTalkPage() )->addWatch();
+		$mgr = $this->getManager();
+
+		$mgr->addWatch( $user, $titleOld->getSubjectPage() );
+		$mgr->addWatch( $user, $titleOld->getTalkPage() );
 		// Cleanup after previous tests
-		WatchedItem::fromUserTitle( $user, $titleNew->getSubjectPage() )->removeWatch();
-		WatchedItem::fromUserTitle( $user, $titleNew->getTalkPage() )->removeWatch();
-
-		WatchedItem::duplicateEntries( $titleOld, $titleNew );
+		$mgr->removeWatch( $user, $titleNew->getSubjectPage() );
+		$mgr->removeWatch( $user, $titleNew->getTalkPage() );
 
 		$this->assertTrue(
-			WatchedItem::fromUserTitle( $user, $titleOld->getSubjectPage() )->isWatched()
+			$mgr->duplicateEntries( $titleOld, $titleNew ),
+			"Duplicate watches"
+		);
+
+		$this->assertTrue(
+			$mgr->isWatched( $user, $titleOld->getSubjectPage() ),
+			"Old page is still watched"
 		);
 		$this->assertTrue(
-			WatchedItem::fromUserTitle( $user, $titleOld->getTalkPage() )->isWatched()
-		);
-		$this->assertTrue(
-			WatchedItem::fromUserTitle( $user, $titleNew->getSubjectPage() )->isWatched()
-		);
-		$this->assertTrue(
-			WatchedItem::fromUserTitle( $user, $titleNew->getTalkPage() )->isWatched()
+			$mgr->isWatched( $user, $titleNew->getSubjectPage() ),
+			"New page is watched, too"
 		);
 	}
 
 	public function testIsWatched_falseOnNotAllowed() {
 		$user = $this->getUser();
 		$title = Title::newFromText( 'WatchedItemIntegrationTestPage' );
-		WatchedItem::fromUserTitle( $user, $title )->addWatch();
+		$mgr = $this->getManager();
+		$mgr->addWatch( $user, $title );
 
-		$this->assertTrue( WatchedItem::fromUserTitle( $user, $title )->isWatched() );
+		$this->assertTrue(
+			$mgr->isWatched( $user, $title ), "Permissions unchanged"
+		);
 		$user->mRights = [];
-		$this->assertFalse( WatchedItem::fromUserTitle( $user, $title )->isWatched() );
+		$this->assertFalse(
+			$mgr->isWatched( $user, $title ), "Cannot watch"
+		);
 	}
 
 	public function testGetNotificationTimestamp_falseOnNotAllowed() {
 		$user = $this->getUser();
 		$title = Title::newFromText( 'WatchedItemIntegrationTestPage' );
-		WatchedItem::fromUserTitle( $user, $title )->addWatch();
-		MediaWikiServices::getInstance()->getWatchedItemStore()->resetNotificationTimestamp(
-			$user, $title
-		);
+		$mgr = $this->getManager();
+		$mgr->addWatch( $user, $title );
+		$mgr->resetNotificationTimestamp( $user, $title );
 
 		$this->assertEquals(
 			null,
-			WatchedItem::fromUserTitle( $user, $title )->getNotificationTimestamp()
+			$mgr->getNotificationTimestamp( $user, $title )
 		);
 		$user->mRights = [];
-		$this->assertFalse( WatchedItem::fromUserTitle( $user, $title )->getNotificationTimestamp() );
+		$this->assertFalse( $mgr->getNotificationTimestamp( $user, $title )->isOk() );
 	}
 
 	public function testRemoveWatch_falseOnNotAllowed() {
 		$user = $this->getUser();
 		$title = Title::newFromText( 'WatchedItemIntegrationTestPage' );
-		WatchedItem::fromUserTitle( $user, $title )->addWatch();
+		$mgr = $this->getManager();
+		$mgr->addWatch( $user, $title );
 
 		$previousRights = $user->mRights;
 		$user->mRights = [];
-		$this->assertFalse( WatchedItem::fromUserTitle( $user, $title )->removeWatch() );
+		$this->assertFalse( $mgr->removeWatch( $user, $title )->isOk() );
 		$user->mRights = $previousRights;
-		$this->assertTrue( WatchedItem::fromUserTitle( $user, $title )->removeWatch() );
+		$this->assertTrue( $mgr->removeWatch( $user, $title )->isOk() );
 	}
 
 	public function testGetNotificationTimestamp_falseOnNotWatched() {
 		$user = $this->getUser();
 		$title = Title::newFromText( 'WatchedItemIntegrationTestPage' );
+		$mgr = $this->getManager();
+		$mgr->removeWatch( $user, $title );
 
-		WatchedItem::fromUserTitle( $user, $title )->removeWatch();
-		$this->assertFalse( WatchedItem::fromUserTitle( $user, $title )->isWatched() );
+		$this->assertFalse( $mgr->isWatched( $user, $title ) );
 
-		$this->assertFalse( WatchedItem::fromUserTitle( $user, $title )->getNotificationTimestamp() );
+		$this->assertFalse( $mgr->getNotificationTimestamp( $user, $title )->isOk() );
 	}
 
 }

@@ -29,28 +29,34 @@ use ResultWrapper;
 use Status;
 use Title;
 use User;
-use WikiPage;
 
 class RelatedChangeWatcher {
 	protected $user;
-	protected $page;
+	protected $namespace;
+	protected $title;
+	protected $timestamp;
 	protected $sinceDays;
 	protected $limit;
 	protected $collectedChanges;
 	protected $exists;
 	protected static $table = "periodic_related_change";
 	protected static $titleCache = [];
+	protected static $rowMap = [
+		'wc_title as title', 'wc_namespace as namespace', 'wc_user as user',
+		'wc_timestamp as timestamp'
+	];
 
 	/**
 	 * Constructor
 	 *
 	 * @param User $user who is watching
-	 * @param Page $page what they're watching
+	 * @param Title $title what they're watching
 	 * @param int|null $timestamp of change
 	 */
-	public function __construct( User $user, Page $page, $timestamp = null ) {
+	public function __construct( User $user, Title $title, $timestamp = null ) {
 		$this->user = $user;
-		$this->page = $page;
+		$this->namespace = $title->getNamespace();
+		$this->title = $title->getDBKey();
 		$this->timestamp = $timestamp;
 		$this->exists = null;
 	}
@@ -75,24 +81,23 @@ class RelatedChangeWatcher {
 		$key = $title->getPrefixedText();
 		if ( !isset( self::$titleCache[$key] ) ) {
 			self::$titleCache[$key] = [];
-			$categoryIDs = array_map(
-				function ( $category ) {
-					$catObj = Title::newFromText( $category );
-					return $catObj->getArticleID();
-				}, $title->getParentCategories()
-			);
-			if ( $categoryIDs ) {
+			$categoryCond = [];
+			foreach ( $title->getParentCategories() as $category => $titleTxt ) {
+				$categoryCond['wc_title'][] = $category;
+				$categoryCond['wc_namespace'][] = NS_CATEGORY;
+			}
+			if ( count( $categoryCond ) ) {
 				$dbr = wfGetDB( DB_SLAVE );
 				$res = $dbr->select(
-					self::$table, 'wc_user', [ 'wc_page' => $categoryIDs ],
+					self::$table, 'wc_user', $categoryCond,
 					__METHOD__, [ 'DISTINCT' ]
 				);
 				foreach ( $res as $row ) {
-					self::$titleCache[$key][] = $row->wc_user;
+					self::$titleCache[$key][$row->wc_user] = 1;
 				}
 			}
 		}
-		return self::$titleCache[$key];
+		return array_keys( self::$titleCache[$key] );
 	}
 
 	/**
@@ -103,7 +108,7 @@ class RelatedChangeWatcher {
 	 * @return RelatedChangeWatcher
 	 */
 	public static function newFromUserTitle( User $user, Title $title ) {
-		return new self( $user, WikiPage::factory( $title ) );
+		return new self( $user, $title );
 	}
 
 	/**
@@ -131,7 +136,8 @@ class RelatedChangeWatcher {
 	 */
 	public static function newFromRow( $row ) {
 		return new self(
-			User::newFromID( $row->user ), WikiPage::newFromID( $row->page ),
+			User::newFromID( $row->user ),
+			Title::newFromText( $row->title, $row->namespace ),
 			$row->timestamp
 		);
 	}
@@ -145,7 +151,7 @@ class RelatedChangeWatcher {
 	public function getFormID( $prefix = "watch" ) {
 		$title = $this->getTitle();
 		return implode(
-			"-", [ $prefix, $this->user->getId(), $title->getNamespace(),
+			"-", [ $prefix, $this->user->getID(), $title->getNamespace(),
 				   $title->getDBkey() ]
 		);
 	}
@@ -156,8 +162,24 @@ class RelatedChangeWatcher {
 	 * @return array
 	 */
 	protected function getRowData() {
-		return [ 'wc_user' => $this->user->getId(),
-				 'wc_page' => $this->page->getId() ];
+		return [
+			'wc_user' => $this->user->getID(),
+			'wc_title' => $this->title,
+			'wc_namespace' => $this->namespace
+		];
+	}
+
+	/**
+	 * Get data ready for row query and insert
+	 *
+	 * @param $title Title to query for
+	 * @return array
+	 */
+	protected static function getRowDataForTitle( Title $title ) {
+		return [
+			'wc_title' => $title->getDBkey(),
+			'wc_namespace' => $title->getNamespace()
+		];
 	}
 
 	/**
@@ -181,6 +203,9 @@ class RelatedChangeWatcher {
 	 * @return bool
 	 */
 	public function exists( $dbr = null ) {
+		if ( !$this->user->isAllowed( 'periodic-related-changes' ) ) {
+			return false;
+		}
 		if ( $this->exists === null ) {
 			$this->exists = false;
 
@@ -189,14 +214,26 @@ class RelatedChangeWatcher {
 			}
 			$row = $this->getRowData();
 			$res = $dbr->select(
-				self::$table, array_keys( $row ), $row, __METHOD__
+				self::$table, self::$rowMap, $row, __METHOD__
 			);
 
 			if ( $res->numRows() > 0 ) {
 				$this->exists = true;
+				foreach ( $res as $row ) {
+					# There can be only one.
+					$this->fillFromRow( $row );
+				}
 			}
 		}
 		return $this->exists;
+	}
+
+	public function fillFromRow( $row ) {
+		$this->title = $row->title;
+		$this->namespace = $row->namespace;
+		$this->user = User::newFromID( $row->user );
+		$this->timestamp = $row->timestamp;
+		$this->exists = true;
 	}
 
 	/**
@@ -212,7 +249,7 @@ class RelatedChangeWatcher {
 			if ( !$result ) {
 				$ret->setResult(
 					false, "periodic-related-changes-no-remove",
-					$this->getUser(), $this->getPage()->getTitle()
+					$this->getUser(), $this->getTitle()
 				);
 			}
 		}
@@ -228,26 +265,35 @@ class RelatedChangeWatcher {
 	}
 
 	/**
-	 * @return Page the page
+	 * @return Title the title
 	 */
-	public function getPage() {
-		return $this->page;
+	public function getTitle() {
+		return Title::newFromText( $this->title, $this->namespace );
 	}
 
 	/**
 	 * Get the corresponding timestamp
-	 * @return xxx
+	 * @return string
 	 */
 	public function getTimestamp() {
 		return $this->timestamp;
 	}
 
 	/**
-	 * Get the corresponding Title object.
-	 * @return Title
+	 * Set the corresponding timestamp
+	 * @param string $ts timestamp
+	 * @return bool
 	 */
-	public function getTitle() {
-		return $this->page->getTitle();
+	public function setTimestamp( $ts ) {
+		$dbw = wfGetDB( DB_MASTER );
+		$res = $dbw->update(
+			self::$table, [ 'wc_timestamp' => $ts ], $this->getRowData(),
+			__METHOD__
+		);
+		if ( $res ) {
+			$this->timestamp = $ts;
+		}
+		return $res;
 	}
 
 	/**
@@ -271,7 +317,7 @@ class RelatedChangeWatcher {
 	 * @return LinkedRecentChanges to list the changes
 	 */
 	public function getRelatedChanges() {
-		$changes = new LinkedRecentChanges( $this->page->getTitle() );
+		$changes = new LinkedRecentChanges( $this->getTitle() );
 		if ( is_integer( $this->limit ) ) {
 			$changes->setLimit( $this->limit );
 		}
@@ -290,7 +336,7 @@ class RelatedChangeWatcher {
 	public static function getWatchGroups() {
 		$dbr = wfGetDB( DB_SLAVE );
 		$res = $dbr->select(
-			self::$table, [ 'wc_page as page', 'wc_user as user' ], null, __METHOD__, [ 'DISTINCT' ]
+			self::$table, self::$rowMap, null, __METHOD__, [ 'DISTINCT' ]
 		);
 		$group = [];
 		foreach ( $res as $row ) {
@@ -321,7 +367,9 @@ class RelatedChangeWatcher {
 		$dbr = wfGetDB( DB_SLAVE );
 		$categories = array_map(
 			function ( $category ) {
-				return Title::newFromText( $category, NS_CATEGORY )->getArticleID();
+				return Title::newFromText(
+					$category, NS_CATEGORY
+				)->getArticleID();
 			}, array_keys( $title->getParentCategories() )
 		);
 
@@ -341,10 +389,9 @@ class RelatedChangeWatcher {
 		);
 
 		$res = $dbr->select(
-			self::$table,
-			[ 'wc_page as page', 'wc_user as user' ],
+			self::$table, self::$rowMap,
 			[
-				'wc_page' => array_merge( $categories, $pages )
+				'wc_title' => array_merge( $categories, $pages )
 			],
 			__METHOD__ . '-getWatchers',
 			[ 'DISTINCT' ]
@@ -352,9 +399,59 @@ class RelatedChangeWatcher {
 
 		$ret = [];
 		foreach ( $res as $row ) {
-			$ret[ User::newFromID( $row->user )->getName() ] = Title::newFromID( $row->page )->getDBKey();
+			$ret[ User::newFromID( $row->user )->getName() ]
+				= Title::newFromText( $row->title, $row->namespace )->getDBKey();
 		}
 		return $ret;
 	}
 
+	/**
+	 * Get the watchers for this title
+	 *
+	 * @param Title $title to check for
+	 * @return array of user ids
+	 */
+	public static function getWatcherIDs( Title $title ) {
+		$dbr = wfGetDB( DB_MASTER );
+		$res = $dbr->select(
+			self::$table, self::$rowMap, self::getRowDataForTitle( $title ),
+			__METHOD__
+		);
+
+		$ret = [];
+		foreach ( $res as $row ) {
+			$ret[] = $row->user;
+		}
+		return $ret;
+	}
+
+	/**
+	 * Make the watchers watch this title
+	 *
+	 * @param Title $title to check for
+	 * @param array $watchers user ids to set
+	 * @return bool
+	 */
+	public static function setWatcherIDs( Title $title, array $watchers ) {
+		$dbw = wfGetDB( DB_SLAVE );
+		$titleFields = [
+			'wc_namespace' => $title->getNamespace(), 'wc_title' => $title->getDBkey()
+		];
+		$insertions = [];
+		foreach ( $watchers as $watcher ) {
+			$insertions[] = array_merge( [ 'wc_user' => $watcher ], $titleFields );
+		}
+		return $dbw->insert( self::$table, $insertions, __METHOD__, [ 'IGNORE' ] );
+	}
+
+	/**
+	 * Duplicate the watchers
+	 *
+	 * @param Title $oldTitle to copy from
+	 * @param Title $newTitle to copy to
+	 * @return bool
+	 */
+	public static function duplicateEntries( Title $oldTitle, Title $newTitle ) {
+		return self::setWatcherIDs( $newTitle, self::getWatcherIDs( $oldTitle ) );
+	}
 }
