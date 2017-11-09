@@ -10,7 +10,7 @@ use User;
  * @group DataBase
  * @group medium
  */
-class NotificationTest extends \ApiTestCase {
+class NotificationTest extends \EchoTalkPageFunctionalTest {
 
 	protected $dbr;
 
@@ -30,6 +30,7 @@ class NotificationTest extends \ApiTestCase {
 			'Moar Cowbell',
 			"I can haz test\n\nplz?", // checks that the parser allows multi-line comments
 			'blah blah',
+			"another"
 		];
 
 		$messageCount = 1;
@@ -42,8 +43,7 @@ class NotificationTest extends \ApiTestCase {
 		$events = $this->fetchAllEvents();
 		$this->assertCount( 1 + $messageCount, $events, 'After initial edit a single event must exist.' ); // +1 is due to 0 index
 		$row = array_shift( $events );
-		$this->assertEquals( 'edit-user-talk', $row->event_type );
-		$this->assertEventSectionTitle( 'Section 8', $row );
+		$this->assertEquals( 'thank-you-edit', $row->event_type );
 
 		// Add another message to the talk page
 		$messageCount++;
@@ -54,8 +54,7 @@ class NotificationTest extends \ApiTestCase {
 		$events = $this->fetchAllEvents();
 		$this->assertCount( 1 + $messageCount, $events );
 		$row = array_shift( $events );
-		$this->assertEquals( 'edit-user-talk', $row->event_type );
-		$this->assertEventSectionTitle( 'Section 8', $row );
+		$this->assertEquals( 'thank-you-edit', $row->event_type );
 
 		// Add a new section and a message within it
 		$messageCount++;
@@ -67,7 +66,6 @@ class NotificationTest extends \ApiTestCase {
 		$this->assertCount( 1 + $messageCount, $events );
 		$row = array_pop( $events );
 		$this->assertEquals( 'edit-user-talk', $row->event_type );
-		$this->assertEventSectionTitle( 'EE', $row );
 	}
 
 	/**
