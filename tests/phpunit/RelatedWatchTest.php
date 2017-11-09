@@ -27,11 +27,18 @@ class RelatedWatchTest extends \MediaWikiTestCase {
 		parent::setUp();
 		$this->dbr = \MWEchoDbFactory::getDB( DB_SLAVE );
 
+		self::$ts['start'] = new ConvertibleTimestamp;
 		self::$user['PRCTestUser'] = User::newFromId( 1 );
 		self::$user['PRCOtherTestUser'] = User::newFromId( 2 );
-		self::$page['rel'] = "TestRelatedWatch";
+
+		self::$page['rel'] = "Rel";
+		self::$page['anotherRel'] = "anotherRel";
 		self::$page['mainPage'] = "MainPageTest";
+
 		self::$title['rel'] = Title::newFromDBkey( self::$page['rel'] );
+		self::$title['anotherRel'] = Title::newFromDBkey(
+			self::$page['anotherRel']
+		);
 		self::$title['mainPage'] = Title::newFromDBkey(
 			self::$page['mainPage']
 		);
@@ -56,19 +63,30 @@ class RelatedWatchTest extends \MediaWikiTestCase {
 		);
 	}
 
+	protected function getListOfLinks( array $titleArray ) {
+		return new WikitextContent(
+			"* " . implode( "\n* ",
+							array_map(
+								function ( $title ) {
+									return
+										"[[" . $title->getPrefixedText() . "]]";
+								}, $titleArray
+							) )
+		);
+	}
+
 	public function testAddRedlink() {
 		$mainPage = self::$title['mainPage'];
 		$page = WikiPage::factory( $mainPage );
 		$rel = self::$title['rel'];
-		$pageStr = '[[' . $rel->getPrefixedText() . ']]';
-		$pages = $this->mgr->getRelatedPages( $mainPage );
 		$page->doEditContent(
-			new WikitextContent( $pageStr ),
+			$this->getListOfLinks( [ $rel ] ),
 			'Create a page with a redLink',
 			0,
 			false,
 			self::$user['PRCTestUser']
 		);
+		$pages = $this->mgr->getRelatedPages( $mainPage );
 
 		$this->assertEquals(
 			0,
@@ -77,7 +95,6 @@ class RelatedWatchTest extends \MediaWikiTestCase {
 			. 'we only have a redlink.'
 		);
 
-		self::$ts['start'] = new ConvertibleTimestamp;
 		$this->assertEquals(
 			[],
 			$this->mgr->getRelatedChangesSince( $mainPage, self::$ts['start'] ),
@@ -96,9 +113,9 @@ class RelatedWatchTest extends \MediaWikiTestCase {
 		$this->mgr->addWatch( $user, $mainPage );
 
 		$page = WikiPage::factory( $rel );
-		self::$ts['edit'] = new ConvertibleTimestamp;
+		self::$ts['edit1'] = new ConvertibleTimestamp;
 		$page->doEditContent(
-			new WikitextContent( '[[' . $mainPage->getPrefixedText() . ']]' ),
+			$this->getListOfLinks( [ $mainPage ] ),
 			'Create the redlinked page',
 			0,
 			false,
@@ -131,7 +148,7 @@ class RelatedWatchTest extends \MediaWikiTestCase {
 				'old' => '0',
 				'new' => '3',
 				'ts' => [
-					ConvertibleTimestamp::convert( TS_MW, self::$ts['edit'] )
+					ConvertibleTimestamp::convert( TS_MW, self::$ts['edit1'] )
 				]
 			] ],
 			$this->mgr->getRelatedChangesSince(
@@ -145,7 +162,7 @@ class RelatedWatchTest extends \MediaWikiTestCase {
 				'old' => '0',
 				'new' => '3',
 				'ts' => [
-					ConvertibleTimestamp::convert( TS_MW, self::$ts['edit'] )
+					ConvertibleTimestamp::convert( TS_MW, self::$ts['edit1'] )
 				]
 			] ],
 			$this->mgr->getRelatedChangesSince(
@@ -164,7 +181,7 @@ class RelatedWatchTest extends \MediaWikiTestCase {
 		$page = WikiPage::factory( $mainPage );
 		self::$ts['edit2'] = new ConvertibleTimestamp;
 		$page->doEditContent(
-			new WikitextContent( '[[' . $rel->getPrefixedText() . ']]' ),
+			$this->getListOfLinks( [ $rel ] ),
 			'Create the redlinked page',
 			0,
 			false,
@@ -182,6 +199,51 @@ class RelatedWatchTest extends \MediaWikiTestCase {
 			] ],
 			$this->mgr->getRelatedChangesSince(
 				$rel, self::$ts['start'], "from"
+			),
+			'Verify that page shows up on backlink.'
+		);
+	}
+
+	public function testAnotherRelatedChanges() {
+		$mainPage = self::$title['mainPage'];
+		$anotherRel = self::$title['anotherRel'];
+		$rel = self::$title['rel'];
+		$user = self::$user['PRCTestUser'];
+		$this->mgr->addWatch( $user, $mainPage );
+
+		$page = WikiPage::factory( $mainPage );
+		self::$ts['edit3'] = new ConvertibleTimestamp;
+		$page->doEditContent(
+			$this->getListOfLinks( [ $rel, $anotherRel ] ),
+			'Create another redlink',
+			0,
+			false,
+			$user
+		);
+		$anotherPage = WikiPage::factory( $anotherRel );
+		$anotherPage->doEditContent(
+			$this->getListOfLinks( [ $mainPage, $rel ] ),
+			'Moar backlinks',
+			0,
+			false,
+			$user
+		);
+		$this->assertEquals(
+			[ self::$page['mainPage'] => [
+				'old' => '0',
+				'new' => (string)$mainPage->getLatestRevID(),
+				'ts' => [
+					ConvertibleTimestamp::convert( TS_MW, self::$ts['edit1'] ),
+					ConvertibleTimestamp::convert( TS_MW, self::$ts['edit2'] )
+				] ],
+			  self::$page['rel'] => [
+				'old' => '0',
+				'new' => (string)$rel->getLatestRevID(),
+				'ts' => [
+					ConvertibleTimestamp::convert( TS_MW, self::$ts['edit2'] )
+				] ] ],
+			$this->mgr->getRelatedChangesSince(
+				$anotherRel, self::$ts['start'], "from"
 			),
 			'Verify that page shows up on backlink.'
 		);
