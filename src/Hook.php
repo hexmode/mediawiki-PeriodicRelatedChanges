@@ -26,6 +26,7 @@ namespace MediaWiki\Extension\PeriodicRelatedChanges;
 use Category;
 use Content;
 use DatabaseUpdater;
+use EchoEvent;
 use GlobalVarConfig;
 use Revision;
 use Status;
