@@ -68,7 +68,12 @@ class Manager {
 				"periodic-related-changes-user-not-exist", $user
 			);
 		}
-		if ( !$title->isValid() ) {
+
+		// Because we're working with MW before June 2017, we can't use isValid:
+		$validTitle = Title::makeTitleSafe(
+			$title->getNamespace(), $title->getDBkey()
+		);
+		if ( $validTitle === null ) {
 			return Status::newFatal(
 				"periodic-related-changes-title-not-valid", $user
 			);
