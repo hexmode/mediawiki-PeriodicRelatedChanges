@@ -334,4 +334,13 @@ class Manager {
 			$startTime, $style
 		);
 	}
+
+	/**
+	 * Get a list of users watching this page or relate pages.
+	 * @param Title $title we want info on
+	 * @return array
+	 */
+	public function getRelatedChangeWatchers( Title $title ) {
+		return RelatedChangeWatcher::getRelatedChangeWatchers( $title );
+	}
 }

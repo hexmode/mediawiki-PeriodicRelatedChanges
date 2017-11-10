@@ -248,4 +248,7 @@ class RelatedWatchTest extends \MediaWikiTestCase {
 			'Verify that page shows up on backlink.'
 		);
 	}
+
+	public function testNotifyRelatedChanges() {
+	}
 }

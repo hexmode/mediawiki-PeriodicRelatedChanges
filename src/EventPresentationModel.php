@@ -30,6 +30,7 @@ class EventPresentationModel extends \EchoEventPresentationModel {
 	 * @return bool
 	 */
 	public function canRender() {
+		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
 		return (bool)$this->event->getTitle();
 	}
 
@@ -41,6 +42,7 @@ class EventPresentationModel extends \EchoEventPresentationModel {
 	 * @return string
 	 */
 	public function getIconType() {
+		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
 		return 'someIcon';
 	}
 
@@ -50,6 +52,7 @@ class EventPresentationModel extends \EchoEventPresentationModel {
 	 * @return Message
 	 */
 	public function getHeaderMessage() {
+		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
 		if ( $this->isBundled() ) {
 			// This is the header message for the bundle that contains
 			// several notifications of this type
@@ -79,6 +82,7 @@ class EventPresentationModel extends \EchoEventPresentationModel {
 	 * @return Message
 	 */
 	public function getCompactHeaderMessage() {
+		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
 		$msg = parent::getCompactHeaderMessage();
 		$msg->params( $this->getViewingUserForGender() );
 		return $msg;
@@ -90,6 +94,7 @@ class EventPresentationModel extends \EchoEventPresentationModel {
 	 * @return Message
 	 */
 	public function getBodyMessage() {
+		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
 		$comment = $this->getRevisionEditSummary();
 		if ( $comment ) {
 			$msg = new \RawMessage( '$1' );
@@ -104,6 +109,7 @@ class EventPresentationModel extends \EchoEventPresentationModel {
 	 * @return array
 	 */
 	public function getPrimaryLink() {
+		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
 		return [
 			'url' => $this->getPageLink( $this->event->getTitle(), null, true ),
 			'label' => $this->msg(
@@ -118,6 +124,7 @@ class EventPresentationModel extends \EchoEventPresentationModel {
 	 * @return array
 	 */
 	public function getSecondaryLinks() {
+		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
 		if ( $this->isBundled() ) {
 			// For the bundle, we don't need secondary actions
 			return [];

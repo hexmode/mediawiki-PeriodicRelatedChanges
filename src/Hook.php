@@ -57,10 +57,11 @@ class Hook {
 	public static function onEchoGetBundleRules(
 		EchoEvent $event, &$bundleString
 	) {
+		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
 		switch ( $event->getType() ) {
 		case 'periodic-related-changes':
 			$bundleString = 'periodic-related-changes';
-		break;
+			break;
 		}
 	}
 
@@ -75,6 +76,7 @@ class Hook {
 	public static function onBeforeCreateEchoEvent(
 		array &$notifications, array &$notificationCategories, array &$icons
 	) {
+		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
 		$icons['periodic-related-changes']['path']
 			= 'PeriodicRelatedChanges/assets/periodic.svg';
 
@@ -86,10 +88,10 @@ class Hook {
 			],
 			'category' => 'periodic-related-changes',
 			'group' => 'neutral',
-			'user-locators' => [ 'PeriodicRelatredChanges\\Hook::userLocater' ],
-			'user-filters' => [ 'PeriodicRelatredChanges\\Hook::userFilter' ],
+			'user-locators' => [ 'MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::userLocater' ],
+			'user-filters' => [ 'MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::userFilter' ],
 			'presentation-model'
-			=> 'PeriodicRelatredChanges\\EchoEventPresentationModel',
+			=> 'MediaWiki\\Extension\\PeriodicRelatedChanges\\EchoEventPresentationModel',
 		];
 
 		$notificationCategories['periodic-related-changes'] = [
@@ -104,6 +106,7 @@ class Hook {
 	 * @return array of users
 	 */
 	public static function userLocater( EchoEvent $event ) {
+		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
 		return RelatedChangeWatcher::getRelatedChangeWatchers(
 			$event->getTitle()
 		);
@@ -116,6 +119,7 @@ class Hook {
 	 * @return array of users
 	 */
 	public static function userFilter( EchoEvent $event ) {
+		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
 		return [ $event->getAgent() ];
 	}
 
@@ -125,6 +129,7 @@ class Hook {
 	 * @return GlobalVarConfig
 	 */
 	public static function makeConfig() {
+		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
 		return new GlobalVarConfig( "PeriodicRelatedChanges" );
 	}
 
@@ -154,6 +159,7 @@ class Hook {
 		$isWatch, $section, &$flags, Revision $revision, Status $status,
 		$baseRevId, $undidRevId = 0
 	) {
+		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
 		if (
 			RelatedChangeWatcher::hasRelatedChangeWatchers(
 				$article->getTitle()

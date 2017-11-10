@@ -340,7 +340,10 @@ class RelatedChangeWatcher {
 		);
 		$group = [];
 		foreach ( $res as $row ) {
-			$group[$row->page][] = User::newFromId( $row->user );
+			$title = Title::newFromText(
+				$row->title, $row->namespace
+			)->getPrefixedDBkey();
+			$group[$title][] = User::newFromId( $row->user );
 		}
 		return $group;
 	}
@@ -367,9 +370,11 @@ class RelatedChangeWatcher {
 		$dbr = wfGetDB( DB_SLAVE );
 		$categories = array_map(
 			function ( $category ) {
-				return Title::newFromText(
-					$category, NS_CATEGORY
-				)->getArticleID();
+				$title = Title::newFromText( $category );
+				return [
+					'wc_namespace' => NS_CATEGORY,
+					'wc_title' => $title->getDBkey()
+				];
 			}, array_keys( $title->getParentCategories() )
 		);
 
@@ -384,23 +389,33 @@ class RelatedChangeWatcher {
 		);
 		$pages = array_map(
 			function ( $row ) {
-				return $row->id;
+				$title = WikiPage::newFromID( $row->id )->getTitle();
+				return [
+					'wc_namespace' => $title->getNamespace(),
+					'wc_title' => $title->getDBkey()
+				];
 			}, iterator_to_array( $res )
 		);
 
-		$res = $dbr->select(
-			self::$table, self::$rowMap,
-			[
-				'wc_title' => array_merge( $categories, $pages )
-			],
-			__METHOD__ . '-getWatchers',
-			[ 'DISTINCT' ]
-		);
-
+		$matches = array_merge( $categories, $pages );
 		$ret = [];
-		foreach ( $res as $row ) {
-			$ret[ User::newFromID( $row->user )->getName() ]
-				= Title::newFromText( $row->title, $row->namespace )->getDBKey();
+
+		if ( count( $matches ) === 1 ) {
+			$matches = $matches[0];
+		}
+
+		if ( count( $matches ) > 0 ) {
+			$res = $dbr->select(
+				self::$table, self::$rowMap, $matches,
+				__METHOD__ . '-getWatchers', [ 'DISTINCT' ]
+			);
+
+			foreach ( $res as $row ) {
+				$ret[ User::newFromID( $row->user )->getName() ]
+					= Title::newFromText(
+						$row->title, $row->namespace
+					)->getDBKey();
+			}
 		}
 		return $ret;
 	}

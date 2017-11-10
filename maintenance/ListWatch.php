@@ -57,14 +57,16 @@ class ListWatch extends Maintenance {
 		);
 		$this->addOption( "mail", "Send an email instead of printing out.",
 						  false, false, "m" );
-		$this->addArg( "page", "User to list watch for.", true );
+		$this->addArg( "user", "User to list watch for.", false );
 	}
 
 	/**
 	 * Where all the business happens.
 	 */
 	public function execute() {
-		$title = Title::newFromText( $this->getArg( 0 ) );
+		if ( $this->hasArg( 0 ) ) {
+			$user = User::newFromText( $this->getArg( 0 ) );
+			
 	}
 
 	/**

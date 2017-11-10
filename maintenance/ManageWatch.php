@@ -21,7 +21,7 @@
  * @author Mark A. Hershberger <mah@nichework.com>
  */
 
-namespace PeriodicRelatedChanges;
+namespace MediaWiki\Extension\PeriodicRelatedChanges;
 
 use MWException;
 use Maintenance;
@@ -41,59 +41,161 @@ require_once $maint;
 
 class ManageWatch extends Maintenance {
 
+	protected $prc;
+	protected $user;
+	protected $page;
+
 	/**
 	 * The constructor, of course.
 	 */
 	public function __construct() {
 		parent::__construct();
-		$this->addDescription( "Manage watches on the periodic watchlist." );
+		$this->addDescription( "Manage watches on the periodic watchlist.\n"
+							   . "• If no user is given, then users watching "
+							   . "the page will be listed.\n"
+							   . "• If no page is given, the user's watchlist "
+							   . "will be shown.\n"
+							   . "• Otherwise all pages being watched with "
+							   . "the PeriodicRelatedChanges extension will be "
+							   . "listed." );
 		$this->addOption(
 			"add", "(default) Add the page to the watchlist.", false, false, "a"
 		);
 		$this->addOption(
-			"remove", "(default) Add the page to the watchlist.",
-			false, false, "r"
+			"remove", "Remove the page from the watchlist.", false, false, "r"
 		);
-		$this->addArg(
-			"user", "User to send notices to.  Must have an email address.",
-			true
+		$this->addOption(
+			"user", "User's watchlist to change.", false, true, "u"
 		);
-		$this->addArg(
+		$this->addOption(
 			"page", "The page to summarize RelatedChanges for.  Must exist.",
-			true
+			false, true, "p"
 		);
 	}
 
 	/**
+	 * Obtain a user object from the argument passed.
+	 * @param string $userName the user's username.
+	 */
+	public function getUserFromArg( $userName ) {
+		$this->user = User::newFromName( $userName );
+		if ( !$this->user ) {
+			$this->error( wfMessage(
+				"periodic-related-changes-invalid-user", $userName
+			)->plain(), 1 );
+		}
+		if ( $this->user->getId() === 0 ) {
+			$this->error( wfMessage(
+				"periodic-related-changes-user-not-exist", $userName
+			)->plain(), 1 );
+		}
+	}
+
+	/**
+	 * Obtain a title object from the argument passed.
+	 * @param string $titleText the title's name
+	 */
+	public function getTitleFromArg( $titleText ) {
+		$this->title = Title::newFromText( $titleText );
+		if ( !$this->title ) {
+			$this->error( wfMessage(
+				"periodic-related-changes-title-not-valid", $titleText
+			)->plain(), 1 );
+		}
+		if ( !$this->title->exists() ) {
+			$this->error( wfMessage(
+				"periodic-related-changes-title-not-exist", $titleText
+			)->plain(), 1 );
+		}
+	}
+
+	/**
 	 * Where all the business happens.
+	 * @return null
 	 */
 	public function execute() {
-		$userName = $this->getArg( 0 );
-		$titleText = $this->getArg( 1 );
-
-		$user = User::newFromName( $userName );
-		if ( !( $user && $user instanceof User ) ) {
-			$this->error( "Couldn't find $userName!", 1 );
+		if ( $this->hasOption( "user" ) ) {
+			$this->getUserFromArg( $this->getOption( "user" ) );
 		}
 
-		$title = Title::newFromText( $titleText );
-		if ( !( $title && $title instanceof Title ) ) {
-			$this->error( "No such title ($titleText)!", 1 );
+		if ( $this->hasOption( "page" ) ) {
+			$this->getTitleFromArg( $this->getOption( "page" ) );
 		}
 
-		$prc = PeriodicRelatedChanges::getManager();
-		if ( $this->hasOption( "remove" ) ) {
-			$stat = $prc->removeWatch( $user, $title );
-		} else {
-			$stat = $prc->addWatch( $user, $title );
+		$this->prc = Manager::getManager();
+		if ( $this->user && $this->title ) {
+			if ( $this->hasOption( "remove" ) ) {
+				$stat = $this->prc->removeWatch( $this->user, $this->title );
+				$msg = "periodic-related-changes-title-removed";
+			} else {
+				$stat = $this->prc->addWatch( $this->user, $this->title );
+				$msg = "periodic-related-changes-title-added";
+			}
+			if ( $stat->isOK() ) {
+				$this->output(
+					wfMessage( $msg, $this->user, $this->title )->plain() . "\n"
+				);
+				return;
+			} else {
+				$this->error( $stat->getMessage()->plain(), 1 );
+			}
 		}
-		if ( $stat->isOK() ) {
-			$this->output( "Success!\n" );
-		} else {
-			$this->error( $stat->getMessage()->plain() );
+
+		if ( $this->user ) {
+			return $this->listUsersWatches();
+		}
+
+		if ( $this->title ) {
+			return $this->listTitlesWatchers();
+		}
+
+		return $this->listTitlesUnderWatch();
+	}
+
+	/**
+	 * List the user's watches
+	 * @return null
+	 */
+	public function listUsersWatches() {
+		foreach (
+			$this->prc->getCurrentWatches( $this->user ) as $watch
+		) {
+			$this->output( $watch->getTitle() . "\n" );
+		}
+		return null;
+	}
+
+	/**
+	 * Print all users watching this title on stdout
+	 * @return null
+	 */
+	public function listTitlesWatchers() {
+		$watchers = $this->prc->getRelatedChangeWatchers( $this->title );
+		var_dump( $watchers);
+		return null;
+	}
+
+	/**
+	 * Print all titles being watched on stdout
+	 * @return null
+	 */
+	public function listTitlesUnderWatch() {
+		$groups = $this->prc->getWatchGroups();
+
+		if ( count( $groups ) === 0 ) {
+			$this->output(
+				wfMessage( "periodic-related-changes-no-users" )->plain() . "\n"
+			);
+			return;
+		}
+
+		foreach ( $groups as $pageName => $watchers ) {
+			$this->output( wfMessage(
+				"periodic-related-changes-title-list", $pageName
+			)->plain() . "\n" );
 		}
 	}
 }
 
-$maintClass = "PeriodicRelatedChanges\\ManageWatch";
+$maintClass = "MediaWiki\\Extension\\PeriodicRelatedChanges\\ManageWatch";
 require_once DO_MAINTENANCE;
