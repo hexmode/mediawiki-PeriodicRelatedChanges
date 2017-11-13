@@ -4,6 +4,7 @@
 	},
 	"action-periodic-related-changes": "add periodic related changes",
 	"action-periodic-related-changes-any-user": "affect any other user",
+	"echo-category-title-periodic-related-changes": "Periodic related notices",
 	"periodicrelatedchanges": "Periodic related changes",
 	"periodic-related-changes": "Set periodic related change watches",
 	"periodic-related-changes-add-fail": "Failed to add $3 for $1 ($2)",

@@ -256,7 +256,7 @@ class Manager {
 	 */
 	public function getRelatedChangeWatcher( User $user, Page $page ) {
 		wfDebugLog( 'PeriodicRelatedChanges::Manager', __METHOD__ );
-		return new RelatedChangeWatcher( $user, $page );
+		return new RelatedChangeWatcher( $user, $page->getTitle() );
 	}
 
 	/**

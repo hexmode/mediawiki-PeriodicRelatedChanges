@@ -94,7 +94,7 @@ class Hook {
 			'user-locators' => [ 'MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::userLocater' ],
 			'user-filters' => [ 'MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::userFilter' ],
 			'presentation-model'
-			=> 'MediaWiki\\Extension\\PeriodicRelatedChanges\\EchoEventPresentationModel',
+			=> 'MediaWiki\\Extension\\PeriodicRelatedChanges\\EventPresentationModel',
 		];
 		$notifications['periodic-related-changes-add'] = [
 			'bundle' => [
@@ -107,7 +107,7 @@ class Hook {
 			'user-locators' => [ 'MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::userLocater' ],
 			'user-filters' => [ 'MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::userFilter' ],
 			'presentation-model'
-			=> 'MediaWiki\\Extension\\PeriodicRelatedChanges\\EchoEventPresentationModel',
+			=> 'MediaWiki\\Extension\\PeriodicRelatedChanges\\EventPresentationModel',
 		];
 		$notifications['periodic-related-changes-cat-del'] = [
 			'bundle' => [
@@ -120,7 +120,7 @@ class Hook {
 			'user-locators' => [ 'MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::userLocater' ],
 			'user-filters' => [ 'MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::userFilter' ],
 			'presentation-model'
-			=> 'MediaWiki\\Extension\\PeriodicRelatedChanges\\EchoEventPresentationModel',
+			=> 'MediaWiki\\Extension\\PeriodicRelatedChanges\\EventPresentationModel',
 		];
 
 		$notificationCategories['periodic-related-changes'] = [

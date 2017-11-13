@@ -89,6 +89,16 @@ class EventPresentationModel extends \EchoEventPresentationModel {
 	}
 
 	/**
+	 * Summary of event notice.
+	 *
+	 * @return string
+	 */
+	public function getRevisionEditSummary() {
+		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
+		return "Edit this is hardcoded, needs to be fixed";
+	}
+
+	/**
 	 * Body of the event notice.  Summary?
 	 *
 	 * @return Message
@@ -110,12 +120,8 @@ class EventPresentationModel extends \EchoEventPresentationModel {
 	 */
 	public function getPrimaryLink() {
 		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
-		return [
-			'url' => $this->getPageLink( $this->event->getTitle(), null, true ),
-			'label' => $this->msg(
-				'notification-myext-topic-word-view-page'
-			)->text(),
-		];
+		$link = $this->getPageLink( $this->event->getTitle(), null, true );
+		return $link;
 	}
 
 	/**
