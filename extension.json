@@ -17,7 +17,6 @@
 	"AutoloadClasses": {
 		"MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook": "src/Hook.php",
 		"MediaWiki\\Extension\\PeriodicRelatedChanges\\MySpecialRelatedChanges": "src/MySpecialRelatedChanges.php",
-		"MediaWiki\\Extension\\PeriodicRelatedChanges\\PeriodicRelatedChanges": "src/PeriodicRelatedChanges.php",
 		"MediaWiki\\Extension\\PeriodicRelatedChanges\\RelatedChangeWatchlist": "src/RelatedChangeWatchlist.php",
 		"MediaWiki\\Extension\\PeriodicRelatedChanges\\RelatedPageList": "src/RelatedPageList.php",
 		"MediaWiki\\Extension\\PeriodicRelatedChanges\\RelatedChangeWatcher": "src/RelatedChangeWatcher.php",

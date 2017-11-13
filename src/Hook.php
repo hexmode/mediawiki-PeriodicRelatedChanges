@@ -27,6 +27,7 @@ use Category;
 use Content;
 use DatabaseUpdater;
 use EchoEvent;
+use EchoDiscussionParser;
 use GlobalVarConfig;
 use Revision;
 use Status;
@@ -59,7 +60,9 @@ class Hook {
 	) {
 		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
 		switch ( $event->getType() ) {
-		case 'periodic-related-changes':
+		case 'periodic-related-changes-cat-del':
+		case 'periodic-related-changes-cat-add':
+		case 'periodic-related-changes-change':
 			$bundleString = 'periodic-related-changes';
 			break;
 		}
@@ -80,7 +83,33 @@ class Hook {
 		$icons['periodic-related-changes']['path']
 			= 'PeriodicRelatedChanges/assets/periodic.svg';
 
-		$notifications['periodic-related-changes'] = [
+		$notifications['periodic-related-changes-change'] = [
+			'bundle' => [
+				'web' => true,
+				'email' => true,
+				'expandable' => true,
+			],
+			'category' => 'periodic-related-changes',
+			'group' => 'neutral',
+			'user-locators' => [ 'MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::userLocater' ],
+			'user-filters' => [ 'MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::userFilter' ],
+			'presentation-model'
+			=> 'MediaWiki\\Extension\\PeriodicRelatedChanges\\EchoEventPresentationModel',
+		];
+		$notifications['periodic-related-changes-add'] = [
+			'bundle' => [
+				'web' => true,
+				'email' => true,
+				'expandable' => true,
+			],
+			'category' => 'periodic-related-changes',
+			'group' => 'neutral',
+			'user-locators' => [ 'MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::userLocater' ],
+			'user-filters' => [ 'MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::userFilter' ],
+			'presentation-model'
+			=> 'MediaWiki\\Extension\\PeriodicRelatedChanges\\EchoEventPresentationModel',
+		];
+		$notifications['periodic-related-changes-cat-del'] = [
 			'bundle' => [
 				'web' => true,
 				'email' => true,
@@ -120,7 +149,15 @@ class Hook {
 	 */
 	public static function userFilter( EchoEvent $event ) {
 		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
-		return [ $event->getAgent() ];
+		$user = $event->getAgent();
+		if ( !$user instanceof User ) {
+			if ( is_string( $user ) ) {
+				$user = User::newFromName( $user );
+			} else {
+				throw new \MWException( "User is not a string or object" );
+			}
+		}
+		return [ $user ];
 	}
 
 	/**
@@ -142,7 +179,7 @@ class Hook {
 	 * @param Content $content New content
 	 * @param string $summary Edit summary/comment
 	 * @param bool $isMinor Whether or not the edit was marked as minor
-	 * @param null $isWatch (No longer used)
+	 * @param null $isWatch (No longer used)g
 	 * @param null $section (No longer used)
 	 * @param int &$flags Flags passed to WikiPage::doEditContent()
 	 * @param Revision $revision saved content. This parameter may be null
@@ -167,11 +204,11 @@ class Hook {
 		) {
 			global $wgContLang;
 			EchoEvent::create( [
-				'type' => 'periodic-related-changes',
-				'title' => $title,
+				'type' => 'periodic-related-changes-change',
+				'title' => $article->getTitle(),
 				'extra' => [
 					'revid' => $revision->getId(),
-					'source' => $source,
+					'source' => false,
 					'excerpt' => EchoDiscussionParser::getEditExcerpt(
 						$revision, $wgContLang
 					),
@@ -179,5 +216,55 @@ class Hook {
 				'agent' => $user,
 			] );
 		}
+	}
+
+	/**
+	 * When a page is added to the category.
+	 * @param Category $category page is added to
+	 * @param WikiPage $page being categorized
+	 * @see https://www.mediawiki.org/wiki/Manual:Hooks/CategoryAfterPageAdded
+	 */
+	public static function onCategoryAfterPageAdded(
+		Category $category, WikiPage $page
+	) {
+		$rev = $page->getRevision();
+		global $wgContLang;
+		EchoEvent::create( [
+			'type' => 'periodic-related-changes-cat-add',
+			'title' => $page->getTitle(),
+			'extra' => [
+				'revid' => $rev->getId(),
+				'source' => $category,
+				'excerpt' => EchoDiscussionParser::getEditExcerpt(
+					$rev, $wgContLang
+				),
+			],
+			'agent' => $rev->getUser(),
+		] );
+	}
+
+	/**
+	 * When a page is removed from the category.
+	 * @param Category $category page is added to
+	 * @param WikiPage $page being categorized
+	 * @see https://www.mediawiki.org/wiki/Manual:Hooks/CategoryAfterPageRemoved
+	 */
+	public static function onCategoryAfterPageRemoved(
+		Category $category, WikiPage $page
+	) {
+		$rev = $page->getRevision();
+		global $wgContLang;
+		EchoEvent::create( [
+			'type' => 'periodic-related-changes-cat-del',
+			'title' => $page->getTitle(),
+			'extra' => [
+				'revid' => $rev->getId(),
+				'source' => $category,
+				'excerpt' => EchoDiscussionParser::getEditExcerpt(
+					$rev, $wgContLang
+				),
+			],
+			'agent' => $rev->getUser(),
+		] );
 	}
 }

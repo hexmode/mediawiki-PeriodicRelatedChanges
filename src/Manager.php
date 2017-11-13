@@ -36,6 +36,7 @@ class Manager {
 	 * @return MediaWiki\Extension\PeriodicRelatedChanges\Manager
 	 */
 	public static function getManager() {
+		wfDebugLog( 'PeriodicRelatedChanges::Manager', __METHOD__ );
 		return new self();
 	}
 
@@ -46,6 +47,7 @@ class Manager {
 	 * @return RelatedChangeWatcher object
 	 */
 	public function get( User $user, Title $title ) {
+		wfDebugLog( 'PeriodicRelatedChanges::Manager', __METHOD__ );
 		return RelatedChangeWatcher::newFromUserTitle( $user, $title );
 	}
 
@@ -58,6 +60,7 @@ class Manager {
 	 * @return Status
 	 */
 	public function isValidUserTitle( User $user, Title $title ) {
+		wfDebugLog( 'PeriodicRelatedChanges::Manager', __METHOD__ );
 		if ( $user->isAnon() ) {
 			return Status::newFatal(
 				"periodic-related-changes-no-anon", $user
@@ -91,6 +94,7 @@ class Manager {
 	 * @return bool
 	 */
 	public function isWatched( User $user, Title $title ) {
+		wfDebugLog( 'PeriodicRelatedChanges::Manager', __METHOD__ );
 		$check = $this->isValidUserTitle( $user, $title );
 		if ( !$check->isGood() ) {
 			return false;
@@ -112,6 +116,7 @@ class Manager {
 	 * @return Status
 	 */
 	public function removeWatch( User $user, Title $title ) {
+		wfDebugLog( 'PeriodicRelatedChanges::Manager', __METHOD__ );
 		$check = $this->isValidUserTitle( $user, $title );
 		if ( !$check->isGood() ) {
 			return $check;
@@ -136,6 +141,7 @@ class Manager {
 	 * @return Status
 	 */
 	public function addWatch( User $user, Title $title ) {
+		wfDebugLog( 'PeriodicRelatedChanges::Manager', __METHOD__ );
 		$check = $this->isValidUserTitle( $user, $title );
 		if ( !$check->isGood() ) {
 			return $check;
@@ -159,6 +165,7 @@ class Manager {
 	 * @return Status
 	 */
 	public function duplicateEntries( Title $oldTitle, Title $newTitle ) {
+		wfDebugLog( 'PeriodicRelatedChanges::Manager', __METHOD__ );
 		return RelatedChangeWatcher::duplicateEntries( $oldTitle, $newTitle );
 	}
 
@@ -171,6 +178,7 @@ class Manager {
 	 * @return Status|RelatedChangeWatcher
 	 */
 	protected function getExistingWatcher( User $user, Title $title ) {
+		wfDebugLog( 'PeriodicRelatedChanges::Manager', __METHOD__ );
 		$check = $this->isValidUserTitle( $user, $title );
 		if ( !$check->isGood() ) {
 			return $check;
@@ -195,6 +203,7 @@ class Manager {
 	 * @return Status|bool
 	 */
 	public function resetNotificationTimestamp( User $user, Title $title ) {
+		wfDebugLog( 'PeriodicRelatedChanges::Manager', __METHOD__ );
 		return $this->updateNotificationTimestamp( $user, $title, null );
 	}
 
@@ -210,6 +219,7 @@ class Manager {
 	public function updateNotificationTimestamp(
 		User $user, Title $title, $ts
 	) {
+		wfDebugLog( 'PeriodicRelatedChanges::Manager', __METHOD__ );
 		$watch = $this->getExistingWatcher( $user, $title );
 		if ( $watch instanceof Status ) {
 			return $watch;
@@ -227,6 +237,7 @@ class Manager {
 	 * @return Status|string
 	 */
 	public function getNotificationTimestamp( User $user, Title $title ) {
+		wfDebugLog( 'PeriodicRelatedChanges::Manager', __METHOD__ );
 		$watch = $this->getExistingWatcher( $user, $title );
 		if ( $watch instanceof Status ) {
 			return $watch;
@@ -244,6 +255,7 @@ class Manager {
 	 * @return RelatedChangeWatcher
 	 */
 	public function getRelatedChangeWatcher( User $user, Page $page ) {
+		wfDebugLog( 'PeriodicRelatedChanges::Manager', __METHOD__ );
 		return new RelatedChangeWatcher( $user, $page );
 	}
 
@@ -253,6 +265,7 @@ class Manager {
 	 * @param LinkedRecentChanges $changes to collect
 	 */
 	public function collectChanges( ResultWrapper $changes ) {
+		wfDebugLog( 'PeriodicRelatedChanges::Manager', __METHOD__ );
 		foreach ( $changes as $change ) {
 			$title = $change->rc_title;
 			$user  = $change->rc_user_text;
@@ -289,6 +302,7 @@ class Manager {
 	 * @return Iterator
 	 */
 	public function getCollectedChanges( RelatedChangeWatcher $changes ) {
+		wfDebugLog( 'PeriodicRelatedChanges::Manager', __METHOD__ );
 		$this->collectChanges( $changes->getRelatedChanges() );
 		return $this->collectedChanges;
 	}
@@ -299,6 +313,7 @@ class Manager {
 	 * @return Iterator
 	 */
 	public function getCurrentWatches( User $user ) {
+		wfDebugLog( 'PeriodicRelatedChanges::Manager', __METHOD__ );
 		return RelatedChangeWatchlist::newFromUser( $user );
 	}
 
@@ -307,6 +322,7 @@ class Manager {
 	 * @return ResultWrapper
 	 */
 	public function getWatchGroups() {
+		wfDebugLog( 'PeriodicRelatedChanges::Manager', __METHOD__ );
 		return RelatedChangeWatcher::getWatchGroups();
 	}
 
@@ -316,6 +332,7 @@ class Manager {
 	 * @return Iterator
 	 */
 	public function getRelatedPages( Title $title ) {
+		wfDebugLog( 'PeriodicRelatedChanges::Manager', __METHOD__ );
 		return RelatedPageList::newFromTitle( $title );
 	}
 
@@ -329,6 +346,7 @@ class Manager {
 	public function getRelatedChangesSince(
 		Title $title, $startTime = 0, $style = "to"
 	) {
+		wfDebugLog( 'PeriodicRelatedChanges::Manager', __METHOD__ );
 		$rpl = RelatedPageList::newFromTitle( $title );
 		return $rpl->getRelatedChangesSince(
 			$startTime, $style
@@ -341,6 +359,7 @@ class Manager {
 	 * @return array
 	 */
 	public function getRelatedChangeWatchers( Title $title ) {
+		wfDebugLog( 'PeriodicRelatedChanges::Manager', __METHOD__ );
 		return RelatedChangeWatcher::getRelatedChangeWatchers( $title );
 	}
 }

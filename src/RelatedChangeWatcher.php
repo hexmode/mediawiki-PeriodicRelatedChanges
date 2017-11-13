@@ -29,6 +29,7 @@ use ResultWrapper;
 use Status;
 use Title;
 use User;
+use WikiPage;
 
 class RelatedChangeWatcher {
 	protected $user;
@@ -54,6 +55,7 @@ class RelatedChangeWatcher {
 	 * @param int|null $timestamp of change
 	 */
 	public function __construct( User $user, Title $title, $timestamp = null ) {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		$this->user = $user;
 		$this->namespace = $title->getNamespace();
 		$this->title = $title->getDBKey();
@@ -68,6 +70,7 @@ class RelatedChangeWatcher {
 	 * @return bool
 	 */
 	public static function titleHasCategoryWatchers( Title $title ) {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		return count( self::titleCategoryWatchers( $title ) ) > 0;
 	}
 
@@ -78,6 +81,7 @@ class RelatedChangeWatcher {
 	 * @return array
 	 */
 	public static function titleCategoryWatchers( Title $title ) {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		$key = $title->getPrefixedText();
 		if ( !isset( self::$titleCache[$key] ) ) {
 			self::$titleCache[$key] = [];
@@ -108,6 +112,7 @@ class RelatedChangeWatcher {
 	 * @return RelatedChangeWatcher
 	 */
 	public static function newFromUserTitle( User $user, Title $title ) {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		return new self( $user, $title );
 	}
 
@@ -119,6 +124,7 @@ class RelatedChangeWatcher {
 	 * @return RelatedChangeWatcher
 	 */
 	public static function newFromFormID( $formID, $prefix = "watch" ) {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		list( $watch, $userId, $titleNS, $title ) = explode( '-', $formID, 4 );
 		if ( $watch === $prefix ) {
 			return self::newFromUserTitle(
@@ -135,6 +141,7 @@ class RelatedChangeWatcher {
 	 * @return RelatedChangeWatcher
 	 */
 	public static function newFromRow( $row ) {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		return new self(
 			User::newFromID( $row->user ),
 			Title::newFromText( $row->title, $row->namespace ),
@@ -149,6 +156,7 @@ class RelatedChangeWatcher {
 	 * @return string
 	 */
 	public function getFormID( $prefix = "watch" ) {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		$title = $this->getTitle();
 		return implode(
 			"-", [ $prefix, $this->user->getID(), $title->getNamespace(),
@@ -162,6 +170,7 @@ class RelatedChangeWatcher {
 	 * @return array
 	 */
 	protected function getRowData() {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		return [
 			'wc_user' => $this->user->getID(),
 			'wc_title' => $this->title,
@@ -176,6 +185,7 @@ class RelatedChangeWatcher {
 	 * @return array
 	 */
 	protected static function getRowDataForTitle( Title $title ) {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		return [
 			'wc_title' => $title->getDBkey(),
 			'wc_namespace' => $title->getNamespace()
@@ -188,6 +198,7 @@ class RelatedChangeWatcher {
 	 * @return Status
 	 */
 	public function save() {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		$dbw = wfGetDB( DB_MASTER );
 		$ret = Status::newGood();
 		if ( !$dbw->insert( self::$table, $this->getRowData(), __METHOD__ ) ) {
@@ -203,6 +214,7 @@ class RelatedChangeWatcher {
 	 * @return bool
 	 */
 	public function exists( $dbr = null ) {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		if ( !$this->user->isAllowed( 'periodic-related-changes' ) ) {
 			return false;
 		}
@@ -229,6 +241,7 @@ class RelatedChangeWatcher {
 	}
 
 	public function fillFromRow( $row ) {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		$this->title = $row->title;
 		$this->namespace = $row->namespace;
 		$this->user = User::newFromID( $row->user );
@@ -240,6 +253,7 @@ class RelatedChangeWatcher {
 	 * remove a watch
 	 */
 	public function remove() {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		$dbw = wfGetDB( DB_MASTER );
 		$dbw->startAtomic( __METHOD__ );
 		$ret = Status::newGood();
@@ -261,6 +275,7 @@ class RelatedChangeWatcher {
 	 * @return User the user
 	 */
 	public function getUser() {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		return $this->user;
 	}
 
@@ -268,6 +283,7 @@ class RelatedChangeWatcher {
 	 * @return Title the title
 	 */
 	public function getTitle() {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		return Title::newFromText( $this->title, $this->namespace );
 	}
 
@@ -276,6 +292,7 @@ class RelatedChangeWatcher {
 	 * @return string
 	 */
 	public function getTimestamp() {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		return $this->timestamp;
 	}
 
@@ -285,6 +302,7 @@ class RelatedChangeWatcher {
 	 * @return bool
 	 */
 	public function setTimestamp( $ts ) {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		$dbw = wfGetDB( DB_MASTER );
 		$res = $dbw->update(
 			self::$table, [ 'wc_timestamp' => $ts ], $this->getRowData(),
@@ -301,6 +319,7 @@ class RelatedChangeWatcher {
 	 * @param int $days days to look at
 	 */
 	public function setSince( $days ) {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		$this->sinceDays = $days;
 	}
 
@@ -309,6 +328,7 @@ class RelatedChangeWatcher {
 	 * @param int $limit days to look at
 	 */
 	public function setLimit( $limit ) {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		$this->limit = $limit;
 	}
 
@@ -317,6 +337,7 @@ class RelatedChangeWatcher {
 	 * @return LinkedRecentChanges to list the changes
 	 */
 	public function getRelatedChanges() {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		$changes = new LinkedRecentChanges( $this->getTitle() );
 		if ( is_integer( $this->limit ) ) {
 			$changes->setLimit( $this->limit );
@@ -334,6 +355,7 @@ class RelatedChangeWatcher {
 	 * @return array
 	 */
 	public static function getWatchGroups() {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		$dbr = wfGetDB( DB_SLAVE );
 		$res = $dbr->select(
 			self::$table, self::$rowMap, null, __METHOD__, [ 'DISTINCT' ]
@@ -356,6 +378,7 @@ class RelatedChangeWatcher {
 	 * @return bool
 	 */
 	public static function hasRelatedChangeWatchers( Title $title ) {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		return count( self::getRelatedChangeWatchers( $title ) ) > 0;
 	}
 
@@ -367,6 +390,7 @@ class RelatedChangeWatcher {
 	 * @return array
 	 */
 	public static function getRelatedChangeWatchers( Title $title ) {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		$dbr = wfGetDB( DB_SLAVE );
 		$categories = array_map(
 			function ( $category ) {
@@ -411,10 +435,7 @@ class RelatedChangeWatcher {
 			);
 
 			foreach ( $res as $row ) {
-				$ret[ User::newFromID( $row->user )->getName() ]
-					= Title::newFromText(
-						$row->title, $row->namespace
-					)->getDBKey();
+				$ret[] = User::newFromID( $row->user );
 			}
 		}
 		return $ret;
@@ -427,6 +448,7 @@ class RelatedChangeWatcher {
 	 * @return array of user ids
 	 */
 	public static function getWatcherIDs( Title $title ) {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		$dbr = wfGetDB( DB_MASTER );
 		$res = $dbr->select(
 			self::$table, self::$rowMap, self::getRowDataForTitle( $title ),
@@ -448,6 +470,7 @@ class RelatedChangeWatcher {
 	 * @return bool
 	 */
 	public static function setWatcherIDs( Title $title, array $watchers ) {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		$dbw = wfGetDB( DB_SLAVE );
 		$titleFields = [
 			'wc_namespace' => $title->getNamespace(), 'wc_title' => $title->getDBkey()
@@ -467,6 +490,7 @@ class RelatedChangeWatcher {
 	 * @return bool
 	 */
 	public static function duplicateEntries( Title $oldTitle, Title $newTitle ) {
+		wfDebugLog( 'PeriodicRelatedChanges::RelatedChangeWatcher', __METHOD__ );
 		return self::setWatcherIDs( $newTitle, self::getWatcherIDs( $oldTitle ) );
 	}
 }

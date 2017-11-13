@@ -68,7 +68,7 @@ class ShowRelatedChanges extends Maintenance {
 	 * Where all the business happens.
 	 */
 	public function execute() {
-		$wrc = PeriodicRelatedChanges::getManager();
+		$wrc = Manager::getManager();
 
 		$user = User::newFromName( $this->getArg( 0 ) );
 		$page = WikiPage::factory( Title::newFromText( $this->getArg( 1 ) ) );

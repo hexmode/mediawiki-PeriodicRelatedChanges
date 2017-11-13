@@ -166,7 +166,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 			return false;
 		}
 
-		$prc = PeriodicRelatedChanges::getManager();
+		$prc = Manager::getManager();
 		$groups = $prc->getWatchGroups();
 
 		if ( count( $groups ) === 0 ) {
@@ -350,7 +350,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * @return null|string string if an error
 	 */
 	protected function addWatch( User $user, Title $title ) {
-		$prc = PeriodicRelatedChanges::getManager();
+		$prc = Manager::getManager();
 		$watch = $prc->get( $user, $title );
 		if ( $watch->exists() ) {
 			return $this->msg(
@@ -885,7 +885,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 
 		if ( $title ) {
 			$watch
-				= PeriodicRelatedChanges::getManager()->getRelatedChangeWatcher(
+				= Manager::getManager()->getRelatedChangeWatcher(
 					$this->userSubject, WikiPage::factory( $title )
 				);
 
@@ -905,7 +905,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * @return bool for form handling
 	 */
 	public function addTitleSubmit( array $formData ) {
-		$prc = PeriodicRelatedChanges::getManager();
+		$prc = Manager::getManager();
 		// Chance of race condition here that would result in an exception?
 		if ( $prc->addWatch( $this->userSubject, $this->titleSubject ) ) {
 			$this->getOutput()->addWikiMsg( "periodic-related-changes-added",
@@ -924,7 +924,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 * Handle watch display and removal form
 	 */
 	public function listAndRemoveTitlesFormHandler() {
-		$prc = PeriodicRelatedChanges::getManager();
+		$prc = Manager::getManager();
 		$formDescriptor = [];
 		if ( $this->userSubject ) {
 			foreach (
