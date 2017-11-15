@@ -180,7 +180,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		foreach ( $groups as $pageName => $watchers ) {
 			$out->addWikiMsg(
 				"periodic-related-changes-group-header",
-				Title::newFromId( $pageName )
+				Title::newFromText( $pageName )
 			);
 			$this->listUsers( $watchers );
 		}
