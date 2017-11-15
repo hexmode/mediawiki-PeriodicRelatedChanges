@@ -32,6 +32,7 @@ use SpecialPage;
 use PermissionsError;
 use PHPExcel_IOFactory;
 use PHPExcel_Reader_Exception;
+use PHPExcel_Settings;
 use PHPExcel_Worksheet_Row;
 use ResultWrapper;
 use Title;
@@ -254,6 +255,9 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 		$out = $this->getOutput();
 		$this->queuedPRCs = [];
 
+		if ( !class_exists( 'ZipArchive' ) ) {
+			PHPExcel_Settings::setZipClass( PHPExcel_Settings::PCLZIP );
+		}
 		if ( $file->getSize() ) {
 			try {
 				$xl = PHPExcel_IOFactory::load( $file->getTempName() );
