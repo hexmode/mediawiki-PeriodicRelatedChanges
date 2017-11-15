@@ -43,7 +43,7 @@ class EventPresentationModel extends \EchoEventPresentationModel {
 	 */
 	public function getIconType() {
 		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
-		return 'someIcon';
+		return 'periodic-related-changes';
 	}
 
 	/**
@@ -56,7 +56,7 @@ class EventPresentationModel extends \EchoEventPresentationModel {
 		if ( $this->isBundled() ) {
 			// This is the header message for the bundle that contains
 			// several notifications of this type
-			$msg = $this->msg( 'notification-bundle-myext-topic-word' );
+			$msg = $this->msg( 'periodic-related-changes-topic-word' );
 			$msg->params( $this->getBundleCount() );
 			$msg->params( $this->getTruncatedTitleText(
 				$this->event->getTitle(), true
@@ -66,7 +66,7 @@ class EventPresentationModel extends \EchoEventPresentationModel {
 		} else {
 			// This is the header message for individual non-bundle message
 			$msg = $this->getMessageWithAgent(
-				'notification-myext-topic-word'
+				'periodic-related-changes-topic-word'
 			);
 			$msg->params( $this->getTruncatedTitleText(
 				$this->event->getTitle(), true
@@ -89,28 +89,15 @@ class EventPresentationModel extends \EchoEventPresentationModel {
 	}
 
 	/**
-	 * Summary of event notice.
-	 *
-	 * @return string
-	 */
-	public function getRevisionEditSummary() {
-		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
-		return "Edit this is hardcoded, needs to be fixed";
-	}
-
-	/**
 	 * Body of the event notice.  Summary?
 	 *
 	 * @return Message
 	 */
 	public function getBodyMessage() {
 		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
-		$comment = $this->getRevisionEditSummary();
-		if ( $comment ) {
-			$msg = new \RawMessage( '$1' );
-			$msg->plaintextParams( $comment );
-			return $msg;
-		}
+		$prcPage = "page they're watching";
+		$relatedPage = "page that changed";
+		return wfMessage( "periodic-related-changes-summary", $relatedPage, $prcPage );
 	}
 
 	/**

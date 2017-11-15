@@ -124,7 +124,9 @@ class Hook {
 		];
 
 		$notificationCategories['periodic-related-changes'] = [
-			'priority' => 2
+			'priority' => 2,
+			'tooltip' => 'periodic-related-changes-tooltip',
+			'no-dismiss' => [ 'email' ]
 		];
 	}
 
