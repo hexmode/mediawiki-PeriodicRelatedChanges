@@ -7,3 +7,4 @@ PHPTAGS.sqlite
 
 # composer
 /vendor/
+/composer.lock
