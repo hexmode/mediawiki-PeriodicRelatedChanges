@@ -15,8 +15,9 @@
 	],
 	"minimum-stability": "beta",
 	"require": {
-		"phpoffice/phpexcel": "^1.8",
 		"composer/installers": "1.*,>=1.0.1",
+		"pear/mail_mime": "1.10.1",
+		"phpoffice/phpexcel": "^1.8",
 		"wikimedia/timestamp": "1.*"
 	},
 	"require-dev": {

@@ -152,11 +152,13 @@ class Hook {
 	public static function userFilter( EchoEvent $event ) {
 		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
 		$user = $event->getAgent();
-		if ( !$user instanceof User ) {
+		if ( ! ( $user instanceof User || $user instanceof StubObject ) ) {
 			if ( is_string( $user ) ) {
 				$user = User::newFromName( $user );
 			} else {
-				throw new \MWException( "User is not a string or object" );
+				throw new \MWException(
+					"User is not a string or object: " . var_export( $user, true )
+				);
 			}
 		}
 		return [ $user ];
@@ -176,7 +178,7 @@ class Hook {
 	 * When a page is modified.
 	 * Occurs after the save page request has been processed
 	 *
-	 * @param Wikipage $article WikiPage modified
+	 * @param WikiPage $article modified
 	 * @param User $user User performing the modification
 	 * @param Content $content New content
 	 * @param string $summary Edit summary/comment
@@ -210,7 +212,6 @@ class Hook {
 				'title' => $article->getTitle(),
 				'extra' => [
 					'revid' => $revision->getId(),
-					'source' => false,
 					'excerpt' => EchoDiscussionParser::getEditExcerpt(
 						$revision, $wgContLang
 					),
@@ -219,7 +220,6 @@ class Hook {
 			] );
 		}
 	}
-
 	/**
 	 * When a page is added to the category.
 	 * @param Category $category page is added to

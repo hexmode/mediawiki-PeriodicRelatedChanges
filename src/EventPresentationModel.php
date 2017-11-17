@@ -61,17 +61,24 @@ class EventPresentationModel extends \EchoEventPresentationModel {
 			$msg->params( $this->getTruncatedTitleText(
 				$this->event->getTitle(), true
 			) );
-			$msg->params( $this->getViewingUserForGender() );
 			return $msg;
 		} else {
-			// This is the header message for individual non-bundle message
-			$msg = $this->getMessageWithAgent(
-				'periodic-related-changes-topic-word'
-			);
-			$msg->params( $this->getTruncatedTitleText(
-				$this->event->getTitle(), true
-			) );
-			$msg->params( $this->getViewingUserForGender() );
+			if ( $this->event->getExtraParam( 'source' ) ) {
+				$msg = $this->getMessageWithAgent(
+					'periodic-related-changes-topic-item-cat'
+				);
+				$msg->params( $this->event->getTitle() );
+				$msg->params( $this->event->getExtraParam( 'source' ) );
+				$msg->params( $this->event->getExtraParam( 'excerpt' ) );
+				$msg->params( $this->getViewingUserForGender() );
+			} else {
+				$msg = $this->getMessageWithAgent(
+					'periodic-related-changes-topic-item'
+				);
+				$msg->params( $this->event->getTitle() );
+				$msg->params( $this->event->getExtraParam( 'excerpt' ) );
+				$msg->params( $this->getViewingUserForGender() );
+			}
 			return $msg;
 		}
 	}
@@ -95,8 +102,8 @@ class EventPresentationModel extends \EchoEventPresentationModel {
 	 */
 	public function getBodyMessage() {
 		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
-		$prcPage = "page they're watching";
-		$relatedPage = "page that changed";
+		$prcPage = $this->event->getExtraParam( 'source' );
+		$relatedPage = $this->event->getTitle();
 		return wfMessage( "periodic-related-changes-summary", $relatedPage, $prcPage );
 	}
 
