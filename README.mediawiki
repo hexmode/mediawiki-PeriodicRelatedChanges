@@ -4,38 +4,58 @@ This is MediaWiki extension to specify that a user should get the related change
 
 == Installation ==
 
-* Download and place the files in a directory called PeriodicRelatedChanges in your extensions/ folder.
+Installing the PeriodicRelatedChanges extension is straightforward.
 
-* Add the following code at the bottom of your <tt>LocalSettings.php</tt>:
+=== Make sure Echo is installed ===
+
+This extension relies on the [https://www.mediawiki.org/wiki/Extension:Echo Echo extension] to send messages.  Echo cannot (currently) be installed with composer, so you'll need to install it separately.
+
+=== Fetch the extension with composer ===
+
+If you're familiar with composer, then, to install PeriodicRelatedChanges you just need to add a dependency on [https://packagist.org/packages/mwstake/periodic-related-changes mwstake/periodic-related-changes].
+
+If you don't already have composer, you'll need to [https://getcomposer.org/download/ download it].
+
+From the command line, run the following:
+
+<pre>
+php composer.phar install mwstake/periodic-related-change
+</pre>
+
+=== Update LocalSettings.php ===
 
 <source lang="php">
 wfLoadExtension( 'PeriodicRelatedChanges' );
 </source>
 
-* Run update.php:
+=== Run update.php ===
 
-<source lang="sh">
-$ php maintenance/update.php --quick
+<pre>
+php maintenance/update.php --quick
+</pre>
+
+=== Verify installation ===
+
+You should see "PeriodicRelatedChanges" listed on your wiki's Special:Version page.
+
+=== Setting up batched email notifications ===
+
+Finally, if you want notifications sent in a batch on a daily or weekly basis, then it is absolutely necessary that you ensure that the auxillary sc
+
+You need to set up a recurring job that will run the following command at least once a day:
+<source>
+php extensions/Echo/maintenance/processEchoEmailBatch.php
 </source>
 
-* Done - Navigate to Special:Version on your wiki to verify that the extension is successfully installed.
+On a Unix-derived system like Linux or OS X, this can be done with a [https://www.thesitewizard.com/general/set-cron-job.shtml cron job].  On Windows, you'll probably want to use [https://technet.microsoft.com/en-us/library/jj649816(v=wps.630).aspx scheduled task cmdlets in PowerShell] or [https://ss64.com/nt/schtasks.html schtasks.]
 
-* Current issues
-
-== Special Page ==
+== Special page and email template  ==
 
 Special:PeriodicRelatedChanges lets you configure who should get which related changes.
 
-This will be stored in an SQL table.
+Read the [[doc/UserManual.mediawiki|user manual]] to understand how to use this tool better.
 
-== Email template ==
+== Contact me ==
 
-From the Special Page, you'll be able to edit a page that will be used as the email message template.
+If you run into problems, please post a question on MediaWiki's [https://www.mediawiki.org/wiki/Project:Support_desk Support Desk] and tag me ([https://en.wikipedia.org/wiki/User:MarkAHershberger @MarkAHershberger]).
 
-== Job Queue ==
-
-Job should sit in the queue and wait until Friday morning to run.  Looks like Echo can do this even w/o the job queue.
-
-== query related changes ==
-
-Need a maint script that will show us the related changes in a period of time for any given page
