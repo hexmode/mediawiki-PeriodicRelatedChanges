@@ -1,86 +1,89 @@
 = Periodic Related Changes =
-
 Periodic Related Changes (PRC) is a MediaWiki extension to specify that a user should get the related changes for a page during a specified period of time (usually a week).
 
 == Installation ==
-
 Installing the PRC is straightforward.
 
 === Make sure Echo is installed ===
-
-This extension relies on the [https://www.mediawiki.org/wiki/Extension:Echo Echo extension] to send messages.  Echo cannot (currently) be installed with composer, so you'll need to install it separately.
+This extension relies on the [https://www.mediawiki.org/wiki/Extension:Echo Echo extension] to send messages. Echo cannot (currently) be installed with composer, so you'll need to install it separately.
 
 === Fetch the extension with composer ===
-
 If you're familiar with composer, then, to install PRC you just need to add a dependency on [https://packagist.org/packages/mwstake/periodic-related-changes mwstake/periodic-related-changes].
 
-If you don't already have composer, you'll need to [https://getcomposer.org/download/ download it].
+If you don't already have composer, you'll need to
+[https://getcomposer.org/download/ download it].
 
 From the command line, run the following:
 
-<pre>
-php composer.phar install mwstake/periodic-related-change
-</pre>
+	php composer.phar install mwstake/periodic-related-change
 
 === Update LocalSettings.php ===
-
 Add the following line to your LocalSettings.php:
 
-<source lang="php">
-wfLoadExtension( 'PeriodicRelatedChanges' );
-</source>
+	wfLoadExtension( 'PeriodicRelatedChanges' );
 
 === Run update.php ===
+On the command line:
 
-<pre>
-php maintenance/update.php --quick
-</pre>
+	php maintenance/update.php --quick
 
 === Verify installation ===
-
 You should see "PeriodicRelatedChanges" listed on your wiki's Special:Version page.
 
 === Setting up batched email notifications ===
-
-Finally, if you want notifications sent in a batch on a daily or weekly basis, then it is absolutely necessary that you ensure that the auxillary sc
+Finally, if you want notifications sent in a batch on a daily or weekly basis, then it is absolutely necessary that you ensure that the auxillary script, <tt>processEchoEmailBatch.php</tt> is run.
 
 You need to set up a recurring job that will run the following command at least once a day:
-<source>
-php extensions/Echo/maintenance/processEchoEmailBatch.php
-</source>
 
-On a Unix-derived system like Linux or OS X, this can be done with a [https://www.thesitewizard.com/general/set-cron-job.shtml cron job].  On Windows, you'll probably want to use [https://technet.microsoft.com/en-us/library/jj649816(v=wps.630).aspx scheduled task cmdlets in PowerShell] or [https://ss64.com/nt/schtasks.html schtasks.]
+	php extensions/Echo/maintenance/processEchoEmailBatch.php
+
+On a Unix-derived system like Linux or OS X, this can be done with a [https://www.thesitewizard.com/general/set-cron-job.shtml cron job]. On Windows, you'll probably want to use[https://technet.microsoft.com/en-us/library/jj649816(v=wps.630).aspx scheduled task cmdlets in PowerShell] or [https://ss64.com/nt/schtasks.html schtasks.]
 
 == Configuration ==
+There are a few items you might want to configure for Echo and PRC. Each of the lines of code below can be put in your LocalSettings.php file.
 
-There are a few items you might want to configure for Echo and PRC.
+'''PRC can send HTML email using Echo, but you need to enable it.''' ([https://www.mediawiki.org/wiki/Manual:$wgAllowHTMLEmail doc])
 
-;PRC can send HTML email using Echo, but you need to enable it. ([https://www.mediawiki.org/wiki/Manual:$wgAllowHTMLEmail doc])
-:<code>$wgAllowHTMLEmail = true;</code>
-;If you want to batch up emails (that's the "Periodic" part, after all), you need to enable batch notifications in Echo. ([https://www.mediawiki.org/wiki/Extension:Echo#Configuration doc])
-:<code>$wgEchoEnableEmailBatch = true;</code>
-;You can send set the default email format for your users to HTML if you'd like. ([https://www.mediawiki.org/wiki/Extension:Echo#Configuration doc])
-:<code>$wgDefaultUserOptions['echo-email-format'] = 'html';</code>
-;Optionally, don't allow your users to change to the text-only email format.
-:<code>$wgHiddenPrefs[] = 'echo-email-format';</code>
-;Enable emailed PRC notifications for all users by default.
-:<code>$wgDefaultUserOptions['echo-subscriptions-email-periodic-related-changes'] = true;</code>
-;Don't allow your users to turn off the notifications.
-:<code>$wgHiddenPrefs[] = 'echo-subscriptions-email-periodic-related-changes';</code>
-;Set your user's to receive emails on a weekly basis by default.
-:<code>$wgDefaultUserOptions['echo-email-frequency'] = 7;</code> <em>The constant EchoEmailFrequency::WEEKLY_DIGEST is set to this number, but can't be used in the LocalSettings.php file in some versions of MediaWiki.</em>
-;Optionally, don't allow your users to change to daily emails.
-:<code>$wgHiddenPrefs[] = 'echo-email-frequency';</code>
-;Disable (by default) unbatched, on-wiki Echo notifications for PRC.
-:<code>$wgDefaultUserOptions['echo-subscriptions-web-periodic-related-changes'] = false;</code>
+	$wgAllowHTMLEmail = true;
 
-== Special page and email template  ==
+'''If you want to batch up emails (that's the "Periodic" part, after all), you need to enable batch notifications in Echo.''' ([https://www.mediawiki.org/wiki/Extension:Echo#Configuration doc])
 
+	$wgEchoEnableEmailBatch = true;
+
+'''You can send set the default email format for your users to HTML if you'd like.''' ([https://www.mediawiki.org/wiki/Extension:Echo#Configuration doc])
+
+	$wgDefaultUserOptions['echo-email-format'] = 'html';
+
+'''Optionally, don't allow your users to change to the text-only email format.'''
+
+	$wgHiddenPrefs[] = 'echo-email-format';
+
+'''Enable emailed PRC notifications for all users by default.'''
+
+	$wgDefaultUserOptions['echo-subscriptions-email-periodic-related-changes'] = true;
+
+'''Don't allow your users to turn off the notifications.'''
+
+	$wgHiddenPrefs[] = 'echo-subscriptions-email-periodic-related-changes';
+
+'''Set your user's to receive emails on a weekly basis by default.'''
+
+	$wgDefaultUserOptions['echo-email-frequency'] = 7;
+
+''The constant <tt>EchoEmailFrequency::WEEKLY_DIGEST</tt> is set to this number (7), but the constant can't be used in the LocalSettings.php file in some versions of MediaWiki.''
+
+'''Optionally, don't allow your users to change to daily to emails.'''
+
+	$wgHiddenPrefs[] = 'echo-email-frequency';
+
+'''Disable (by default) un-batched, on-wiki Echo notifications for PRC.'''
+
+	$wgDefaultUserOptions['echo-subscriptions-web-periodic-related-changes'] = false;
+
+== Special page and email template ==
 Special:PeriodicRelatedChanges lets you configure who should get which related changes.
 
-Read the [[doc/UserManual.mediawiki|user manual]] to understand how to use this tool better.
+Read the [./doc/User_manual.html user manual] to understand how to use this tool better.
 
-== Contact me ==
-
+== Support ==
 If you run into problems, please post a question on MediaWiki's [https://www.mediawiki.org/wiki/Project:Support_desk Support Desk] and tag me ([https://en.wikipedia.org/wiki/User:MarkAHershberger @MarkAHershberger]).
-

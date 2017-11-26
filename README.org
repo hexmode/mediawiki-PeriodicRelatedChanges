@@ -1,0 +1,116 @@
+* Periodic Related Changes
+
+Periodic Related Changes (PRC) is a MediaWiki extension to specify that a user should get the related changes for a page during a specified period of time (usually a week).
+
+** Installation
+
+Installing the PRC is straightforward.
+
+*** Make sure Echo is installed
+
+This extension relies on the [[https://www.mediawiki.org/wiki/Extension:Echo][Echo extension]] to send messages. Echo cannot (currently) be installed with composer, so you'll need to install it separately.
+
+*** Fetch the extension with composer
+
+If you're familiar with composer, then, to install PRC you just need to add a dependency on [[https://packagist.org/packages/mwstake/periodic-related-changes][mwstake/periodic-related-changes]].
+
+If you don't already have composer, you'll need to
+[[https://getcomposer.org/download/][download it]].
+
+From the command line, run the following:
+
+#+BEGIN_EXAMPLE
+	php composer.phar install mwstake/periodic-related-change
+#+END_EXAMPLE
+
+*** Update LocalSettings.php
+
+Add the following line to your LocalSettings.php:
+
+#+BEGIN_EXAMPLE
+	wfLoadExtension( 'PeriodicRelatedChanges' );
+#+END_EXAMPLE
+
+*** Run update.php
+
+On the command line:
+#+BEGIN_EXAMPLE
+	php maintenance/update.php --quick
+#+END_EXAMPLE
+
+*** Verify installation
+
+You should see "PeriodicRelatedChanges" listed on your wiki's Special:Version page.
+
+*** Setting up batched email notifications
+
+Finally, if you want notifications sent in a batch on a daily or weekly basis, then it is absolutely necessary that you ensure that the auxillary script, =processEchoEmailBatch.php= is run.
+
+You need to set up a recurring job that will run the following command at least once a day:
+
+#+BEGIN_EXAMPLE
+	php extensions/Echo/maintenance/processEchoEmailBatch.php
+#+END_EXAMPLE
+
+On a Unix-derived system like Linux or OS X, this can be done with a [[https://www.thesitewizard.com/general/set-cron-job.shtml][cron job]]. On Windows, you'll probably want to use[[https://technet.microsoft.com/en-us/library/jj649816(v=wps.630).aspx][scheduled task cmdlets in PowerShell]] or [[https://ss64.com/nt/schtasks.html][schtasks.]]
+
+** Configuration
+  
+There are a few items you might want to configure for Echo and PRC. Each of the lines of code below can be put in your LocalSettings.php file.
+
+*PRC can send HTML email using Echo, but you need to enable it.* ([[https://www.mediawiki.org/wiki/Manual:$wgAllowHTMLEmail][doc]])
+#+BEGIN_SRC php
+$wgAllowHTMLEmail = true;
+#+END_SRC
+
+*If you want to batch up emails (that's the "Periodic" part, after all), you need to enable batch notifications in Echo.* ([[https://www.mediawiki.org/wiki/Extension:Echo#Configuration][doc]])
+#+BEGIN_SRC php
+$wgEchoEnableEmailBatch = true;
+#+END_SRC
+
+*You can send set the default email format for your users to HTML if you'd like.* ([[https://www.mediawiki.org/wiki/Extension:Echo#Configuration][doc]])
+#+BEGIN_SRC php
+$wgDefaultUserOptions['echo-email-format'] = 'html';
+#+END_SRC
+
+*Optionally, don't allow your users to change to the text-only email format.*
+#+BEGIN_SRC php
+$wgHiddenPrefs[] = 'echo-email-format';
+#+END_SRC
+
+*Enable emailed PRC notifications for all users by default.*
+#+BEGIN_SRC php
+$wgDefaultUserOptions['echo-subscriptions-email-periodic-related-changes'] = true;
+#+END_SRC
+
+*Don't allow your users to turn off the notifications.*
+#+BEGIN_SRC php
+$wgHiddenPrefs[] = 'echo-subscriptions-email-periodic-related-changes';
+#+END_SRC
+
+*Set your user's to receive emails on a weekly basis by default.*
+#+BEGIN_SRC php
+$wgDefaultUserOptions['echo-email-frequency'] = 7;
+#+END_SRC
+
+/The constant =EchoEmailFrequency::WEEKLY_DIGEST= is set to this number (7), but the constant can't be used in the LocalSettings.php file in some versions of MediaWiki./
+
+*Optionally, don't allow your users to change to daily to emails.*
+#+BEGIN_SRC php
+$wgHiddenPrefs[] = 'echo-email-frequency';
+#+END_SRC
+
+*Disable (by default) un-batched, on-wiki Echo notifications for PRC.*
+#+BEGIN_SRC php
+$wgDefaultUserOptions['echo-subscriptions-web-periodic-related-changes'] = false;
+#+END_SRC
+
+** Special page and email template
+
+Special:PeriodicRelatedChanges lets you configure who should get which related changes.
+
+Read the [[./doc/User_manual.org][user manual]] to understand how to use this tool better.
+
+** Support
+
+If you run into problems, please post a question on MediaWiki's [[https://www.mediawiki.org/wiki/Project:Support_desk][Support Desk]] and tag me ([[https://en.wikipedia.org/wiki/User:MarkAHershberger][@MarkAHershberger]]).
