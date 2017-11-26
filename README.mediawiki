@@ -59,7 +59,7 @@ There are a few items you might want to configure for Echo and PRC.
 :<code>$wgAllowHTMLEmail = true;</code>
 ;If you want to batch up emails (that's the "Periodic" part, after all), you need to enable batch notifications in Echo. ([https://www.mediawiki.org/wiki/Extension:Echo#Configuration doc])
 :<code>$wgEchoEnableEmailBatch = true;</code>
-;You can send set the default email format for your users to HTML if you'd like. [https://www.mediawiki.org/wiki/Extension:Echo#Configuration doc])
+;You can send set the default email format for your users to HTML if you'd like. ([https://www.mediawiki.org/wiki/Extension:Echo#Configuration doc])
 :<code>$wgDefaultUserOptions['echo-email-format'] = 'html';</code>
 ;Optionally, don't allow your users to change to the text-only email format.
 :<code>$wgHiddenPrefs[] = 'echo-email-format';</code>
