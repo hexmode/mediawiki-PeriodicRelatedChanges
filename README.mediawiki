@@ -55,12 +55,12 @@ On a Unix-derived system like Linux or OS X, this can be done with a [https://ww
 
 There are a few items you might want to configure for Echo and PRC.
 
-;PRC can send HTML email using Echo, but you need to enable it.
-:<code>[https://www.mediawiki.org/wiki/Manual:$wgAllowHTMLEmail $wgAllowHTMLEmail] = true;</code>
-;If you want to batch up emails (that's the "Periodic" part, after all), you need to enable batch notifications in Echo.
-:<code>[https://www.mediawiki.org/wiki/Extension:Echo#Configuration $wgEchoEnableEmailBatch] = true;</code>
-;You can send set the default email format for your users to HTML if you'd like.
-:<code>[https://www.mediawiki.org/wiki/Extension:Echo#Configuration $wgDefaultUserOptions&x5B;'echo-email-format'&x5D;] = 'html';</code>
+;PRC can send HTML email using Echo, but you need to enable it. ([https://www.mediawiki.org/wiki/Manual:$wgAllowHTMLEmail doc])
+:<code>$wgAllowHTMLEmail = true;</code>
+;If you want to batch up emails (that's the "Periodic" part, after all), you need to enable batch notifications in Echo. ([https://www.mediawiki.org/wiki/Extension:Echo#Configuration doc])
+:<code>$wgEchoEnableEmailBatch = true;</code>
+;You can send set the default email format for your users to HTML if you'd like. [https://www.mediawiki.org/wiki/Extension:Echo#Configuration doc])
+:<code>$wgDefaultUserOptions['echo-email-format'] = 'html';</code>
 ;Optionally, don't allow your users to change to the text-only email format.
 :<code>$wgHiddenPrefs[] = 'echo-email-format';</code>
 ;Enable emailed PRC notifications for all users by default.
@@ -72,7 +72,7 @@ There are a few items you might want to configure for Echo and PRC.
 ;Optionally, don't allow your users to change to daily emails.
 :<code>$wgHiddenPrefs[] = 'echo-email-frequency';</code>
 ;Disable (by default) unbatched, on-wiki Echo notifications for PRC.
-;<code>$wgDefaultUserOptions['echo-subscriptions-web-periodic-related-changes'] = false;</code>
+:<code>$wgDefaultUserOptions['echo-subscriptions-web-periodic-related-changes'] = false;</code>
 
 == Special page and email template  ==
 
