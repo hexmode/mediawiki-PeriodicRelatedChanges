@@ -1,0 +1,18 @@
+= User manual =
+
+== User Permissions ==
+
+PRC exposes two new permissions that can be assigned to groups:
+
+* <code>periodic-related-changes</code> - View and change the PRC notices for logged in user.
+* <code>periodic-related-changes-any-user</code> - View and change the PRC notices for any user.
+
+By default, the <code>periodic-related-changes</code> right is assigned to the <code>user</code> group so that any logged in user can view and modify their own PRC notices; the <code>periodic-related-changes-any-user</code> right is assigned to the <code>sysop</code>
+
+== Setting up notifications ==
+
+== Importing a list of bulk watchers ==
+
+== What counts as a related page ==
+
+== Changing the email formats ==
