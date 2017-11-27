@@ -9,7 +9,7 @@ PRC exposes two new permissions that can be assigned to groups:
 
 By default, the =periodic-related-changes= right is assigned to the =user= group so that any logged in user can view and modify their own PRC notices; the =periodic-related-changes-any-user= right is assigned to the =sysop= (often displayed as "administrator" on the wiki) group.
 
-If you want to take the rights away from these groups you would do something like the following in your LocalSettings.php:
+If you want to take the rights away from these groups you would do something like the following in your =LocalSettings.php=:
 #+BEGIN_SRC php
 // Take away the default rights
 $wgGroupPermissions['user']['periodic-related-changes'] = false;
@@ -26,9 +26,18 @@ When a user visits Special:PeriodicRelatedChanges on your wiki, they'll see one 
 
 - *A form to look up a user* Administrators will see this when they first visit the page. Auto-completion of the user name is provided.
 - *A form to edit the the pages on a user's PRC list* Logged in users that are not administrators will see this page with their own PRC list.  Administrators will see this page once they have selected a user.
-- *Permission error* Users who are not logged in will be told that they cannot access this featurae.
-
+- *Permission error* Users who are not logged in will be told that they cannot access this feature.
 
 ** Importing a list of bulk watchers
+
+Users that have the =periodic-related-changes-any-user= right will have the option to "Import users" listed just below "Periodic related changes" line:
+
+[[./img/import-users.png]]
+
+Selecting this option will produce a form that asks for a file to import.  The file is expected to be in the following format:
+
+| Comment         | Page Title    | User1 | User2 | ... | UserX |
+| Another comment | Category:Test | User2 |       |     |       |
+
 ** What counts as a related page
 ** Changing the email formats
