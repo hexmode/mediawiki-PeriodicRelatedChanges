@@ -47,6 +47,10 @@ class Hook {
 			'periodic_related_change',
 			__DIR__ . '/../sql/periodic_related_change.sql'
 		);
+		$db->addExtensionField(
+			'periodic_related_change', 'wc_namespace',
+			__DIR__ . '/../sql/add_namespace_title_columns.sql'
+		);
 	}
 
 	/**
