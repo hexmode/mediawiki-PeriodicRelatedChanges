@@ -66,7 +66,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	 */
 	public function __construct(
 		$name = 'PeriodicRelatedChanges',
-		$restriction = 'periodic-related-changes'
+		$restriction = "periodic-related-changes"
 	) {
 		parent::__construct( $name, $restriction );
 
@@ -930,10 +930,9 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	public function listAndRemoveTitlesFormHandler() {
 		$prc = Manager::getManager();
 		$formDescriptor = [];
-		if ( $this->userSubject ) {
-			foreach (
-				$prc->getCurrentWatches( $this->userSubject ) as $watch
-			) {
+        $watches = $prc->getCurrentWatches( $this->userSubject );
+		if ( $this->userSubject && $watches->numRows() > 0 ) {
+			foreach ( $watches as $watch ) {
 				$formDescriptor[$watch->getFormID()] = [
 					'section' => 'currentwatchlist',
 					'label'   => $watch->getTitle(),
@@ -970,12 +969,10 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 					}
 				}, array_keys( $formData )
 			) );
-		wfDebugLog( __METHOD__, var_export( $watchesToRemove, true ) );
 
 		foreach ( $watchesToRemove as $watch ) {
 			$watch->remove();
 		}
-		$this->listAndRemoveTitlesFormHandler();
 		return true;
 	}
 }
