@@ -92,7 +92,7 @@ There are a few items you might want to configure for Echo and PRC. Each of the 
 
 Special:PeriodicRelatedChanges lets you configure who should get which related changes.
 
-Read the [[./doc/User_manual.org|user manual]] to understand how to use this tool better.
+Read the [[./doc/User_manual.mediawiki|user manual]] to understand how to use this tool better.
 
 == Support ==
 

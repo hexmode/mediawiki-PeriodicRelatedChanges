@@ -109,7 +109,7 @@ $wgDefaultUserOptions['echo-subscriptions-web-periodic-related-changes'] = false
 
 Special:PeriodicRelatedChanges lets you configure who should get which related changes.
 
-Read the [[./doc/User_manual.mediawiki][user manual] to understand how to use this tool better.
+Read the [[./doc/User_manual.mediawiki][user manual]] to understand how to use this tool better.
 
 ** Support
 
