@@ -44,7 +44,7 @@ You need to set up a recurring job that will run the following command at least 
 
 <pre class="example">php extensions/Echo/maintenance/processEchoEmailBatch.php
 </pre>
-On a Unix-derived system like Linux or OS X, this can be done with a [https://www.thesitewizard.com/general/set-cron-job.shtml cron job]. On Windows, you'll probably want to use[https://technet.microsoft.com/en-us/library/jj649816(v=wps.630).aspx scheduled task cmdlets in PowerShell] or [https://ss64.com/nt/schtasks.html schtasks.]
+On a Unix-derived system like Linux or OS X, this can be done with a [https://www.thesitewizard.com/general/set-cron-job.shtml cron job]. On Windows, you'll probably want to use [https://technet.microsoft.com/en-us/library/jj649816(v=wps.630).aspx scheduled task cmdlets in PowerShell] or [https://ss64.com/nt/schtasks.html schtasks.]
 
 == Configuration ==
 
