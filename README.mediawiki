@@ -59,7 +59,7 @@ Because of limitations of how Echo handles notifications, fine grained schedulin
 <p>Similarly, using SCHTASKS to perform this in Windows would look something like the following:</p>
 <pre class="example">SCHTASKS /Create /SC weekly /D FRI /TN PRCNotifications /ST 17:00 /TR c:\do_prc.bat
 </pre>
-<p>You would have to execute the following command in do_prc.bat, or course:</p>
+<p>You would have to execute the following command in <code>do_prc.bat</code>, or course:</p>
 <pre class="example">php extensions/Echo/maintenance/processEchoEmailBatch.php -i
 </pre></li></ol>
 

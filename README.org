@@ -73,7 +73,7 @@ Similarly, using SCHTASKS to perform this in Windows would look something like t
 SCHTASKS /Create /SC weekly /D FRI /TN PRCNotifications /ST 17:00 /TR c:\do_prc.bat
 #+END_EXAMPLE
 
-You would have to execute the following command in do\_prc.bat, or course:
+You would have to execute the following command in =do_prc.bat=, or course:
 #+BEGIN_EXAMPLE
 php extensions/Echo/maintenance/processEchoEmailBatch.php -i
 #+END_EXAMPLE
