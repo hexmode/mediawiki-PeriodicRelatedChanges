@@ -18,7 +18,7 @@ If you don't already have composer, you'll need to [https://getcomposer.org/down
 
 From the command line, run the following:
 
-<pre class="example">php composer.phar install mwstake/periodic-related-change
+<pre class="example">php composer.phar require mwstake/periodic-related-changes dev-master
 </pre>
 === Update LocalSettings.php ===
 

@@ -20,7 +20,7 @@ If you don't already have composer, you'll need to
 From the command line, run the following:
 
 #+BEGIN_EXAMPLE
-	php composer.phar install mwstake/periodic-related-change
+	php composer.phar require mwstake/periodic-related-changes dev-master
 #+END_EXAMPLE
 
 *** Update LocalSettings.php
