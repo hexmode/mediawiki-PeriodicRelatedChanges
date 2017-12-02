@@ -208,7 +208,7 @@ class Hook {
 		if (
 			RelatedChangeWatcher::hasRelatedChangeWatchers(
 				$article->getTitle()
-			)
+			) && $user
 		) {
 			global $wgContLang;
 			EchoEvent::create( [
@@ -234,19 +234,22 @@ class Hook {
 		Category $category, WikiPage $page
 	) {
 		$rev = $page->getRevision();
-		global $wgContLang;
-		EchoEvent::create( [
-			'type' => 'periodic-related-changes-cat-add',
-			'title' => $page->getTitle(),
-			'extra' => [
-				'revid' => $rev->getId(),
-				'source' => $category,
-				'excerpt' => EchoDiscussionParser::getEditExcerpt(
-					$rev, $wgContLang
-				),
-			],
-			'agent' => $rev->getUser(),
-		] );
+		$user = $rev->getUser();
+		if ( $user !== 0 ) {
+			global $wgContLang;
+			EchoEvent::create( [
+				'type' => 'periodic-related-changes-cat-add',
+				'title' => $page->getTitle(),
+				'extra' => [
+					'revid' => $rev->getId(),
+					'source' => $category,
+					'excerpt' => EchoDiscussionParser::getEditExcerpt(
+						$rev, $wgContLang
+					),
+				],
+				'agent' => User::newFromId( $user )
+			] );
+		}
 	}
 
 	/**
@@ -259,18 +262,21 @@ class Hook {
 		Category $category, WikiPage $page
 	) {
 		$rev = $page->getRevision();
-		global $wgContLang;
-		EchoEvent::create( [
-			'type' => 'periodic-related-changes-cat-del',
-			'title' => $page->getTitle(),
-			'extra' => [
-				'revid' => $rev->getId(),
-				'source' => $category,
-				'excerpt' => EchoDiscussionParser::getEditExcerpt(
-					$rev, $wgContLang
-				),
-			],
-			'agent' => $rev->getUser(),
-		] );
+		$user = $rev->getUser();
+		if ( $user !== 0 ) {
+			global $wgContLang;
+			EchoEvent::create( [
+				'type' => 'periodic-related-changes-cat-del',
+				'title' => $page->getTitle(),
+				'extra' => [
+					'revid' => $rev->getId(),
+					'source' => $category,
+					'excerpt' => EchoDiscussionParser::getEditExcerpt(
+						$rev, $wgContLang
+					),
+				],
+				'agent' => User::newFromId( $user )
+			] );
+		}
 	}
 }
