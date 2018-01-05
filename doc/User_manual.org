@@ -2,24 +2,6 @@
 
 PeriodicRelatedChanges (PRC) provides your MediaWiki wiki with the ability to notify users about changes related to categories or pages they are watching on a daily or weekly basis.
 
-** User Permissions
-PRC exposes two new permissions that can be assigned to groups:
-- =periodic-related-changes= - View and change the PRC notices for logged in user.
-- =periodic-related-changes-any-user= - View and change the PRC notices for any user.
-
-By default, the =periodic-related-changes= right is assigned to the =user= group so that any logged in user can view and modify their own PRC notices; the =periodic-related-changes-any-user= right is assigned to the =sysop= (often displayed as "administrator" on the wiki) group.
-
-If you want to take the rights away from these groups you would do something like the following in your =LocalSettings.php=:
-#+BEGIN_SRC php
-// Take away the default rights
-$wgGroupPermissions['user']['periodic-related-changes'] = false;
-$wgGroupPermissions['sysop']['periodic-related-changes-any-user'] = false;
-
-// Give them to other groups
-$wgGroupPermissions['watchers']['periodic-related-changes'] = true;
-$wgGroupPermissions['watch-admin']['periodic-related-changes-any-user'] = true;
-#+END_SRC
-
 ** Setting up notifications
 
 When a user visits Special:PeriodicRelatedChanges on your wiki, they'll see one of three things, depending on their permission level.  The default configuration would show these options:
@@ -27,6 +9,8 @@ When a user visits Special:PeriodicRelatedChanges on your wiki, they'll see one 
 - *A form to look up a user* Administrators will see this when they first visit the page. Auto-completion of the user name is provided.
 - *A form to edit the the pages on a user's PRC list* Logged in users that are not administrators will see this page with their own PRC list.  Administrators will see this page once they have selected a user.
 - *Permission error* Users who are not logged in will be told that they cannot access this feature.
+
+By default, the administrator permission  (=periodic-related-changes-any-user=) is assigned to the Administrator group (=sysop=) and the user permission (=periodic-related-changes=) is assigned to anyone who is logged in (=user=).  See “[[../README.mediawiki#User_Permissions][User Permissions in the README]] to understand how to change these.
 
 ** Importing a list of bulk watchers
 
@@ -39,5 +23,16 @@ Selecting this option will produce a form that asks for a file to import.  The f
 | Comment         | Page Title    | User1 | User2 | ... | UserX |
 | Another comment | Category:Test | User2 |       |     |       |
 
-** What counts as a related page
-** Changing the email formats
+** What counts as a related page and how to check it
+A related page is defined as a page that you would get if you visited the “related changes” link on a page.  For example, clicking the [[https://en.wikipedia.org/wiki/Special:RecentChangesLinked/Test][releated changes]] link in the side bar of wikipedia's [[https://en.wikipedia.org/wiki/Categtory:Tests][Categtory:Tests]] page takes you to a page which lists all edits made by non-bot accounts to pages in the category.  The category covers a number of pages, but for the past week you can se that several edits have been made to the [[https://en.wikipedia.org/wiki/Bechdel_test][Bechdel test]] and [[https://en.wikipedia.org/wiki/Drug_test][Drug test]] pages as well as one edit on [[https://en.wikipedia.org/wiki/Floor_slip_resistance_testing][Floor slip resistance testing]].
+
+Non-category pages ([[https://en.wikipedia.org/wiki/Bechdel_test][Bechdel test]], for example) will show changes on pages that are linked from or linked to the page being examined.  The [[https://en.wikipedia.org/wiki/Special:RecentChangesLinked][related changes for the Bechdel test]] page include everything thing from [[https://en.wikipedia.org/wiki/FiveThirtyEight][FiveThirtyEight]] and [[https://en.wikipedia.org/wiki/Npm_(software)][npm (software)]] to [[https://en.wikipedia.org/wiki/Women%27s_cinema][Women's cinima]] and [[https://en.wikipedia.org/wiki/Alison_Bechdel][Alison Bechdel]].
+
+This means that if MediaWiki were to send out a PRC-generated email right now based on the Bechdel test page, it should include links to the pages just mentioned as well as a information on who made the changes, when the changes were made, and links to their changes.
+
+A week ago, or a week from now the same pages would probably not be listed unless they are likely to all change every week.
+
+If you want to see what a PRC notification would include if it were sent out when you chaeck you can use the 
+
+** Changing how the email looks
+By default

@@ -2,41 +2,42 @@
 
 Periodic Related Changes (PRC) is a MediaWiki extension to specify that a user should get the related changes for a page during a specified period of time (usually a week).
 
+Read the [[./doc/User_manual.mediawiki][user manual]] to understand how to use this tool better.
+
 ** Installation
 
 Installing the PRC is straightforward.
 
 *** Make sure Echo is installed
 
-This extension relies on the [[https://www.mediawiki.org/wiki/Extension:Echo][Echo extension]] to send messages. Echo cannot (currently) be installed with composer, so you'll need to install it separately.
+This extension relies on the [[https://www.mediawiki.org/wiki/Extension:Echo][Echo extension]] to send messages. Echo cannot (currently) be installed with composer, so you'll need to [[https://www.mediawiki.org/wiki/Extension:Echo#Installing][install Echo]] separately before continuing.
 
 *** Fetch the extension with composer
 
 If you're familiar with composer, then, to install PRC you just need to add a dependency on [[https://packagist.org/packages/mwstake/periodic-related-changes][mwstake/periodic-related-changes]].
 
-If you don't already have composer, you'll need to
-[[https://getcomposer.org/download/][download it]].
+If you don't already have composer, you'll need to [[https://getcomposer.org/download/][download it]].
 
 From the command line, run the following:
 
-#+BEGIN_EXAMPLE
+#+BEGIN_SRC sh
 	php composer.phar require mwstake/periodic-related-changes dev-master
-#+END_EXAMPLE
+#+END_SRC
 
 *** Update LocalSettings.php
 
 Add the following line to your LocalSettings.php:
 
-#+BEGIN_EXAMPLE
+#+BEGIN_SRC php
 	wfLoadExtension( 'PeriodicRelatedChanges' );
-#+END_EXAMPLE
+#+END_SRC
 
 *** Run update.php
 
 On the command line:
-#+BEGIN_EXAMPLE
+#+BEGIN_SRC sh
 	php maintenance/update.php --quick
-#+END_EXAMPLE
+#+END_SRC
 
 *** Verify installation
 
@@ -48,9 +49,9 @@ Finally, if you want notifications sent in a batch on a daily or weekly basis, t
 
 You need to set up a recurring job that will run the following command at least once a day:
 
-#+BEGIN_EXAMPLE
+#+BEGIN_SRC sh
 	php extensions/Echo/maintenance/processEchoEmailBatch.php
-#+END_EXAMPLE
+#+END_SRC
 
 On a Unix-derived system like Linux or OS X, this can be done with a [[https://www.thesitewizard.com/general/set-cron-job.shtml][cron job]]. On Windows, you'll probably want to use [[https://technet.microsoft.com/en-us/library/jj649816(v=wps.630).aspx][scheduled task cmdlets in PowerShell]] or [[https://ss64.com/nt/schtasks.html][SCHTASKS.]]
 
@@ -62,9 +63,9 @@ Because of limitations of how Echo handles notifications, fine grained schedulin
 
 For instance, if you want all PRC notifications to go out at 5pm on a Friday afternoon in a Unix cron job, the following cron entry would work:
 
-#+BEGIN_EXAMPLE
+#+BEGIN_SRC crontab
 0 17 * * 5 	php extensions/Echo/maintenance/processEchoEmailBatch.php -i
-#+END_EXAMPLE
+#+END_SRC
 
 **** On Windows
 
@@ -74,13 +75,13 @@ SCHTASKS /Create /SC weekly /D FRI /TN PRCNotifications /ST 17:00 /TR c:\do_prc.
 #+END_EXAMPLE
 
 You would have to execute the following command in =do_prc.bat=, or course:
-#+BEGIN_EXAMPLE
+#+BEGIN_SRC sh
 php extensions/Echo/maintenance/processEchoEmailBatch.php -i
-#+END_EXAMPLE
+#+END_SRC
 
 *** Cautions
 
-Note that setting up weekly notifications in this way will affect /all/ batched Echo notifications, not just those for PRC.  This means that if a user has specified they want to be notified via email on a daily basis of comments on their page, but you only run =processEchoEmailBatch.php= once a week
+Note that setting up weekly notifications in this way will affect /all/ batched Echo notifications, not just those for PRC.  This means that if a user has specified they want to be notified via email on a daily basis of comments on their page, but you only run =processEchoEmailBatch.php= once a week, they'll only get the notices once a week.
 
 ** Configuration
 
@@ -133,11 +134,23 @@ $wgHiddenPrefs[] = 'echo-email-frequency';
 $wgDefaultUserOptions['echo-subscriptions-web-periodic-related-changes'] = false;
 #+END_SRC
 
-** Special page and email template
+** User Permissions
+PRC exposes two new permissions that can be assigned to groups:
+- =periodic-related-changes= - View and change the PRC notices for logged in user.
+- =periodic-related-changes-any-user= - View and change the PRC notices for any user.
 
-Special:PeriodicRelatedChanges lets you configure who should get which related changes.
+By default, the =periodic-related-changes= right is assigned to the =user= group so that any logged in user can view and modify their own PRC notices; the =periodic-related-changes-any-user= right is assigned to the =sysop= (often displayed as "administrator" on the wiki) group.
 
-Read the [[./doc/User_manual.mediawiki][user manual]] to understand how to use this tool better.
+If you want to take the rights away from these groups you would do something like the following in your =LocalSettings.php=:
+#+BEGIN_SRC php
+// Take away the default rights
+$wgGroupPermissions['user']['periodic-related-changes'] = false;
+$wgGroupPermissions['sysop']['periodic-related-changes-any-user'] = false;
+
+// Give them to other groups
+$wgGroupPermissions['watchers']['periodic-related-changes'] = true;
+$wgGroupPermissions['watch-admin']['periodic-related-changes-any-user'] = true;
+#+END_SRC
 
 ** Support
 
