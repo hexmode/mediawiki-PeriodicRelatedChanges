@@ -32,7 +32,7 @@ This means that if MediaWiki were to send out a PRC-generated email right now ba
 
 A week ago, or a week from now the same pages would probably not be listed unless they are likely to all change every week.
 
-If you want to see what a PRC notification would include if it were sent out when you chaeck you can use the 
+If you want to see what a PRC notification would include if it were sent out 
 
 ** Changing how the email looks
 By default
