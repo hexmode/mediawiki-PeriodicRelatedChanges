@@ -26,8 +26,8 @@
 	},
 	"autoload" : {
 		"psr-4": {
-			"MediaWiki\\Extension\\PeriodicRelatedChanges\\Tests\\" : "tests/phpunit",
-			"MediaWiki\\Extension\\PeriodicRelatedChanges\\" : "src"
+			"MediaWiki\\Extensions\\PeriodicRelatedChanges\\Tests\\" : "tests/phpunit",
+			"MediaWiki\\Extensions\\PeriodicRelatedChanges\\" : "src"
 		}
 	},
 	"scripts": {

@@ -1,7 +1,7 @@
 <?php
-namespace MediaWiki\Extension\PeriodicRelatedChanges\Test;
+namespace MediaWiki\Extensions\PeriodicRelatedChanges\Test;
 
-use MediaWiki\Extension\PeriodicRelatedChanges;
+use MediaWiki\Extensions\PeriodicRelatedChanges;
 use Title;
 use User;
 

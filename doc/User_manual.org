@@ -26,13 +26,14 @@ Selecting this option will produce a form that asks for a file to import.  The f
 ** What counts as a related page and how to check it
 A related page is defined as a page that you would get if you visited the “related changes” link on a page.  For example, clicking the [[https://en.wikipedia.org/wiki/Special:RecentChangesLinked/Test][releated changes]] link in the side bar of wikipedia's [[https://en.wikipedia.org/wiki/Categtory:Tests][Categtory:Tests]] page takes you to a page which lists all edits made by non-bot accounts to pages in the category.  The category covers a number of pages, but for the past week you can se that several edits have been made to the [[https://en.wikipedia.org/wiki/Bechdel_test][Bechdel test]] and [[https://en.wikipedia.org/wiki/Drug_test][Drug test]] pages as well as one edit on [[https://en.wikipedia.org/wiki/Floor_slip_resistance_testing][Floor slip resistance testing]].
 
-Non-category pages ([[https://en.wikipedia.org/wiki/Bechdel_test][Bechdel test]], for example) will show changes on pages that are linked from or linked to the page being examined.  The [[https://en.wikipedia.org/wiki/Special:RecentChangesLinked][related changes for the Bechdel test]] page include everything thing from [[https://en.wikipedia.org/wiki/FiveThirtyEight][FiveThirtyEight]] and [[https://en.wikipedia.org/wiki/Npm_(software)][npm (software)]] to [[https://en.wikipedia.org/wiki/Women%27s_cinema][Women's cinima]] and [[https://en.wikipedia.org/wiki/Alison_Bechdel][Alison Bechdel]].
+Non-category pages ([[https://en.wikipedia.org/wiki/Bechdel_test][Bechdel test]], for example) will show changes on pages that are linked from or linked to the page being examined.  The [[https://en.wikipedia.org/wiki/Special:RecentChangesLinked][related changes for the Bechdel test]] page includes everything thing from [[https://en.wikipedia.org/wiki/FiveThirtyEight][FiveThirtyEight]] and [[https://en.wikipedia.org/wiki/Npm_(software)][npm (software)]] to [[https://en.wikipedia.org/wiki/Women%27s_cinema][Women's cinima]] and [[https://en.wikipedia.org/wiki/Alison_Bechdel][Alison Bechdel]].
 
 This means that if MediaWiki were to send out a PRC-generated email right now based on the Bechdel test page, it should include links to the pages just mentioned as well as a information on who made the changes, when the changes were made, and links to their changes.
 
 A week ago, or a week from now the same pages would probably not be listed unless they are likely to all change every week.
 
-If you want to see what a PRC notification would include if it were sent out 
+** Checking the outgoing email
+If you want to see what a PRC notification would look like if it were sent out at any given time, you can view a preview at any time by visiting the 
 
 ** Changing how the email looks
 By default

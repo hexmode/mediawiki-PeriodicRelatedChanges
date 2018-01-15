@@ -21,7 +21,7 @@
  * @author Mark A. Hershberger <mah@nichework.com>
  */
 
-namespace MediaWiki\Extension\PeriodicRelatedChanges;
+namespace MediaWiki\Extensions\PeriodicRelatedChanges;
 
 use FauxRequest;
 use IDatabase;

@@ -21,7 +21,7 @@
  * @author Mark A. Hershberger <mah@nichework.com>
  */
 
-namespace MediaWiki\Extension\PeriodicRelatedChanges;
+namespace MediaWiki\Extensions\PeriodicRelatedChanges;
 
 use MWException;
 use Maintenance;
@@ -171,7 +171,7 @@ class ManageWatch extends Maintenance {
 	 */
 	public function listTitlesWatchers() {
 		$watchers = $this->prc->getRelatedChangeWatchers( $this->title );
-		var_dump( $watchers);
+		var_dump( $watchers );
 		return null;
 	}
 
@@ -197,5 +197,5 @@ class ManageWatch extends Maintenance {
 	}
 }
 
-$maintClass = "MediaWiki\\Extension\\PeriodicRelatedChanges\\ManageWatch";
+$maintClass = "MediaWiki\\Extensions\\PeriodicRelatedChanges\\ManageWatch";
 require_once DO_MAINTENANCE;

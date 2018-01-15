@@ -21,7 +21,7 @@
  * @ingroup SpecialPage
  */
 
-namespace MediaWiki\Extension\PeriodicRelatedChanges;
+namespace MediaWiki\Extensions\PeriodicRelatedChanges;
 
 use Wikimedia\Timestamp\ConvertibleTimestamp;
 

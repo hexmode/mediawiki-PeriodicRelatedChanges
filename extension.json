@@ -5,7 +5,10 @@
 	"author": [
 		"[http://mwstake.org Mark A. Hershberger]"
 	],
-	"require": [ "1.26" ],
+	"require": {
+		"MediaWiki":"1.26",
+		"Echo": "*"
+	},
 	"url": "https://www.mediawiki.org/wiki/Extension:PeriodicRelatedChanges",
 	"descriptionmsg": "periodic-related-changes-desc",
 	"type": "specialpage",
@@ -15,18 +18,19 @@
 		]
 	},
 	"AutoloadClasses": {
-		"MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook": "src/Hook.php",
-		"MediaWiki\\Extension\\PeriodicRelatedChanges\\MySpecialRelatedChanges": "src/MySpecialRelatedChanges.php",
-		"MediaWiki\\Extension\\PeriodicRelatedChanges\\RelatedChangeWatchlist": "src/RelatedChangeWatchlist.php",
-		"MediaWiki\\Extension\\PeriodicRelatedChanges\\RelatedPageList": "src/RelatedPageList.php",
-		"MediaWiki\\Extension\\PeriodicRelatedChanges\\RelatedChangeWatcher": "src/RelatedChangeWatcher.php",
-		"MediaWiki\\Extension\\PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges": "src/SpecialPeriodicRelatedChanges.php",
-		"MediaWiki\\Extension\\PeriodicRelatedChanges\\RelatedChangeWatchGroupList": "src/RelatedChangeWatchGroupList.php",
-		"MediaWiki\\Extension\\PeriodicRelatedChanges\\EventPresentationModel": "src/EventPresentationModel.php",
-		"MediaWiki\\Extension\\PeriodicRelatedChanges\\LinkedRecentChangeQuery": "src/LinkedRecentChangeQuery.php"
+		"MediaWiki\\Extensions\\PeriodicRelatedChanges\\Hook": "src/Hook.php",
+		"MediaWiki\\Extensions\\PeriodicRelatedChanges\\Manager": "src/Manager.php",
+		"MediaWiki\\Extensions\\PeriodicRelatedChanges\\MySpecialRelatedChanges": "src/MySpecialRelatedChanges.php",
+		"MediaWiki\\Extensions\\PeriodicRelatedChanges\\RelatedChangeWatchlist": "src/RelatedChangeWatchlist.php",
+		"MediaWiki\\Extensions\\PeriodicRelatedChanges\\RelatedPageList": "src/RelatedPageList.php",
+		"MediaWiki\\Extensions\\PeriodicRelatedChanges\\RelatedChangeWatcher": "src/RelatedChangeWatcher.php",
+		"MediaWiki\\Extensions\\PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges": "src/SpecialPeriodicRelatedChanges.php",
+		"MediaWiki\\Extensions\\PeriodicRelatedChanges\\RelatedChangeWatchGroupList": "src/RelatedChangeWatchGroupList.php",
+		"MediaWiki\\Extensions\\PeriodicRelatedChanges\\EventPresentationModel": "src/EventPresentationModel.php",
+		"MediaWiki\\Extensions\\PeriodicRelatedChanges\\LinkedRecentChangeQuery": "src/LinkedRecentChangeQuery.php"
 	},
 	"SpecialPages": {
-		"PeriodicRelatedChanges": "MediaWiki\\Extension\\PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges"
+		"PeriodicRelatedChanges": "MediaWiki\\Extensions\\PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges"
 	},
 	"GroupPermissions": {
 		"sysop": {
@@ -41,26 +45,26 @@
 		"periodic-related-changes"
 	],
 	"ConfigRegistry": {
-		"PeriodicRelatedChanges": "MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::makeConfig"
+		"PeriodicRelatedChanges": "MediaWiki\\Extensions\\PeriodicRelatedChanges\\Hook::makeConfig"
 	},
 	"Hooks": {
 		"LoadExtensionSchemaUpdates": [
-			"MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::onLoadExtensionSchemaUpdates"
+			"MediaWiki\\Extensions\\PeriodicRelatedChanges\\Hook::onLoadExtensionSchemaUpdates"
 		],
 		"BeforeCreateEchoEvent": [
-			"MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::onBeforeCreateEchoEvent"
+			"MediaWiki\\Extensions\\PeriodicRelatedChanges\\Hook::onBeforeCreateEchoEvent"
 		],
 		"EchoGetBundleRules": [
-			"MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::onEchoGetBundleRules"
+			"MediaWiki\\Extensions\\PeriodicRelatedChanges\\Hook::onEchoGetBundleRules"
 		],
 		"CategoryAfterPageAdded": [
-			"MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::onCategoryAfterPageAdded"
+			"MediaWiki\\Extensions\\PeriodicRelatedChanges\\Hook::onCategoryAfterPageAdded"
 		],
 		"CategoryAfterPageRemoved": [
-			"MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::onCategoryAfterPageRemoved"
+			"MediaWiki\\Extensions\\PeriodicRelatedChanges\\Hook::onCategoryAfterPageRemoved"
 		],
 		"PageContentSaveComplete": [
-			"MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::onPageContentSaveComplete"
+			"MediaWiki\\Extensions\\PeriodicRelatedChanges\\Hook::onPageContentSaveComplete"
 		]
 	},
 	"config": {

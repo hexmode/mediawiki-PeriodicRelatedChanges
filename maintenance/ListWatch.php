@@ -19,7 +19,7 @@
  * @author Mark A. Hershberger <mah@nichework.com>
  */
 
-namespace PeriodicRelatedChanges;
+namespace MediaWiki\Extensions\PeriodicRelatedChanges;
 
 use Iterator;
 use Maintenance;
@@ -57,16 +57,31 @@ class ListWatch extends Maintenance {
 		);
 		$this->addOption( "mail", "Send an email instead of printing out.",
 						  false, false, "m" );
-		$this->addArg( "user", "User to list watch for.", false );
+		$this->addArg( "user", "User to list watchs for.", false );
 	}
 
 	/**
 	 * Where all the business happens.
 	 */
 	public function execute() {
+		$mgr = Manager::getManager();
+		$groupList = null;
 		if ( $this->hasArg( 0 ) ) {
-			$user = User::newFromText( $this->getArg( 0 ) );
-			
+			$username = $this->getArg( 0 );
+			$user = User::newFromName( $username );
+			if ( !$user->idForName() ) {
+				$this->error( "The user '$username' does not exist.", 1 );
+			}
+
+			$groupList = [];
+			foreach ( $mgr->getCurrentWatches( $user ) as $title ) {
+				$groupList[$title] = [ $user ];
+			}
+		}
+
+		if ( $groupList === null ) {
+			$groupList = $mgr->getWatchGroups();
+		}
 	}
 
 	/**
@@ -208,5 +223,5 @@ class ListWatch extends Maintenance {
 	}
 }
 
-$maintClass = "PeriodicRelatedChanges\\ListWatch";
+$maintClass = "MediaWiki\\Extensions\\PeriodicRelatedChanges\\ListWatch";
 require_once DO_MAINTENANCE;

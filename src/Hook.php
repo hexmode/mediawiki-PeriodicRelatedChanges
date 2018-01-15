@@ -21,7 +21,7 @@
  * @author Mark A. Hershberger <mah@nichework.com>
  */
 
-namespace MediaWiki\Extension\PeriodicRelatedChanges;
+namespace MediaWiki\Extensions\PeriodicRelatedChanges;
 
 use Category;
 use Content;
@@ -95,10 +95,10 @@ class Hook {
 			],
 			'category' => 'periodic-related-changes',
 			'group' => 'neutral',
-			'user-locators' => [ 'MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::userLocater' ],
-			'user-filters' => [ 'MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::userFilter' ],
+			'user-locators' => [ 'MediaWiki\\Extensions\\PeriodicRelatedChanges\\Hook::userLocater' ],
+			'user-filters' => [ 'MediaWiki\\Extensions\\PeriodicRelatedChanges\\Hook::userFilter' ],
 			'presentation-model'
-			=> 'MediaWiki\\Extension\\PeriodicRelatedChanges\\EventPresentationModel',
+			=> 'MediaWiki\\Extensions\\PeriodicRelatedChanges\\EventPresentationModel',
 		];
 		$notifications['periodic-related-changes-add'] = [
 			'bundle' => [
@@ -108,10 +108,10 @@ class Hook {
 			],
 			'category' => 'periodic-related-changes',
 			'group' => 'neutral',
-			'user-locators' => [ 'MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::userLocater' ],
-			'user-filters' => [ 'MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::userFilter' ],
+			'user-locators' => [ 'MediaWiki\\Extensions\\PeriodicRelatedChanges\\Hook::userLocater' ],
+			'user-filters' => [ 'MediaWiki\\Extensions\\PeriodicRelatedChanges\\Hook::userFilter' ],
 			'presentation-model'
-			=> 'MediaWiki\\Extension\\PeriodicRelatedChanges\\EventPresentationModel',
+			=> 'MediaWiki\\Extensions\\PeriodicRelatedChanges\\EventPresentationModel',
 		];
 		$notifications['periodic-related-changes-cat-del'] = [
 			'bundle' => [
@@ -121,10 +121,10 @@ class Hook {
 			],
 			'category' => 'periodic-related-changes',
 			'group' => 'neutral',
-			'user-locators' => [ 'MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::userLocater' ],
-			'user-filters' => [ 'MediaWiki\\Extension\\PeriodicRelatedChanges\\Hook::userFilter' ],
+			'user-locators' => [ 'MediaWiki\\Extensions\\PeriodicRelatedChanges\\Hook::userLocater' ],
+			'user-filters' => [ 'MediaWiki\\Extensions\\PeriodicRelatedChanges\\Hook::userFilter' ],
 			'presentation-model'
-			=> 'MediaWiki\\Extension\\PeriodicRelatedChanges\\EventPresentationModel',
+			=> 'MediaWiki\\Extensions\\PeriodicRelatedChanges\\EventPresentationModel',
 		];
 
 		$notificationCategories['periodic-related-changes'] = [

@@ -21,7 +21,7 @@
  * @author Mark A. Hershberger <mah@nichework.com>
  */
 
-namespace MediaWiki\Extension\PeriodicRelatedChanges;
+namespace MediaWiki\Extensions\PeriodicRelatedChanges;
 
 use MediaWiki\Changes\LinkedRecentChanges;
 use Page;
@@ -403,9 +403,14 @@ class RelatedChangeWatcher {
 			__METHOD__ . '-getLinksTo'
 		);
 		foreach ( $res as $row ) {
-			$title = WikiPage::newFromID( $row->id )->getTitle();
-			$match['wc_namespace'][$title->getNamespace()] = true;
-			$match['wc_title'][$title->getDBkey()] = true;
+			$page = WikiPage::newFromID( $row->id );
+			if ( $page ) {
+				$title = $page->getTitle();
+				$match['wc_namespace'][$title->getNamespace()] = true;
+				$match['wc_title'][$title->getDBkey()] = true;
+				// Add redirects?
+			}
+			// FIXME: Handle deleted pages?
 		}
 		return $match;
 	}
@@ -439,11 +444,11 @@ class RelatedChangeWatcher {
 			$match['wc_title'][$title->getDBkey()] = true;
 		}
 
+		file_put_contents( "/tmp/st", var_export( [ $title->getDBKey(), $match ], true ) . "\n\n\n" );
 		$ret = [];
-		if ( count( $match['wc_namespace'] ) > 0 ) {
+		if ( isset( $match['wc_namespace'] ) && count( $match['wc_namespace'] ) > 0 ) {
 			$match['wc_namespace'] = array_keys( $match['wc_namespace'] );
 			$match['wc_title'] = array_keys( $match['wc_title'] );
-
 			$res = $dbr->select(
 				self::$table, self::$rowMap, $match,
 				__METHOD__ . '-getWatchers', [ 'DISTINCT' ]

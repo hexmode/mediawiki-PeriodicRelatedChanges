@@ -18,9 +18,8 @@
  * @author Mark A. Hershberger <mah@nichework.com>
  */
 
-namespace MediaWiki\Extension\PeriodicRelatedChanges;
+namespace MediaWiki\Extensions\PeriodicRelatedChanges;
 
-use MWException;
 use Page;
 use ResultWrapper;
 use Status;
@@ -33,7 +32,7 @@ class Manager {
 	/**
 	 * Get the manager for this
 	 *
-	 * @return MediaWiki\Extension\PeriodicRelatedChanges\Manager
+	 * @return MediaWiki\Extensions\PeriodicRelatedChanges\Manager
 	 */
 	public static function getManager() {
 		wfDebugLog( 'PeriodicRelatedChanges::Manager', __METHOD__ );
@@ -170,7 +169,7 @@ class Manager {
 	}
 
 	/**
-	 * Get the a watcher, ensuring that it exists.
+	 * Get the watcher, ensuring that it exists.
 	 *
 	 * @param User $user the user
 	 * @param Title $title what to watch for related changes.

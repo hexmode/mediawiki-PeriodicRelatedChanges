@@ -21,7 +21,7 @@
  * @author Mark A. Hershberger <mah@nichework.com>
  */
 
-namespace MediaWiki\Extension\PeriodicRelatedChanges;
+namespace MediaWiki\Extensions\PeriodicRelatedChanges;
 
 use ErrorPageError;
 use HTML;
@@ -930,7 +930,7 @@ class SpecialPeriodicRelatedChanges extends SpecialPage {
 	public function listAndRemoveTitlesFormHandler() {
 		$prc = Manager::getManager();
 		$formDescriptor = [];
-        $watches = $prc->getCurrentWatches( $this->userSubject );
+		$watches = $prc->getCurrentWatches( $this->userSubject );
 		if ( $this->userSubject && $watches->numRows() > 0 ) {
 			foreach ( $watches as $watch ) {
 				$formDescriptor[$watch->getFormID()] = [

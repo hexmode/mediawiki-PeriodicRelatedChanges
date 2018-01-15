@@ -1,7 +1,7 @@
 <?php
-namespace MediaWiki\Extension\PeriodicRelatedChanges\Test;
+namespace MediaWiki\Extensions\PeriodicRelatedChanges\Test;
 
-use MediaWiki\Extension\PeriodicRelatedChanges\RelatedChangeWatcher;
+use MediaWiki\Extensions\PeriodicRelatedChanges\RelatedChangeWatcher;
 use Title;
 use User;
 
@@ -19,7 +19,7 @@ class RelatedChangeWatcherTest extends \EchoTalkPageFunctionalTest {
 		$conditions = [ 'wc_user' => 1,
 						'wc_namespace' => NS_MAIN,
 						'wc_title' => 'China' ];
-		wfGetDB( DB_MASTER )->delete( $wlTable, $conditions, __METHOD );
+		wfGetDB( DB_MASTER )->delete( $wlTable, $conditions, __METHOD__ );
 
 		$content = <<<EOF
 [[Image:Wok cooking.jpg|thumb|right|250px|Cooking in a wok]]
@@ -39,7 +39,10 @@ EOF;
 		$watchers = RelatedChangeWatcher::getRelatedChangeWatchers( $wok );
 		$this->assertEquals( [], $watchers );
 
-		wfGetDB( DB_MASTER )->insert( $wlTable, $conditions, __METHOD );
+		$this->assertEquals(
+			wfGetDB( DB_MASTER )->insert( $wlTable, $conditions, __METHOD__ ),
+			1
+		);
 		$watchers = RelatedChangeWatcher::getRelatedChangeWatchers( $wok );
 		$this->assertEquals( [ User::newFromID( $conditions['wc_user'] ) ], $watchers );
 	}
