@@ -4,7 +4,7 @@
 		"installer-name": "PeriodicRelatedChanges"
 	},
 	"type": "mediawiki-extension",
-	"license": "GPL-3.0+",
+	"license": "GPL-3.0-or-later",
 	"description": "MediaWiki extension to set up periodic notifications of related changes",
 	"homepage": "https://github.com/hexmode/mediawiki-PeriodicRelatedChanges",
 	"authors": [
@@ -16,7 +16,7 @@
 	"minimum-stability": "beta",
 	"require": {
 		"composer/installers": "1.*,>=1.0.1",
-		"pear/mail_mime": "1.10.1",
+		"pear/mail_mime": "1.*,>=1.10.1",
 		"phpoffice/phpexcel": "^1.8",
 		"wikimedia/timestamp": "1.*"
 	},
