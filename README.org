@@ -2,7 +2,7 @@
 
 Periodic Related Changes (PRC) is a MediaWiki extension to specify that a user should get the related changes for a page during a specified period of time (usually a week).
 
-Read the [[file:doc/User_manual.mediawiki][user manual]] to understand how to use this tool better.
+Read the [[https://github.com/hexmode/mediawiki-PeriodicRelatedChanges/blob/master/doc/User_manual.mediawiki][user manual]] to understand how to use this tool better.
 
 ** Installation
 
