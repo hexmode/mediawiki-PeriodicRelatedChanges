@@ -12,7 +12,7 @@ When a user visits Special:PeriodicRelatedChanges on your wiki, they'll see one 
 
 By default, the administrator permission  (=periodic-related-changes-any-user=) is assigned to the Administrator group (=sysop=) and the user permission (=periodic-related-changes=) is assigned to anyone who is logged in (=user=).  See “[[https://github.com/hexmode/mediawiki-PeriodicRelatedChanges/blob/master/README.mediawiki#User_Permissions][User Permissions in the README]]” to understand how to change these.
 
-** Adding to a user's PRC notifications
+** Adding pages to a PRC notification list
 
 If you have administrative privileges, you'll be able to add notifications to any user's PRC watchlist.  When you visit the Special:PeriodicRelatedChanges page, a form field will be shown that will let you select any user that already exists in the wiki by typing their name.  Auto-completion is provided so that as soon as you type a few characters, the first few possible matches are listed.
 
@@ -23,6 +23,26 @@ Select a user and then hit <enter> or click “fetch”.
 At this point, you'll see a list of pages that are on the user's PRC list and a form to add more pages.
 
 [[./img/user-prc-form.png]]
+
+Use the “Add” field to enter a page (remember to use the “Category:” prefix if you want it to be a category page):
+
+[[./img/category-selection.png]]
+
+If you manage to somehow select a non-existant page, you'll see an error and have a chance to try again:
+
+[[./img/bad-selection.png]]
+
+After you have successfully added a page to the user's PRC list, you'll see a message telling you that the page has been saved and a link to “Set up another periodic related change watch.”
+
+[[./img/saved-page.png]]
+
+Due to a problem with the way forms are processed, you will not see the page listed on their current watchlist until you click the link to set up another PRC.
+
+** Removing pages from the PRC notiification list
+
+Removing pages is similar.  Instead of typing a name, click the checkbox beside the title:
+
+[[./img/remove-page.png]]
 
 ** Importing a list of bulk watchers
 
