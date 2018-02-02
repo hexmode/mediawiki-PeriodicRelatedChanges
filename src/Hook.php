@@ -35,6 +35,15 @@ use User;
 use WikiPage;
 
 class Hook {
+
+	/**
+	 * Prove the autoloader works -- used in tests
+	 */
+	public static function getVersion() {
+		$extension = json_decode( file_get_contents( __DIR__ . "/../extension.json" ) );
+		return $extension->version;
+	}
+
 	/**
 	 * Schema update handler
 	 *

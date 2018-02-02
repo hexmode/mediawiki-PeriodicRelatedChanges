@@ -8,3 +8,6 @@ PHPTAGS.sqlite
 # composer
 /vendor/
 /composer.lock
+
+# phpunitt
+/tests/_reports

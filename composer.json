@@ -33,6 +33,8 @@
 	"scripts": {
 		"test": [
 			"parallel-lint . --exclude vendor --exclude node_modules"
-		]
+		],
+		"phpunit": "php ../../tests/phpunit/phpunit.php -c phpunit.xml.dist",
+		"phpdbg": "phpdbg -qrr ../../tests/phpunit/phpunit.php -c phpunit.xml.dist"
 	}
 }

@@ -27,7 +27,8 @@
 		"MediaWiki\\Extensions\\PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges": "src/SpecialPeriodicRelatedChanges.php",
 		"MediaWiki\\Extensions\\PeriodicRelatedChanges\\RelatedChangeWatchGroupList": "src/RelatedChangeWatchGroupList.php",
 		"MediaWiki\\Extensions\\PeriodicRelatedChanges\\EventPresentationModel": "src/EventPresentationModel.php",
-		"MediaWiki\\Extensions\\PeriodicRelatedChanges\\LinkedRecentChangeQuery": "src/LinkedRecentChangeQuery.php"
+		"MediaWiki\\Extensions\\PeriodicRelatedChanges\\LinkedRecentChangeQuery": "src/LinkedRecentChangeQuery.php",
+		"MediaWiki\\Extensions\\PeriodicRelatedChanges\\UserImporter": "src/UserImporter.php"
 	},
 	"SpecialPages": {
 		"PeriodicRelatedChanges": "MediaWiki\\Extensions\\PeriodicRelatedChanges\\SpecialPeriodicRelatedChanges"

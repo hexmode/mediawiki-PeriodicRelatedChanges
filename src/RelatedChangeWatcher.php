@@ -24,8 +24,6 @@
 namespace MediaWiki\Extensions\PeriodicRelatedChanges;
 
 use MediaWiki\Changes\LinkedRecentChanges;
-use Page;
-use ResultWrapper;
 use Status;
 use Title;
 use User;
@@ -181,7 +179,7 @@ class RelatedChangeWatcher {
 	/**
 	 * Get data ready for row query and insert
 	 *
-	 * @param $title Title to query for
+	 * @param Title $title to query for
 	 * @return array
 	 */
 	protected static function getRowDataForTitle( Title $title ) {
@@ -240,7 +238,7 @@ class RelatedChangeWatcher {
 		return $this->exists;
 	}
 
-	public function fillFromRow( $row ) {
+	private function fillFromRow( $row ) {
 		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
 		$this->title = $row->title;
 		$this->namespace = $row->namespace;
@@ -251,6 +249,7 @@ class RelatedChangeWatcher {
 
 	/**
 	 * remove a watch
+	 * @return Status object
 	 */
 	public function remove() {
 		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
@@ -301,15 +300,15 @@ class RelatedChangeWatcher {
 	 * @param string $ts timestamp
 	 * @return bool
 	 */
-	public function setTimestamp( $ts ) {
+	public function setTimestamp( $timeStamp ) {
 		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
 		$dbw = wfGetDB( DB_MASTER );
 		$res = $dbw->update(
-			self::$table, [ 'wc_timestamp' => $ts ], $this->getRowData(),
+			self::$table, [ 'wc_timestamp' => $timeStamp ], $this->getRowData(),
 			__METHOD__
 		);
 		if ( $res ) {
-			$this->timestamp = $ts;
+			$this->timestamp = $timeStamp;
 		}
 		return $res;
 	}
@@ -339,7 +338,7 @@ class RelatedChangeWatcher {
 	public function getRelatedChanges() {
 		wfDebugLog( 'PeriodicRelatedChanges', __METHOD__ );
 		$changes = new LinkedRecentChanges( $this->getTitle() );
-		if ( is_integer( $this->limit ) ) {
+		if ( is_int( $this->limit ) ) {
 			$changes->setLimit( $this->limit );
 		}
 		$changes->addCond(
