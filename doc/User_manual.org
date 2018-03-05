@@ -50,10 +50,14 @@ Users that have the =periodic-related-changes-any-user= right will have the opti
 
 [[./img/import-users.png]]
 
-Selecting this option will produce a form that asks for a file to import.  The file is expected to be in the following format:
+Selecting this option will produce a form that asks for a file to import.  The file is expected to be a spreadsheet with the columns in the following format:
 
 | Comment         | Page Title    | User1 | User2 | ... | UserX |
 | Another comment | Category:Test | User2 |       |     |       |
+
+- Comment (column 1) :: This column is simply for descriptive purposes and is ignored by PRC when importing.
+- Page Title (column 2) :: The page to subscribe users to.  Remember to include the namespace if it is not in the main namespace (e.g “Category:Test”).
+- User1 through UserX (the remaining columns) :: After the second column any remaining columns are assumed to be a user or a user's email.  If no user can be found with the information given, then a message is displayed.  For example, if the column contains “NoSuchUser” and no user with the username “NoSuchUser” is found, then, an message is displayed and the next column is checked.  Likewise, if a column contains “no-user@example.com” and no user has “no-user@example.com” as their email address then a message is displayed and the next column is checked.
 
 ** What counts as a related page and how to check it
 A related page is defined as a page that you would get if you visited the “related changes” link on a page.  For example, clicking the [[https://en.wikipedia.org/wiki/Special:RecentChangesLinked/Test][releated changes]] link in the side bar of wikipedia's [[https://en.wikipedia.org/wiki/Categtory:Tests][Categtory:Tests]] page takes you to a page which lists all edits made by non-bot accounts to pages in the category.  The category covers a number of pages, but for the past week you can se that several edits have been made to the [[https://en.wikipedia.org/wiki/Bechdel_test][Bechdel test]] and [[https://en.wikipedia.org/wiki/Drug_test][Drug test]] pages as well as one edit on [[https://en.wikipedia.org/wiki/Floor_slip_resistance_testing][Floor slip resistance testing]].
