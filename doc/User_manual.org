@@ -50,13 +50,13 @@ Users that have the =periodic-related-changes-any-user= right will have the opti
 
 [[./img/import-users.png]]
 
-Selecting this option will produce a form that asks for a file to import.  The file is expected to be a spreadsheet with the columns in the following format:
+Selecting this option will produce a form that asks for a file to import.  The file is expected to be a spreadsheet with the columns in the order given below. The importer assumes there is no header.  In other words, as long sit will treat every row as if it is intended to import users into PRC.
 
 | Comment         | Page Title    | User1 | User2 | ... | UserX |
 | Another comment | Category:Test | User2 |       |     |       |
 
 - Comment (column 1) :: This column is simply for descriptive purposes and is ignored by PRC when importing.
-- Page Title (column 2) :: The page to subscribe users to.  Remember to include the namespace if it is not in the main namespace (e.g “Category:Test”).
+- Page Title (column 2) :: The page to subscribe users to.  Remember to include the namespace if it is not in the main namespace (e.g “Category:Test”).  If the this column is empty in a row,that row is skipped.  If the colum contains something that cannot be a title, a message is displayed and the row is skipped.
 - User1 through UserX (the remaining columns) :: After the second column any remaining columns are assumed to be a user or a user's email.  If no user can be found with the information given, then a message is displayed.  For example, if the column contains “NoSuchUser” and no user with the username “NoSuchUser” is found, then, an message is displayed and the next column is checked.  Likewise, if a column contains “no-user@example.com” and no user has “no-user@example.com” as their email address then a message is displayed and the next column is checked.
 
 ** What counts as a related page and how to check it
