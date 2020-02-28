@@ -27,8 +27,9 @@ use FauxRequest;
 use IDatabase;
 use MWException;
 use MailAddress;
-use ResultWrapper;
+use MediaWikiServices;
 use RequestContext;
+use ResultWrapper;
 use Title;
 use User;
 use UserMailer;
@@ -139,7 +140,7 @@ class RelatedChangeWatchlist extends ResultWrapper {
 				"days" => $days
 			] );
 		$req->setUser( $user );
-		\SpecialPageFactory::executePath( $thisPage, $req );
+		MediaWikiServices::getInstance()->getSpecialPageFactory()->executePath( $thisPage, $req );
 
 		global $wgAllowHTMLEmail, $wgPasswordSender;
 		$wgAllowHTMLEmail = true;
