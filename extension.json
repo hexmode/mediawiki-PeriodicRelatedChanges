@@ -2,20 +2,16 @@
 	"name": "PeriodicRelatedChanges",
 	"version": "0.1.0",
 	"license-name": "GPL-3.0+",
-	"author": [
-		"[http://mwstake.org Mark A. Hershberger]"
-	],
-	"require": {
-		"MediaWiki":"1.26",
+	"author": ["[http://mwstake.org Mark A. Hershberger]"],
+	"requires": {
+		"MediaWiki": "1.26",
 		"Echo": "*"
 	},
 	"url": "https://www.mediawiki.org/wiki/Extension:PeriodicRelatedChanges",
 	"descriptionmsg": "periodic-related-changes-desc",
 	"type": "specialpage",
 	"MessagesDirs": {
-		"PeriodicRelatedChanges": [
-			"i18n"
-		]
+		"PeriodicRelatedChanges": ["i18n"]
 	},
 	"AutoloadClasses": {
 		"MediaWiki\\Extensions\\PeriodicRelatedChanges\\Hook": "src/Hook.php",
@@ -73,13 +69,10 @@
 	},
 	"ResourceModules": {
 		"ext.periodicRelatedChanges": {
-			"styles": [
-			]
+			"styles": []
 		},
 		"ext.periodicRelatedChanges.user": {
-			"scripts": [
-				"modules/periodicRelatedChanges.user.js"
-			]
+			"scripts": ["modules/periodicRelatedChanges.user.js"]
 		}
 	},
 	"ResourceFileModulePaths": {
